@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom'
+
 export default function ProductCard({ product }) {
   return (
-    <article className={`product-card product-card--${product.size}`}>
+    <Link to={`/products/${product.id}`} className={`product-card product-card--${product.size}`}>
       <div className="product-card__media">
         {product.image ? (
           <img src={product.image} alt={product.name} className="product-card__image" />
@@ -13,6 +15,6 @@ export default function ProductCard({ product }) {
         </span>
       </div>
       <p className="product-card__name">{product.name}</p>
-    </article>
+    </Link>
   )
 }

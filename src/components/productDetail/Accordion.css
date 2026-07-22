@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+.accordion {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.accordion__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.9rem 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-medium);
+  font-size: 0.95rem;
+  color: var(--color-black);
+}
+
+.accordion__trigger svg {
+  font-size: 0.7rem;
+  color: #9a9a9a;
+  flex-shrink: 0;
+}
+
+.accordion__panel {
+  padding: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--color-text-body);
+}

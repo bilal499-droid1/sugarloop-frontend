@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom'
 import './ProductsHero.css'
 import heroBgDesktop from '../../assets/p1.png'
 import heroBgMobile from '../../assets/p2.png'
-import logo from '../../assets/sugarLoop 1.png'
+import ShopNav from './ShopNav'
 
 export default function ProductsHero({ categories, activeCategory, onSelectCategory }) {
   return (
@@ -12,23 +11,7 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
         <div className="products-hero__bg products-hero__bg--desktop" style={{ backgroundImage: `url(${heroBgDesktop})` }} />
         <div className="products-hero__overlay" />
 
-        <nav className="products-hero__nav">
-          <Link to="/" className="products-hero__logo">
-            <img src={logo} alt="Sugarloop" />
-          </Link>
-
-          <ul className="products-hero__nav-links">
-            <li><Link to="/products">Products</Link></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="/#about">About us</a></li>
-          </ul>
-
-          <button className="products-hero__menu-btn" type="button" aria-label="Open menu">
-            <span />
-            <span />
-            <span />
-          </button>
-        </nav>
+        <ShopNav />
 
         <div className="products-hero__content">
           <h1 className="products-hero__heading">
