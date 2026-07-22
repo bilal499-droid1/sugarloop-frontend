@@ -1,19 +1,16 @@
-import Hero from './components/Hero'
-import About from './components/About'
-import Marquee from './components/Marquee'
-import DrinksStrip from './components/DrinksStrip'
-import MenuCarousel from './components/MenuCarousel'
-import Footer from './components/Footer'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import HomePage from './pages/HomePage'
+import ProductsPage from './pages/ProductsPage'
 
 export default function App() {
   return (
-    <main>
-      <Hero />
-      <About />
-      <Marquee />
-      <DrinksStrip />
-      <MenuCarousel />
-      <Footer />
-    </main>
+    <BrowserRouter>
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductsPage />} />
+        </Routes>
+      </main>
+    </BrowserRouter>
   )
 }

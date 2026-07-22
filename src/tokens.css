@@ -20,6 +20,12 @@
   --card-bg-neutral: #e0e0e0;       /* menu category card outer frame */
   --faq-border: rgba(190, 190, 190, 0.8);
 
+  /* ---- Products page (Figma frames 2719:5980 desktop / 2831:6956 mobile) ---- */
+  --color-accent-dark: #425b72;     /* mobile active category pill */
+  --color-muted-text: #d9d9d9;      /* desktop inactive sidebar category */
+  --color-border-light: #efefef;    /* product card borders */
+  --font-price: 'Raleway', sans-serif;
+
   /* ---- Color: ESTIMATED (no exact Figma value captured yet) ---- */
   --color-text-body: #4a4a4a;       /* body copy gray, estimated from screenshot */
   --color-testimonial-bg: #ffffff;  /* ESTIMATED */

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import './Hero.css'
 import heroBg from '../assets/DSC04944.jpg'
 import logo from '../assets/sugarLoop 1.png'
@@ -22,11 +23,17 @@ export default function Hero() {
         </div>
 
         <ul className="hero__nav-links">
-          {NAV_LINKS.slice(0, 2).map((label) => (
-            <li key={label}>
-              <a href={`#${label.toLowerCase()}`}>{label}</a>
-            </li>
-          ))}
+          {NAV_LINKS.slice(0, 2).map((label) =>
+            label === 'Menu' ? (
+              <li key={label}>
+                <Link to="/products">{label}</Link>
+              </li>
+            ) : (
+              <li key={label}>
+                <a href={`#${label.toLowerCase()}`}>{label}</a>
+              </li>
+            )
+          )}
         </ul>
 
         <ul className="hero__nav-links">
