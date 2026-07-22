@@ -1,0 +1,78 @@
+/*
+  Design tokens — pulled directly from Figma "Copy as CSS" exports
+  (Frame 850 / Hero, Frame 851 / About, Menu category cards, FAQ row).
+  Anything not explicitly confirmed in Figma is marked ESTIMATED below —
+  replace with real values once available.
+*/
+@import "tailwindcss";
+:root {
+  /* ---- Color: confirmed ---- */
+  --color-bg-section: #f6f6f6;      /* About Us section background */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-accent: #587ea2;          /* confirmed reused: stat numbers + menu-card CTA circle */
+
+  --overlay-nav: rgba(0, 0, 0, 0.18);       /* glass nav pill */
+  --overlay-hero-dark: rgba(0, 0, 0, 0.35); /* hero photo darkening */
+  --overlay-card-fade: rgba(0, 0, 0, 0.4);  /* menu card left->right gradient end */
+  --glow-vignette: rgba(0, 0, 0, 0.4);      /* hero blurred glow, blur ~193px */
+
+  --card-bg-neutral: #e0e0e0;       /* menu category card outer frame */
+  --faq-border: rgba(190, 190, 190, 0.8);
+
+  /* ---- Color: ESTIMATED (no exact Figma value captured yet) ---- */
+  --color-text-body: #4a4a4a;       /* body copy gray, estimated from screenshot */
+  --color-testimonial-bg: #ffffff;  /* ESTIMATED */
+
+  /* ---- Typography ---- */
+  --font-display: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --fw-bold: 700;
+  --fw-medium: 500;
+
+  /* Hero headline (confirmed) */
+  --fs-hero-line1: clamp(2.5rem, 6vw, 8.125rem);   /* 130px source */
+  --fs-hero-line2: clamp(2.75rem, 7vw, 9.3125rem); /* 149px source, kept as-authored */
+  --tracking-hero: -0.04em;
+
+  /* Stat numbers (confirmed via "100%") */
+  --fs-stat: 3.75rem; /* 60px */
+  --lh-stat: 1.35;    /* 81px / 60px */
+
+  /* Nav + buttons (confirmed) */
+  --fs-nav-link: 1.125rem;   /* 18px */
+  --fs-btn-label: 1.25rem;   /* 20px */
+
+  /* Menu category card labels (confirmed, two sizes seen) */
+  --fs-card-label-sm: 2.5rem;  /* 40px, Donuts-size card */
+  --fs-card-label-lg: 3.125rem; /* 50px, Croissants-size card */
+  --fs-card-cta-sm: 1.25rem;  /* 20px */
+  --fs-card-cta-lg: 1.875rem; /* 30px */
+
+  /* ---- Radii (confirmed) ---- */
+  --radius-card-outer: 35px;
+  --radius-card-inner: 27px;
+  --radius-photo-tile: 11px;
+  --radius-nav-pill: 40px;
+  --radius-btn-sm: 3px;
+  --radius-cta-pill: 47px;
+
+  /* ---- Layout ---- */
+  --page-max-width: 1920px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-display);
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
