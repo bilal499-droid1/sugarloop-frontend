@@ -1,14 +1,11 @@
 import { useState } from 'react'
 import './MenuCarousel.css'
-import donutsLeft from '../assets/Group 130.png'
-import croissants from '../assets/Group 131.png'
-import donutsRight from '../assets/Group 132.png'
+import croissantImg from '../assets/Rectangle 1025.png'
 
-// Label + "View" button are baked into each image already.
 const ITEMS = [
-  { label: 'Donuts', image: donutsLeft },
-  { label: 'Croissants', image: croissants },
-  { label: 'Donuts', image: donutsRight },
+  { label: 'Croissants', image: croissantImg },
+  { label: 'Croissants', image: croissantImg },
+  { label: 'Croissants', image: croissantImg },
 ]
 
 export default function MenuCarousel() {
@@ -27,7 +24,22 @@ export default function MenuCarousel() {
             type="button"
           >
             <img src={item.image} alt={item.label} className="menu-carousel__image" />
+            <span className="menu-carousel__label">{item.label}</span>
           </button>
+        ))}
+      </div>
+
+      <div className="menu-carousel__dots" role="tablist" aria-label="Menu items">
+        {ITEMS.map((_, i) => (
+          <button
+            key={i}
+            className={`menu-carousel__dot ${i === activeIndex ? 'menu-carousel__dot--active' : ''}`}
+            onClick={() => setActiveIndex(i)}
+            aria-label={`Show item ${i + 1}`}
+            aria-selected={i === activeIndex}
+            role="tab"
+            type="button"
+          />
         ))}
       </div>
     </section>

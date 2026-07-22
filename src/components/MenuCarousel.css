@@ -14,48 +14,69 @@
 }
 
 .menu-carousel__track {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.75rem, 2vw, 1.5rem);
   max-width: 1100px;
   margin: 0 auto;
 }
 
 .menu-carousel__card {
   background: none;
-  border: none;
-  border-radius: 20px;
+  border: 2px solid transparent;
+  border-radius: 14px;
   padding: 0;
   cursor: pointer;
   overflow: hidden;
-  flex: 0 0 auto;
-  width: clamp(160px, 22vw, 280px);
-  margin: 0 clamp(-2rem, -3.5vw, -1rem);
-  position: relative;
-  z-index: 1;
-  filter: grayscale(1) brightness(0.6);
-  transform: scale(0.82);
-  transition: transform 0.3s ease, filter 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
 }
 
 .menu-carousel__card--active {
-  z-index: 2;
-  filter: none;
-  transform: scale(1);
-  outline: 3px solid var(--color-accent);
-  outline-offset: 4px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+  border-color: var(--color-accent);
 }
 
 .menu-carousel__image {
   width: 100%;
-  height: auto;
-  display: block;
+  aspect-ratio: 601 / 888;
+  object-fit: cover;
+  background: #111;
+}
+
+.menu-carousel__label {
+  background: var(--color-white);
+  color: var(--color-black);
+  font-weight: var(--fw-bold);
+  font-size: 0.85rem;
+  padding: 0.6rem 0;
+  text-align: center;
+}
+
+.menu-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+}
+
+.menu-carousel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: #d9d9d9;
+  cursor: pointer;
+  padding: 0;
+}
+
+.menu-carousel__dot--active {
+  background: var(--color-accent);
 }
 
 @media (max-width: 720px) {
-  .menu-carousel__card {
-    width: clamp(140px, 38vw, 200px);
-    margin: 0 clamp(-1.5rem, -6vw, -0.75rem);
+  .menu-carousel__track {
+    grid-template-columns: 1fr;
+    max-width: 320px;
   }
 }
