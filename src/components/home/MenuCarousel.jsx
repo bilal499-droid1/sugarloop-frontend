@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './MenuCarousel.css'
-import croissantImg from '../assets/Rectangle 1025.png'
+import croissantImg from '../../assets/Rectangle 1025.png'
 
 const ITEMS = [
   { label: 'Croissants', image: croissantImg },

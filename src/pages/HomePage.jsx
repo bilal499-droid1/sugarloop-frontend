@@ -1,8 +1,8 @@
-import Hero from '../components/Hero'
-import About from '../components/About'
-import Marquee from '../components/Marquee'
-import DrinksStrip from '../components/DrinksStrip'
-import MenuCarousel from '../components/MenuCarousel'
+import Hero from '../components/home/Hero'
+import About from '../components/home/About'
+import Marquee from '../components/home/Marquee'
+import DrinksStrip from '../components/home/DrinksStrip'
+import MenuCarousel from '../components/home/MenuCarousel'
 import Footer from '../components/Footer'
 
 export default function HomePage() {

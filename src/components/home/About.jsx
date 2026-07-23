@@ -1,5 +1,5 @@
 import './About.css'
-import aboutImage from '../assets/about.jpg'
+import aboutImage from '../../assets/about.jpg'
 
 const STATS = [
   { value: '2000+', label: 'Happy Customers' },

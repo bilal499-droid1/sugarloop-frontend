@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import './Hero.css'
-import heroBg from '../assets/DSC04944.jpg'
-import logo from '../assets/sugarLoop 1.png'
+import heroBg from '../../assets/DSC04944.jpg'
+import logo from '../../assets/sugarLoop 1.png'
 
 const NAV_LINKS = ['Home', 'Menu', 'About'] // labels are placeholders — Figma layers were named generically "Page 1" x3
 

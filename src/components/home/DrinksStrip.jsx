@@ -1,5 +1,5 @@
 import './DrinksStrip.css'
-import drinkImg from '../assets/Rectangle 910.png'
+import drinkImg from '../../assets/Rectangle 910.png'
 
 const DRINKS = [1, 2, 3, 4]
 
