@@ -15,7 +15,7 @@ export default function ShopNav() {
 
       <ul className="shop-nav__links">
         <li><Link to="/products">Products</Link></li>
-        <li><a href="#faq">FAQ</a></li>
+        <li><Link to="/faq">FAQ</Link></li>
         <li><a href="/#about">About us</a></li>
       </ul>
 
