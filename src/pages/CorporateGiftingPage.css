@@ -15,10 +15,10 @@
 }
 
 .corporate-gifting__media img {
-  width: 110%;
-  height: 110%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-   margin-left: -250px;
+  object-position: right center;
 }
 
 .corporate-gifting__content {
@@ -95,7 +95,10 @@
   }
 
   .corporate-gifting__media {
-    aspect-ratio: 1920 / 1043; /* native size of assets/Rectangle 1134.png */
+    /* assets/Rectangle 1134.png is 1920x1043 but has ~36% empty space baked into
+       its left edge; crop that off (object-position: right, above) so the box
+       art sits flush against the text column instead of leaving a dead gap. */
+    aspect-ratio: 1220 / 1043;
     order: 1;
     flex: 1 1 auto;
     min-width: 0;
