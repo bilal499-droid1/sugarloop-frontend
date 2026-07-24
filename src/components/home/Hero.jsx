@@ -4,7 +4,8 @@ import logo from '../../assets/sugarLoop 1.png'
 
 const NAV_LINKS = ['Home', 'Menu', 'About'] // labels are placeholders — Figma layers were named generically "Page 1" x3
 
-const navLinkClass = 'text-white no-underline font-bold text-nav-link whitespace-nowrap'
+const navLinkClass =
+  'inline-block text-white no-underline font-bold text-nav-link whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110'
 
 export default function Hero() {
   return (
@@ -52,7 +53,7 @@ export default function Hero() {
 
       <div className="relative z-[2] flex items-center gap-[clamp(1rem,3vw,2rem)]">
         <button
-          className="shrink-0 bg-white text-black border-none rounded-btn-sm font-display font-bold text-btn-label py-[0.6rem] px-[1.6rem] cursor-pointer whitespace-nowrap self-end mb-[0.5em]"
+          className="shrink-0 bg-white text-black border-none rounded-btn-sm font-display font-bold text-btn-label py-[0.6rem] px-[1.6rem] cursor-pointer whitespace-nowrap self-end mb-[0.5em] transition-transform duration-300 ease-out hover:scale-110"
           type="button"
         >
           MENU

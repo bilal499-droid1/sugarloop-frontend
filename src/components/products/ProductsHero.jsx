@@ -58,7 +58,7 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
           <button
             key={category}
             type="button"
-            className={`font-display font-medium text-[0.8rem] rounded-cta-pill py-[0.4rem] px-4 cursor-pointer whitespace-nowrap lg:text-[1.125rem] lg:py-[0.7rem] lg:px-[1.6rem] ${
+            className={`font-display font-medium text-[0.8rem] rounded-cta-pill py-[0.4rem] px-4 cursor-pointer whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110 lg:text-[1.125rem] lg:py-[0.7rem] lg:px-[1.6rem] ${
               category === activeCategory
                 ? 'bg-accent-dark text-white border border-accent-dark lg:bg-accent lg:border-accent'
                 : 'bg-white text-accent-dark border border-accent-dark lg:bg-transparent lg:text-accent lg:border-accent'

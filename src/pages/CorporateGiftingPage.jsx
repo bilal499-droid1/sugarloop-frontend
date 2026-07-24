@@ -58,7 +58,7 @@ export default function CorporateGiftingPage() {
               ))}
               <button
                 type="submit"
-                className="h-12 bg-accent text-white border-none rounded-[3px] font-display font-bold text-[1.1rem] cursor-pointer lg:self-start lg:px-10"
+                className="h-12 bg-accent text-white border-none rounded-[3px] font-display font-bold text-[1.1rem] cursor-pointer transition-transform duration-300 ease-out hover:scale-105 lg:self-start lg:px-10"
               >
                 Submit
               </button>

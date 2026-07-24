@@ -90,7 +90,7 @@ export default function BuildYourBoxPage() {
                 <button
                   key={type}
                   type="button"
-                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium font-display border cursor-pointer ${
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium font-display border cursor-pointer transition-transform duration-300 ease-out hover:scale-110 ${
                     type === productType
                       ? 'bg-accent text-white border-accent'
                       : 'bg-white text-[#666] border-[#e0e0e0]'
@@ -168,12 +168,16 @@ export default function BuildYourBoxPage() {
                 <button
                   key={product.id}
                   type="button"
-                  className={`flex flex-col text-left ${isFull ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  className={`group flex flex-col text-left ${isFull ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   onClick={() => handleAddToSlot(product)}
                   disabled={isFull}
                 >
                   <div className="relative border border-border-light rounded-[6px] overflow-hidden aspect-square">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                    />
                     <span className="absolute top-2 right-2 w-[2.3rem] h-[2.3rem] rounded-full bg-accent text-white flex items-center justify-center gap-px shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
                       <span className="font-price italic font-semibold text-[0.5rem]">Rs</span>
                       <span className="font-price font-bold text-[0.85rem]">{product.price}</span>

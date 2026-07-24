@@ -6,7 +6,7 @@ export default function ProductCard({ product }) {
   return (
     <Link
       to={`/products/${product.id}`}
-      className={`flex flex-col no-underline text-inherit ${isLg ? 'lg:col-span-2 lg:row-span-2' : ''}`}
+      className={`group flex flex-col no-underline text-inherit ${isLg ? 'lg:col-span-2 lg:row-span-2' : ''}`}
     >
       <div
         className={`relative border border-border-light rounded-[6px] overflow-hidden ${
@@ -14,7 +14,11 @@ export default function ProductCard({ product }) {
         }`}
       >
         {product.image ? (
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+          />
         ) : (
           <div
             className="w-full h-full bg-[linear-gradient(135deg,#eef1f4_0%,#e3e8ec_100%)]"

@@ -23,7 +23,7 @@ export default function MenuCarousel() {
         {ITEMS.map((item, i) => (
           <button
             key={i}
-            className={`bg-none border-2 rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display ${
+            className={`bg-none border-2 rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display transition-transform duration-300 ease-out hover:scale-105 ${
               i === activeIndex ? 'border-accent' : 'border-transparent'
             }`}
             onClick={() => setActiveIndex(i)}

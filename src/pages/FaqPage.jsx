@@ -72,7 +72,7 @@ function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="bg-[#f5f5f5] border border-[#dfdfdf] rounded-[10px] lg:rounded-[19px] px-[1.1rem]">
+    <div className="bg-[#f5f5f5] border border-[#dfdfdf] rounded-[10px] lg:rounded-[19px] px-[1.1rem] transition-transform duration-300 ease-out hover:scale-[1.02]">
       <button
         type="button"
         className="w-full flex items-center justify-between gap-4 bg-none border-none cursor-pointer py-[1.1rem] font-display font-medium text-[0.9rem] lg:text-[1.1rem] text-[#616161] text-left"
@@ -157,13 +157,17 @@ export default function FaqPage() {
               <button
                 key={t.name}
                 type="button"
-                className={`rounded-full overflow-hidden border-none p-0 cursor-pointer shrink-0 outline-offset-[3px] w-14 h-14 lg:absolute ${AVATAR_LAYOUT[i]} ${
+                className={`group rounded-full overflow-hidden border-none p-0 cursor-pointer shrink-0 outline-offset-[3px] w-14 h-14 lg:absolute ${AVATAR_LAYOUT[i]} ${
                   i === activeTestimonial ? 'outline-[3px] outline-accent' : ''
                 }`}
                 onClick={() => setActiveTestimonial(i)}
                 aria-label={`Show testimonial from ${t.name}`}
               >
-                <img src={t.avatar} alt="" className="w-full h-full object-cover block" />
+                <img
+                  src={t.avatar}
+                  alt=""
+                  className="w-full h-full object-cover block transition-transform duration-500 ease-out group-hover:scale-110"
+                />
               </button>
             ))}
           </div>
@@ -258,7 +262,7 @@ export default function FaqPage() {
           />
           <button
             type="submit"
-            className="block w-full mt-4 lg:mt-0 h-[2.9rem] bg-accent text-white border-none rounded-xl font-display font-bold text-[1.1rem] cursor-pointer lg:absolute lg:right-6 lg:bottom-6 lg:w-auto lg:px-10"
+            className="block w-full mt-4 lg:mt-0 h-[2.9rem] bg-accent text-white border-none rounded-xl font-display font-bold text-[1.1rem] cursor-pointer transition-transform duration-300 ease-out hover:scale-105 lg:absolute lg:right-6 lg:bottom-6 lg:w-auto lg:px-10"
           >
             Submit
           </button>

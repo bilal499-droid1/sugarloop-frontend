@@ -20,7 +20,7 @@ export default function ProductGrid({ products, categories, activeCategory, onSe
               <li key={category}>
                 <button
                   type="button"
-                  className={`flex items-center gap-[0.6rem] bg-none border-none cursor-pointer p-0 font-display font-medium text-xl ${
+                  className={`flex items-center gap-[0.6rem] bg-none border-none cursor-pointer p-0 font-display font-medium text-xl origin-left transition-transform duration-300 ease-out hover:scale-110 ${
                     isActive ? 'text-black' : 'text-muted-text'
                   }`}
                   onClick={() => onSelectCategory(category)}
