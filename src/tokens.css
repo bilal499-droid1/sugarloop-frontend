@@ -5,26 +5,21 @@
   replace with real values once available.
 */
 @import "tailwindcss";
-:root {
+
+@theme {
   /* ---- Color: confirmed ---- */
   --color-bg-section: #f6f6f6;      /* About Us section background */
-  --color-white: #ffffff;
-  --color-black: #000000;
   --color-accent: #587ea2;          /* confirmed reused: stat numbers + menu-card CTA circle */
-
-  --overlay-nav: rgba(0, 0, 0, 0.18);       /* glass nav pill */
-  --overlay-hero-dark: rgba(0, 0, 0, 0.35); /* hero photo darkening */
-  --overlay-card-fade: rgba(0, 0, 0, 0.4);  /* menu card left->right gradient end */
-  --glow-vignette: rgba(0, 0, 0, 0.4);      /* hero blurred glow, blur ~193px */
-
-  --card-bg-neutral: #e0e0e0;       /* menu category card outer frame */
-  --faq-border: rgba(190, 190, 190, 0.8);
-
-  /* ---- Products page (Figma frames 2719:5980 desktop / 2831:6956 mobile) ---- */
   --color-accent-dark: #425b72;     /* mobile active category pill */
   --color-muted-text: #d9d9d9;      /* desktop inactive sidebar category */
   --color-border-light: #efefef;    /* product card borders */
-  --font-price: 'Raleway', sans-serif;
+  --color-card-bg-neutral: #e0e0e0; /* menu category card outer frame */
+  --color-faq-border: rgba(190, 190, 190, 0.8);
+
+  --color-overlay-nav: rgba(0, 0, 0, 0.18);       /* glass nav pill */
+  --color-overlay-hero-dark: rgba(0, 0, 0, 0.35); /* hero photo darkening */
+  --color-overlay-card-fade: rgba(0, 0, 0, 0.4);  /* menu card left->right gradient end */
+  --color-glow-vignette: rgba(0, 0, 0, 0.4);      /* hero blurred glow, blur ~193px */
 
   /* ---- Color: ESTIMATED (no exact Figma value captured yet) ---- */
   --color-text-body: #4a4a4a;       /* body copy gray, estimated from screenshot */
@@ -32,28 +27,26 @@
 
   /* ---- Typography ---- */
   --font-display: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
-
-  --fw-bold: 700;
-  --fw-medium: 500;
+  --font-price: 'Raleway', sans-serif;
 
   /* Hero headline (confirmed) */
-  --fs-hero-line1: clamp(2.5rem, 6vw, 8.125rem);   /* 130px source */
-  --fs-hero-line2: clamp(2.75rem, 7vw, 9.3125rem); /* 149px source, kept as-authored */
+  --text-hero-line1: clamp(2.5rem, 6vw, 8.125rem);   /* 130px source */
+  --text-hero-line2: clamp(2.75rem, 7vw, 9.3125rem); /* 149px source, kept as-authored */
   --tracking-hero: -0.04em;
 
   /* Stat numbers (confirmed via "100%") */
-  --fs-stat: 3.75rem; /* 60px */
-  --lh-stat: 1.35;    /* 81px / 60px */
+  --text-stat: 3.75rem; /* 60px */
+  --leading-stat: 1.35;    /* 81px / 60px */
 
   /* Nav + buttons (confirmed) */
-  --fs-nav-link: 1.125rem;   /* 18px */
-  --fs-btn-label: 1.25rem;   /* 20px */
+  --text-nav-link: 1.125rem;   /* 18px */
+  --text-btn-label: 1.25rem;   /* 20px */
 
   /* Menu category card labels (confirmed, two sizes seen) */
-  --fs-card-label-sm: 2.5rem;  /* 40px, Donuts-size card */
-  --fs-card-label-lg: 3.125rem; /* 50px, Croissants-size card */
-  --fs-card-cta-sm: 1.25rem;  /* 20px */
-  --fs-card-cta-lg: 1.875rem; /* 30px */
+  --text-card-label-sm: 2.5rem;  /* 40px, Donuts-size card */
+  --text-card-label-lg: 3.125rem; /* 50px, Croissants-size card */
+  --text-card-cta-sm: 1.25rem;  /* 20px */
+  --text-card-cta-lg: 1.875rem; /* 30px */
 
   /* ---- Radii (confirmed) ---- */
   --radius-card-outer: 35px;
@@ -63,8 +56,17 @@
   --radius-btn-sm: 3px;
   --radius-cta-pill: 47px;
 
-  /* ---- Layout ---- */
-  --page-max-width: 1920px;
+  /* ---- Marquee animation ---- */
+  --animate-marquee-scroll: marquee-scroll 22s linear infinite;
+
+  @keyframes marquee-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 * {
@@ -81,4 +83,10 @@ body {
 img {
   max-width: 100%;
   display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-scroll {
+    animation: none;
+  }
 }

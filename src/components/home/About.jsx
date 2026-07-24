@@ -1,4 +1,3 @@
-import './About.css'
 import aboutImage from '../../assets/about.jpg'
 
 const STATS = [
@@ -9,12 +8,17 @@ const STATS = [
 
 export default function About() {
   return (
-    <section className="about" aria-label="About us">
-      <div className="about__row">
-        <div className="about__content">
-          <h2 className="about__heading">ABOUT US</h2>
+    <section
+      className="bg-bg-section flex flex-col gap-[clamp(1.5rem,4vw,2.5rem)] py-[clamp(2.5rem,6vw,5rem)] px-[clamp(1.5rem,5vw,6rem)]"
+      aria-label="About us"
+    >
+      <div className="grid grid-cols-[1.3fr_1fr] max-[900px]:grid-cols-1 gap-[clamp(2rem,5vw,4rem)] items-start">
+        <div className="flex flex-col gap-[clamp(1.25rem,3vw,2rem)]">
+          <h2 className="font-display font-bold text-[clamp(2.5rem,5vw,4.5rem)] m-0 tracking-[-0.02em]">
+            ABOUT US
+          </h2>
 
-          <p className="about__body">
+          <p className="text-text-body leading-[1.7] max-w-[42ch] m-0">
             Sugarloop was built around a simple focus: consistency, quality, and donuts done
             right. We believe great donuts come from getting the details right. From dough
             that&rsquo;s soft and light, to fillings that complement rather than overpower, and
@@ -22,18 +26,20 @@ export default function About() {
             that&rsquo;s how it should be.
           </p>
 
-          <dl className="about__stats">
+          <dl className="flex max-[900px]:flex-wrap gap-[clamp(1.5rem,4vw,3.5rem)] m-0">
             {STATS.map((stat) => (
-              <div className="about__stat" key={stat.label}>
-                <dt className="about__stat-value">{stat.value}</dt>
-                <dd className="about__stat-label">{stat.label}</dd>
+              <div key={stat.label}>
+                <dt className="font-display font-bold text-stat leading-stat text-accent m-0">
+                  {stat.value}
+                </dt>
+                <dd className="m-0 text-[0.9rem] text-accent">{stat.label}</dd>
               </div>
             ))}
           </dl>
         </div>
 
-        <div className="about__image-wrap">
-          <img src={aboutImage} alt="Sugarloop storefront" className="about__image" />
+        <div className="rounded-2xl overflow-hidden aspect-[4/3]">
+          <img src={aboutImage} alt="Sugarloop storefront" className="w-full h-full object-cover" />
         </div>
       </div>
     </section>
