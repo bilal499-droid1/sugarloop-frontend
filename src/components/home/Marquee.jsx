@@ -4,7 +4,7 @@ export default function Marquee() {
   const items = Array.from({ length: 8 }, (_, i) => i)
 
   return (
-    <div className="bg-[#1c2b3a] overflow-hidden py-[0.9rem]" aria-hidden="true">
+    <div className="bg-[#1c2b3a] overflow-hidden py-[1.8rem]" aria-hidden="true">
       <div className="flex w-max animate-marquee-scroll">
         {[0, 1].map((copy) => (
           <div className="flex shrink-0" key={copy}>
