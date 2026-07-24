@@ -16,6 +16,7 @@ export default function ShopNav() {
 
       <ul className="hidden lg:flex list-none gap-[clamp(1.5rem,3vw,3rem)] m-0 ml-auto p-0">
         <li><Link to="/products" className={navLinkClass}>Products</Link></li>
+        <li><Link to="/build-your-box" className={navLinkClass}>Build a Box</Link></li>
         <li><Link to="/faq" className={navLinkClass}>FAQ</Link></li>
         <li><a href="/#about" className={navLinkClass}>About us</a></li>
       </ul>

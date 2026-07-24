@@ -10,7 +10,7 @@ import coolerIcedLatte from '../../assets/R1.jpg'
 import coolerIcedMacchiato from '../../assets/R2.jpg'
 import sandwichGrilled from '../../assets/C1.jpg'
 
-export const CATEGORIES = ['Croissants', 'Donuts', 'Coolers', 'Sandwiches']
+export const CATEGORIES = ['Croissants', 'Donuts', 'Drinks', 'Sandwiches']
 
 const DESCRIPTION =
   'Baked fresh every morning with simple, honest ingredients. Best enjoyed the same day, alongside your favorite coffee.'
@@ -31,8 +31,8 @@ export const PRODUCTS = [
   { id: 7, name: 'Dark Chocolate Donut', price: 200, category: 'Donuts', size: 'sm', image: donutDarkChocolate, description: DESCRIPTION, reviews: REVIEWS },
   { id: 8, name: 'Oreo Crumble Donut', price: 200, category: 'Donuts', size: 'sm', image: donutOreo, description: DESCRIPTION, reviews: REVIEWS },
 
-  { id: 9, name: 'Iced Caramel Macchiato', price: 200, category: 'Coolers', size: 'lg', image: coolerIcedMacchiato, description: DESCRIPTION, reviews: REVIEWS },
-  { id: 10, name: 'Iced Latte', price: 200, category: 'Coolers', size: 'sm', image: coolerIcedLatte, description: DESCRIPTION, reviews: REVIEWS },
+  { id: 9, name: 'Iced Caramel Macchiato', price: 200, category: 'Drinks', size: 'lg', image: coolerIcedMacchiato, description: DESCRIPTION, reviews: REVIEWS },
+  { id: 10, name: 'Iced Latte', price: 200, category: 'Drinks', size: 'sm', image: coolerIcedLatte, description: DESCRIPTION, reviews: REVIEWS },
 
   { id: 11, name: 'Grilled Chicken Sandwich', price: 200, category: 'Sandwiches', size: 'wide', image: sandwichGrilled, description: DESCRIPTION, reviews: REVIEWS },
 ]
