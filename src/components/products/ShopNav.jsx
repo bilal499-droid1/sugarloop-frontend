@@ -10,6 +10,7 @@ const navLinkClass = 'text-accent no-underline font-bold text-[1.125rem]'
 const NAV_ITEMS = [
   { label: 'Products', to: '/products' },
   { label: 'Build a Box', to: '/build-your-box' },
+  { label: 'Corporate Gifting', to: '/corporate-gifting' },
   { label: 'FAQ', to: '/faq' },
   { label: 'About us', href: '/#about' },
 ]
