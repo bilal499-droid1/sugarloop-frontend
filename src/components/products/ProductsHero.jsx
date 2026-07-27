@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import heroBgDesktop1 from '../../assets/p1.png'
-import heroBgMobile1 from '../../assets/p2.png'
 import heroBg2 from '../../assets/pp2.png'
 import heroBg3 from '../../assets/pp3.png'
+import mobileHeroBg1 from '../../assets/mv1.png'
+import mobileHeroBg2 from '../../assets/mv2.png'
+import mobileHeroBg3 from '../../assets/mv3.png'
 import ShopNav from './ShopNav'
 
 const DESKTOP_SLIDES = [heroBgDesktop1, heroBg2, heroBg3]
-const MOBILE_SLIDES = [heroBgMobile1, heroBg2, heroBg3]
+const MOBILE_SLIDES = [mobileHeroBg1, mobileHeroBg2, mobileHeroBg3]
 const SLIDE_INTERVAL_MS = 5000
 
 export default function ProductsHero({ categories, activeCategory, onSelectCategory }) {
