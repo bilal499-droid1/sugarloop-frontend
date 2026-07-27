@@ -37,11 +37,11 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
         <ShopNav />
 
         <div className="relative z-[2] mt-10 px-5 lg:mt-[clamp(2rem,6vw,5rem)] lg:px-[clamp(2rem,5vw,5.5rem)]">
-          <h1 className="m-0 mb-3 font-display font-medium text-[#3d3d3d] tracking-[-0.03em] flex flex-col leading-[1]">
-            <span className="text-[0.85rem] font-normal lg:text-[clamp(2.5rem,4.5vw,4.0625rem)]">
+          <h1 className="m-0 mb-3 font-display font-medium text-[#3d3d3d] tracking-[-0.03em] flex flex-col leading-[1] text-center lg:text-left">
+            <span className="text-[1rem] font-normal lg:text-[clamp(2.5rem,4.5vw,4.0625rem)]">
               Have a look at our
             </span>
-            <span className="text-[2.5rem] font-bold text-accent lg:text-[clamp(2.5rem,4.5vw,4.0625rem)]">
+            <span className="text-[2.25rem] font-bold uppercase text-accent lg:text-[clamp(2.5rem,4.5vw,4.0625rem)] lg:normal-case">
               fresh products
             </span>
           </h1>
