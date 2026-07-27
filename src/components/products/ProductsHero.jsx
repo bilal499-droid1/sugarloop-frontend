@@ -43,7 +43,7 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
               fresh products
             </span>
           </h1>
-          <p className="hidden lg:block lg:max-w-[33rem] lg:mt-6 lg:text-[1.125rem] lg:leading-[1.96] lg:text-[#414141] lg:opacity-[0.71]">
+          <p className="hidden lg:block lg:max-w-[38rem] lg:mt-6 lg:text-[1.125rem] lg:leading-[1.5] lg:font-semibold lg:text-white">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
           </p>
         </div>
