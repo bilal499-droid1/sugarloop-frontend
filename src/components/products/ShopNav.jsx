@@ -72,6 +72,7 @@ export default function ShopNav() {
         open={menuOpen}
         items={NAV_ITEMS.filter((item) => item.label !== 'Products')}
         onClose={() => setMenuOpen(false)}
+        positionClassName="top-16 right-5"
       />
     </nav>
   )

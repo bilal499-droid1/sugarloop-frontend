@@ -61,7 +61,12 @@ export default function Hero() {
           </button>
         </div>
 
-        <MobileNavMenu open={menuOpen} items={NAV_ITEMS} onClose={() => setMenuOpen(false)} />
+        <MobileNavMenu
+          open={menuOpen}
+          items={NAV_ITEMS}
+          onClose={() => setMenuOpen(false)}
+          positionClassName="top-16 right-6"
+        />
 
         <nav className="hidden sm:flex items-center justify-center gap-[clamp(1rem,3vw,2.75rem)] bg-overlay-nav rounded-nav-pill py-[0.85rem] px-8 w-fit max-w-full mx-auto">
           <div className="shrink-0">
@@ -79,12 +84,12 @@ export default function Hero() {
       </div>
 
       <div className="relative z-[2] flex items-center gap-[clamp(1rem,3vw,2rem)]">
-        <button
-          className="shrink-0 bg-white text-black border-none rounded-btn-sm font-display font-bold text-btn-label py-[0.6rem] px-[1.6rem] cursor-pointer whitespace-nowrap self-end mb-[0.5em] transition-transform duration-300 ease-out hover:scale-110"
-          type="button"
+        <Link
+          to="/products"
+          className="inline-block shrink-0 bg-white text-black border-none rounded-btn-sm font-display font-bold text-btn-label py-[0.6rem] px-[1.6rem] cursor-pointer whitespace-nowrap self-end mb-[0.5em] no-underline transition-transform duration-300 ease-out hover:scale-110"
         >
           MENU
-        </button>
+        </Link>
         <h1 className="relative z-[2] m-0 text-white font-bold tracking-hero leading-[1.35] flex flex-col">
           <span className="text-hero-line1">TASTE THE LOOP</span>
           <span className="text-hero-line2">OF HAPPINESS</span>
