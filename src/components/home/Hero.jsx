@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import heroBg from '../../assets/DSC04944.jpg'
 import logo from '../../assets/sugarLoop 1.png'
+import MobileNavMenu from '../MobileNavMenu'
 
 const NAV_ITEMS = [
   { label: 'Home', href: '#home' },
@@ -60,15 +61,7 @@ export default function Hero() {
           </button>
         </div>
 
-        {menuOpen && (
-          <ul className="sm:hidden list-none flex flex-col gap-4 mt-4 ml-auto bg-overlay-nav rounded-nav-pill py-4 px-6 w-fit items-end m-0">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.label}>
-                <NavLink item={item} className={navLinkClass} onClick={() => setMenuOpen(false)} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <MobileNavMenu open={menuOpen} items={NAV_ITEMS} onClose={() => setMenuOpen(false)} />
 
         <nav className="hidden sm:flex items-center justify-center gap-[clamp(1rem,3vw,2.75rem)] bg-overlay-nav rounded-nav-pill py-[0.85rem] px-8 w-fit max-w-full mx-auto">
           <div className="shrink-0">

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FaShoppingCart } from 'react-icons/fa'
 import logo from '../../assets/sugarLoop 1.png'
 import { useCart } from '../../context/CartContext'
+import MobileNavMenu from '../MobileNavMenu'
 
 const navLinkClass = 'text-accent no-underline font-bold text-[1.125rem]'
 
@@ -67,15 +68,11 @@ export default function ShopNav() {
         <span className="block h-[2px] w-full bg-black rounded-[1px]" />
       </button>
 
-      {menuOpen && (
-        <ul className="lg:hidden absolute right-5 top-full mt-2 z-[3] list-none flex flex-col items-end gap-3 w-fit m-0 bg-white rounded-2xl shadow-lg py-4 px-6">
-          {NAV_ITEMS.filter((item) => item.label !== 'Products').map((item) => (
-            <li key={item.label}>
-              <ShopNavLink item={item} className={navLinkClass} onClick={() => setMenuOpen(false)} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <MobileNavMenu
+        open={menuOpen}
+        items={NAV_ITEMS.filter((item) => item.label !== 'Products')}
+        onClose={() => setMenuOpen(false)}
+      />
     </nav>
   )
 }
