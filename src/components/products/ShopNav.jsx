@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaShoppingCart } from 'react-icons/fa'
 import logo from '../../assets/sugarLoop 1.png'
@@ -5,8 +6,28 @@ import { useCart } from '../../context/CartContext'
 
 const navLinkClass = 'text-accent no-underline font-bold text-[1.125rem]'
 
+const NAV_ITEMS = [
+  { label: 'Products', to: '/products' },
+  { label: 'Build a Box', to: '/build-your-box' },
+  { label: 'FAQ', to: '/faq' },
+  { label: 'About us', href: '/#about' },
+]
+
+function ShopNavLink({ item, className, onClick }) {
+  return item.to ? (
+    <Link to={item.to} className={className} onClick={onClick}>
+      {item.label}
+    </Link>
+  ) : (
+    <a href={item.href} className={className} onClick={onClick}>
+      {item.label}
+    </a>
+  )
+}
+
 export default function ShopNav() {
   const { count } = useCart()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <nav className="relative z-[2] flex items-center justify-between gap-4 pt-5 px-5 pb-0 lg:pt-10 lg:px-[clamp(2rem,5vw,5.5rem)] lg:pb-0">
@@ -15,10 +36,11 @@ export default function ShopNav() {
       </Link>
 
       <ul className="hidden lg:flex list-none gap-[clamp(1.5rem,3vw,3rem)] m-0 ml-auto p-0">
-        <li><Link to="/products" className={navLinkClass}>Products</Link></li>
-        <li><Link to="/build-your-box" className={navLinkClass}>Build a Box</Link></li>
-        <li><Link to="/faq" className={navLinkClass}>FAQ</Link></li>
-        <li><a href="/#about" className={navLinkClass}>About us</a></li>
+        {NAV_ITEMS.map((item) => (
+          <li key={item.label}>
+            <ShopNavLink item={item} className={navLinkClass} />
+          </li>
+        ))}
       </ul>
 
       <div
@@ -36,12 +58,24 @@ export default function ShopNav() {
       <button
         className="flex flex-col justify-center gap-1 w-[22px] h-[21px] bg-none border-none cursor-pointer p-0 lg:hidden"
         type="button"
-        aria-label="Open menu"
+        aria-label="Toggle menu"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((open) => !open)}
       >
         <span className="block h-[2px] w-full bg-black rounded-[1px]" />
         <span className="block h-[2px] w-full bg-black rounded-[1px]" />
         <span className="block h-[2px] w-full bg-black rounded-[1px]" />
       </button>
+
+      {menuOpen && (
+        <ul className="lg:hidden absolute right-5 top-full mt-2 z-[3] list-none flex flex-col items-end gap-3 w-fit m-0 bg-white rounded-2xl shadow-lg py-4 px-6">
+          {NAV_ITEMS.filter((item) => item.label !== 'Products').map((item) => (
+            <li key={item.label}>
+              <ShopNavLink item={item} className={navLinkClass} onClick={() => setMenuOpen(false)} />
+            </li>
+          ))}
+        </ul>
+      )}
     </nav>
   )
 }
