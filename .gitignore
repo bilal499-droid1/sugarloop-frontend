@@ -4,5 +4,6 @@ dist/
 *.log
 .DS_Store
 
-# Source video is too large for GitHub (pm1.mp4 alone is 97MB); kept local only.
-*.mp4
+# Full-size camera masters for the DrinksStrip videos (~232MB). The web-sized
+# 720p re-encodes in src/assets/pm*.mp4 are what ship; these stay local.
+src/assets/video-originals/
