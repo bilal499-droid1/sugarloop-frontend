@@ -2,13 +2,24 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import heroBg from '../../assets/bgh1.png'
 import mobileHeroBg from '../../assets/category/GDRGG-04.png'
-import logo from '../../assets/sugarLoop 1.png'
 import MobileNavMenu from '../MobileNavMenu'
+import DesktopMenuDropdown from '../DesktopMenuDropdown'
+import SugarLoopMark from '../SugarLoopMark'
 
 const NAV_ITEMS = [
   { label: 'Home', href: '#home' },
   { label: 'Menu', to: '/products' },
   { label: 'Contact', href: '#contact' },
+]
+
+// Surfaced via the desktop-only hamburger next to the pill nav, so the rest of
+// the site stays reachable from the homepage without crowding Home/Menu/Contact.
+const MORE_PAGES = [
+  { label: 'Products', to: '/products' },
+  { label: 'Build a Box', to: '/build-your-box' },
+  { label: 'Corporate Gifting', to: '/corporate-gifting' },
+  { label: 'FAQ', to: '/faq' },
+  { label: 'About us', href: '/#about' },
 ]
 
 const navLinkClass =
@@ -68,7 +79,7 @@ export default function Hero() {
 
       <div className="relative z-[2] w-full">
         <div className="flex sm:hidden items-center justify-between">
-          <img src={logo} alt="Sugarloop" className="h-[2.2rem] w-auto" />
+          <SugarLoopMark className="h-[4.4rem] w-auto aspect-[432/288]" />
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
@@ -90,17 +101,21 @@ export default function Hero() {
         />
 
         <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] items-center w-full">
-          <img src={logo} alt="Sugarloop" className="h-[3.9rem] w-auto justify-self-start" />
+          <SugarLoopMark className="h-[7.8rem] w-auto aspect-[432/288] justify-self-start" />
 
-          <nav className="flex items-center justify-center gap-[clamp(1rem,3vw,2.75rem)] bg-overlay-nav rounded-nav-pill py-[0.85rem] px-8 w-fit max-w-full">
-            <ul className="list-none flex gap-[clamp(1rem,3vw,2.75rem)] m-0 p-0">
-              {NAV_ITEMS.map((item) => (
-                <li key={item.label}>
-                  <NavLink item={item} className={navLinkClass} />
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <div className="flex items-center justify-center gap-3">
+            <nav className="flex items-center justify-center gap-[clamp(1rem,3vw,2.75rem)] bg-overlay-nav rounded-nav-pill py-[0.85rem] px-8 w-fit max-w-full">
+              <ul className="list-none flex gap-[clamp(1rem,3vw,2.75rem)] m-0 p-0">
+                {NAV_ITEMS.map((item) => (
+                  <li key={item.label}>
+                    <NavLink item={item} className={navLinkClass} />
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <DesktopMenuDropdown items={MORE_PAGES} />
+          </div>
 
           <div aria-hidden="true" />
         </div>

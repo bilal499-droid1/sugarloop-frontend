@@ -7,3 +7,7 @@ dist/
 # Full-size camera masters for the DrinksStrip videos (~232MB). The web-sized
 # 720p re-encodes in src/assets/pm*.mp4 are what ship; these stay local.
 src/assets/video-originals/
+
+# Uncropped 2:3 masters of the catalogue photos that ship square. Kept local in
+# case a different crop is ever wanted.
+src/assets/photo-originals/

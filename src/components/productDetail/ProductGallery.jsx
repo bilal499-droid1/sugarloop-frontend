@@ -53,6 +53,8 @@ export default function ProductGallery({ images = [], name }) {
           className="flex w-full aspect-square border border-border-light rounded-[6px] overflow-x-auto overflow-y-hidden snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label={`${name} photos`}
         >
+          {/* Non-square photos are shown whole rather than sliced to fill the square
+              frame, matching how ProductCard treats them in the grid. */}
           {images.map((src, i) => (
             <img
               key={src}
@@ -60,6 +62,13 @@ export default function ProductGallery({ images = [], name }) {
               alt={`${name} — photo ${i + 1} of ${images.length}`}
               loading={i === 0 ? 'eager' : 'lazy'}
               draggable="false"
+              onLoad={(event) => {
+                const { naturalWidth, naturalHeight } = event.currentTarget
+                if (Math.abs(naturalWidth / naturalHeight - 1) > 0.02) {
+                  event.currentTarget.classList.remove('object-cover')
+                  event.currentTarget.classList.add('object-contain', 'bg-[#eceef3]')
+                }
+              }}
               className="w-full h-full flex-none object-cover snap-center"
             />
           ))}

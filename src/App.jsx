@@ -6,6 +6,7 @@ import CorporateGiftingPage from './pages/CorporateGiftingPage'
 import FaqPage from './pages/FaqPage'
 import BuildYourBoxPage from './pages/BuildYourBoxPage'
 import ScrollToTop from './components/ScrollToTop'
+import PageLoader from './components/PageLoader'
 import { CartProvider } from './context/CartContext'
 
 export default function App() {
@@ -13,16 +14,18 @@ export default function App() {
     <BrowserRouter>
       <ScrollToTop />
       <CartProvider>
-        <main>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/products/:id" element={<ProductDetailPage />} />
-            <Route path="/corporate-gifting" element={<CorporateGiftingPage />} />
-            <Route path="/faq" element={<FaqPage />} />
-            <Route path="/build-your-box" element={<BuildYourBoxPage />} />
-          </Routes>
-        </main>
+        <PageLoader>
+          <main>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
+              <Route path="/corporate-gifting" element={<CorporateGiftingPage />} />
+              <Route path="/faq" element={<FaqPage />} />
+              <Route path="/build-your-box" element={<BuildYourBoxPage />} />
+            </Routes>
+          </main>
+        </PageLoader>
       </CartProvider>
     </BrowserRouter>
   )

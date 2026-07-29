@@ -4,17 +4,19 @@ import { Link } from 'react-router-dom'
 import logo from '../assets/sugarLoop 1.png'
 
 const linkBaseClass =
-  'no-underline font-display font-black text-[1.5rem] tracking-[0.01em] whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110'
+  'no-underline font-display font-bold text-[1.5rem] tracking-[0.01em] whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110'
 
+// No -webkit-text-stroke here: font-black plus a 0.8px stroke read as far too heavy
+// at 1.5rem, so the weight now comes from the font face alone.
 const VARIANTS = {
   dark: {
     panel: 'bg-[#1C1C1C]',
-    link: 'text-white [-webkit-text-stroke:0.8px_#fff]',
+    link: 'text-white',
     close: 'text-white',
   },
   light: {
     panel: 'bg-white',
-    link: 'text-accent [-webkit-text-stroke:0.8px_#587ea2]',
+    link: 'text-accent',
     close: 'text-accent',
   },
 }

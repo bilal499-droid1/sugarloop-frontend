@@ -27,8 +27,10 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
         </div>
       </div>
 
+      {/* Below lg only: past lg the ProductGrid sidebar owns category filtering, so
+          these would just duplicate it on top of the hero photo. */}
       <div
-        className="relative z-[2] flex flex-wrap gap-[0.6rem] pt-6 px-5 pb-0 max-w-full lg:flex-col lg:items-start lg:gap-4 lg:p-0 lg:mt-[clamp(-17rem,-21vw,-7rem)] lg:ml-[clamp(2rem,5vw,5.5rem)]"
+        className="relative z-[2] flex lg:hidden flex-nowrap items-center gap-[1.7vw] sm:gap-[0.6rem] pt-6 px-5 pb-0 max-w-full"
         role="group"
         aria-label="Filter by category"
       >
@@ -36,10 +38,10 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
           <button
             key={category}
             type="button"
-            className={`font-display font-medium text-[0.8rem] rounded-cta-pill py-[0.4rem] px-4 cursor-pointer whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110 lg:text-[1.125rem] lg:py-[0.7rem] lg:px-[1.6rem] ${
+            className={`shrink-0 font-display font-medium rounded-cta-pill cursor-pointer whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110 text-[3.3vw] py-[1.5vw] px-[2.6vw] sm:text-[0.8rem] sm:py-[0.4rem] sm:px-4 ${
               category === activeCategory
-                ? 'bg-accent-dark text-white border border-accent-dark lg:bg-accent lg:border-accent'
-                : 'bg-white text-accent-dark border border-accent-dark lg:bg-transparent lg:text-accent lg:border-accent'
+                ? 'bg-accent-dark text-white border border-accent-dark'
+                : 'bg-white text-accent-dark border border-accent-dark'
             }`}
             onClick={() => onSelectCategory(category)}
           >

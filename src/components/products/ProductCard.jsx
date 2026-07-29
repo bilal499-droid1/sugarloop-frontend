@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 export default function ProductCard({ product }) {
   const isLg = product.size === 'lg'
+  // object-cover would slice a non-square photo to fill the square tile, so those
+  // are shown whole instead. Detected from the file itself - no per-product config.
+  const [showWhole, setShowWhole] = useState(false)
 
   return (
     <Link
@@ -10,14 +14,20 @@ export default function ProductCard({ product }) {
     >
       <div
         className={`relative border border-border-light rounded-[6px] overflow-hidden ${
-          isLg ? 'aspect-[677/668]' : 'aspect-square'
-        }`}
+          showWhole ? 'bg-[#eceef3]' : ''
+        } ${isLg ? 'aspect-[677/668]' : 'aspect-square'}`}
       >
         {product.image ? (
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+            onLoad={(event) => {
+              const { naturalWidth, naturalHeight } = event.currentTarget
+              setShowWhole(Math.abs(naturalWidth / naturalHeight - 1) > 0.02)
+            }}
+            className={`w-full h-full transition-transform duration-500 ease-out group-hover:scale-110 ${
+              showWhole ? 'object-contain' : 'object-cover'
+            }`}
           />
         ) : (
           <div

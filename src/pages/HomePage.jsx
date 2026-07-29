@@ -9,6 +9,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <MenuCarousel title="Featured Products" linkToCategory={false} />
       <Marquee short />
       <About />
       <Marquee />

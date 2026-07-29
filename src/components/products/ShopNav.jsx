@@ -1,11 +1,17 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaShoppingCart } from 'react-icons/fa'
-import logo from '../../assets/sugarLoop 1.png'
 import { useCart } from '../../context/CartContext'
 import MobileNavMenu from '../MobileNavMenu'
+import SugarLoopMark from '../SugarLoopMark'
 
-const navLinkClass = 'text-accent no-underline font-bold text-[1.125rem]'
+// 900 is the heaviest Satoshi face, so the extra weight comes from a same-color
+// stroke thickening the glyphs - same trick MobileNavMenu uses for its links.
+const navLinkClass =
+  // Steps up to 2xl only past 1536px - at 24px the five links plus the enlarged
+  // logo need ~1393px, which forces the whole document to scroll sideways on
+  // 1024-1280 laptops.
+  'text-accent no-underline font-black text-base xl:text-xl 2xl:text-2xl [-webkit-text-stroke:0.6px_#587ea2]'
 
 const NAV_ITEMS = [
   { label: 'Products', to: '/products' },
@@ -33,8 +39,8 @@ export default function ShopNav() {
 
   return (
     <nav className="relative z-[2] flex items-center justify-between gap-4 pt-5 px-5 pb-0 lg:pt-10 lg:px-[clamp(2rem,5vw,5.5rem)] lg:pb-0">
-      <Link to="/">
-        <img src={logo} alt="Sugarloop" className="h-[1.8rem] w-auto block" />
+      <Link to="/" aria-label="Sugarloop home">
+        <SugarLoopMark className="h-[7.2rem] w-auto aspect-[432/288] block" />
       </Link>
 
       <ul className="hidden lg:flex list-none gap-[clamp(1.5rem,3vw,3rem)] m-0 ml-auto p-0">
@@ -69,10 +75,12 @@ export default function ShopNav() {
         <span className="block h-[2px] w-full bg-black rounded-[1px]" />
       </button>
 
+      {/* variant="light" so this drawer matches the one the home page hero opens */}
       <MobileNavMenu
         open={menuOpen}
         items={NAV_ITEMS.filter((item) => item.label !== 'Products')}
         onClose={() => setMenuOpen(false)}
+        variant="light"
       />
     </nav>
   )

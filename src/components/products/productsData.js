@@ -28,7 +28,6 @@ import mixBerry1 from '../../assets/category/mix berry 1.jpg'
 import mixBerry2 from '../../assets/category/mix berry 2.jpg'
 import mixBerry3 from '../../assets/category/mix berry 3.jpg'
 import brownieFilled2 from '../../assets/category/brownie filled 2.jpg'
-import blueberry1 from '../../assets/category/blueberry 1.jpg'
 import mango1 from '../../assets/category/mango 1.jpg'
 import mango2 from '../../assets/category/mango 2.jpg'
 import classicOreo1 from '../../assets/category/classic oreo 1.jpg'
@@ -57,7 +56,10 @@ import sizzlingFajita1 from '../../assets/category/fajita sandwich 1.jpg'
 import passionFruit1 from '../../assets/category/passion fruit chiller 1.jpg'
 import passionFruit2 from '../../assets/category/passion fruit chiller 2.jpg'
 import wildBerry1 from '../../assets/category/wild berry chiller 1.jpg'
-import strawberryChiller1 from '../../assets/category/strawberry chiller 1.jpg'
+// Shipped exactly as supplied (2:3 portrait, 3857x5786). ProductCard and
+// ProductGallery detect non-square photos and switch to object-contain, so this
+// is shown whole instead of being sliced to fill the square frame.
+import strawberryChillerSc from '../../assets/sssc1.jpg'
 import strawberryChiller2 from '../../assets/category/strawberry chiller 2.jpg'
 import cappuccinoImg from '../../assets/category/cappuccino.jpg'
 import latteImg from '../../assets/category/latte.jpg'
@@ -85,7 +87,7 @@ const withPrimaryImage = (products) =>
 
 export const PRODUCTS = withPrimaryImage([
   // ---- Donuts / Signature (299) ----
-  { id: 1, name: 'Chocoholic', price: 299, category: 'Donuts', type: 'Signature', size: 'lg', images: [chocoholic1, chocoholic3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 1, name: 'Chocoholic', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [chocoholic1, chocoholic3], description: DESCRIPTION, reviews: REVIEWS },
   { id: 2, name: 'Lotus', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [lotus1, lotus3], description: DESCRIPTION, reviews: REVIEWS },
   { id: 3, name: 'Nutella', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [nutella2, nutella3], description: DESCRIPTION, reviews: REVIEWS },
   { id: 4, name: 'Coffee', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [coffeeDonut1, coffeeDonut2], description: DESCRIPTION, reviews: REVIEWS },
@@ -95,7 +97,6 @@ export const PRODUCTS = withPrimaryImage([
   { id: 8, name: 'Mix Berry', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mixBerry1, mixBerry2, mixBerry3], description: DESCRIPTION, reviews: REVIEWS },
   { id: 9, name: 'Brownie Filled', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [brownieFilled2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 10, name: 'Mango', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mango1, mango2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 11, name: 'Blueberry', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [blueberry1], description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Donuts / Classic ----
   { id: 12, name: 'Classic Oreo', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicOreo1, classicOreo2], description: DESCRIPTION, reviews: REVIEWS },
@@ -106,20 +107,20 @@ export const PRODUCTS = withPrimaryImage([
   { id: 17, name: 'Vanilla Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [vanillaGlazed1, vanillaGlazed2], description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Fresh Bakes ----
-  { id: 18, name: 'Chocolate Croissant', price: 379, category: 'Croissants', type: 'Fresh Bakes', size: 'lg', images: [chocolateCroissant1, chocolateCroissant2, chocolateCroissant3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 18, name: 'Chocolate Croissant', price: 379, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [chocolateCroissant1, chocolateCroissant2, chocolateCroissant3], description: DESCRIPTION, reviews: REVIEWS },
   { id: 19, name: 'Butter Cream Croissant', price: 370, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCreamCroissant1, butterCreamCroissant2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 20, name: 'Butter Croissant', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCroissant1], description: DESCRIPTION, reviews: REVIEWS },
   { id: 21, name: 'Baked Cinnamon', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [bakedCinnamon1, bakedCinnamon2], description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Sandwiches ----
-  { id: 22, name: 'Signature Chicken', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'lg', images: [signatureChicken1], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 22, name: 'Signature Chicken', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [signatureChicken1], description: DESCRIPTION, reviews: REVIEWS },
   { id: 23, name: 'Classic Scrambled Egg', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', description: DESCRIPTION, reviews: REVIEWS },
   { id: 24, name: 'Smoked Tikka Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [smokedTikka1, smokedTikka2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 25, name: 'Sizzling Fajita', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [sizzlingFajita1], description: DESCRIPTION, reviews: REVIEWS },
   { id: 26, name: 'Signature Beef Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Drinks / Hot Coffee ----
-  { id: 27, name: 'Cappuccino', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'lg', images: [cappuccinoImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 27, name: 'Cappuccino', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [cappuccinoImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 28, name: 'Latte', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [latteImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 29, name: 'Spanish Latte', price: 599, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [spanishLatteImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 30, name: 'Caramel Latte', price: 599, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [caramelLatteImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
@@ -140,6 +141,6 @@ export const PRODUCTS = withPrimaryImage([
   // ---- Drinks / Chillers + Extras ----
   { id: 40, name: 'Passion Fruit Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [passionFruit1, passionFruit2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 41, name: 'Wild Berry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [wildBerry1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 42, name: 'Strawberry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [strawberryChiller1, strawberryChiller2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 42, name: 'Strawberry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [strawberryChillerSc, strawberryChiller2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 43, name: 'Water', price: 120, category: 'Drinks', type: 'Extras', size: 'sm', description: 'Chilled bottled water.', reviews: REVIEWS },
 ])
