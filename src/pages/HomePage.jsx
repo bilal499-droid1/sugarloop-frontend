@@ -9,6 +9,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <Marquee short />
       <About />
       <Marquee />
       <DrinksStrip />

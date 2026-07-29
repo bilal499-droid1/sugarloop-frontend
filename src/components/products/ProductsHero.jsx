@@ -1,53 +1,29 @@
-import { useEffect, useState } from 'react'
-import heroBgDesktop1 from '../../assets/p1.png'
-import heroBg2 from '../../assets/pp2.png'
-import heroBg3 from '../../assets/pp3.png'
-import mobileHeroBg1 from '../../assets/mv1.png'
-import mobileHeroBg2 from '../../assets/mv2.png'
-import mobileHeroBg3 from '../../assets/mv3.png'
+import desktopHeroBg from '../../assets/zz.png'
+import mobileHeroBg from '../../assets/mv2.png'
 import ShopNav from './ShopNav'
 
-const DESKTOP_SLIDES = [heroBgDesktop1, heroBg2, heroBg3]
-const MOBILE_SLIDES = [mobileHeroBg1, mobileHeroBg2, mobileHeroBg3]
-const SLIDE_INTERVAL_MS = 5000
-
 export default function ProductsHero({ categories, activeCategory, onSelectCategory }) {
-  const [slideIndex, setSlideIndex] = useState(0)
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSlideIndex((i) => (i + 1) % DESKTOP_SLIDES.length)
-    }, SLIDE_INTERVAL_MS)
-    return () => clearInterval(id)
-  }, [])
-
   return (
     <section className="relative" aria-label="Products hero">
       <div className="relative overflow-hidden aspect-[393/471] lg:aspect-[1920/827] min-h-[420px] lg:min-h-[600px] flex flex-col pb-8 lg:pb-10">
         <div
           className="absolute inset-0 bg-center bg-cover bg-no-repeat block lg:hidden"
-          style={{ backgroundImage: `url(${MOBILE_SLIDES[slideIndex]})` }}
+          style={{ backgroundImage: `url(${mobileHeroBg})` }}
         />
         <div
           className="absolute inset-0 bg-center bg-cover bg-no-repeat hidden lg:block"
-          style={{ backgroundImage: `url(${DESKTOP_SLIDES[slideIndex]})` }}
+          style={{ backgroundImage: `url(${desktopHeroBg})` }}
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.15)_35%,rgba(0,0,0,0.05)_100%)]" />
 
         <ShopNav />
 
         <div className="relative z-[2] mt-10 px-5 lg:mt-[clamp(2rem,6vw,5rem)] lg:px-[clamp(2rem,5vw,5.5rem)]">
-          <h1 className="m-0 mb-3 font-display font-medium text-[#3d3d3d] tracking-[-0.03em] flex flex-col leading-[1] text-center lg:text-left">
-            <span className="text-[1rem] font-normal lg:text-[clamp(2.5rem,4.5vw,4.0625rem)]">
-              Have a look at our
-            </span>
-            <span className="text-[2.25rem] font-bold uppercase text-accent lg:text-[clamp(2.5rem,4.5vw,4.0625rem)] lg:normal-case">
-              fresh products
-            </span>
+          {/* zz.png has MENU baked in, so past lg the live heading drops to
+              screen-reader-only rather than printing the word twice. */}
+          <h1 className="m-0 font-display font-black uppercase text-white tracking-[-0.03em] leading-[1] text-center text-[2.25rem] [-webkit-text-stroke:1px_#fff] lg:sr-only">
+            MENU
           </h1>
-          <p className="hidden lg:block lg:max-w-[38rem] lg:mt-6 lg:text-[1.125rem] lg:leading-[1.5] lg:font-semibold lg:text-white">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
-          </p>
         </div>
       </div>
 

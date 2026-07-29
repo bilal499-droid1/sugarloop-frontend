@@ -3,3 +3,6 @@ dist/
 .vite/
 *.log
 .DS_Store
+
+# Source video is too large for GitHub (pm1.mp4 alone is 97MB); kept local only.
+*.mp4

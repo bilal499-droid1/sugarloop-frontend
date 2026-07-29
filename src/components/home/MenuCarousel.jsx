@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import croissantImg from '../../assets/Rectangle 1025.png'
+import { Link } from 'react-router-dom'
+import donutImg from '../../assets/a1.jpeg'
+import croissantImg from '../../assets/a5.jpeg'
+import drinkImg from '../../assets/a3.jpeg'
+import sandwichImg from '../../assets/a2.jpeg'
 
 const ITEMS = [
+  { label: 'Donuts', image: donutImg },
   { label: 'Croissants', image: croissantImg },
-  { label: 'Croissants', image: croissantImg },
-  { label: 'Croissants', image: croissantImg },
+  { label: 'Drinks', image: drinkImg },
+  { label: 'Sandwiches', image: sandwichImg },
 ]
 
 export default function MenuCarousel() {
@@ -41,16 +46,16 @@ export default function MenuCarousel() {
 
       <div
         ref={trackRef}
-        className="grid grid-cols-3 gap-[clamp(0.75rem,2vw,1.5rem)] max-w-[1100px] mx-auto max-[720px]:flex max-[720px]:max-w-none max-[720px]:overflow-x-auto max-[720px]:snap-x max-[720px]:snap-mandatory max-[720px]:-mx-[clamp(1.5rem,5vw,4rem)] max-[720px]:px-[clamp(1.5rem,5vw,4rem)] max-[720px]:pb-2 max-[720px]:[scrollbar-width:none] max-[720px]:[&::-webkit-scrollbar]:hidden"
+        className="grid grid-cols-4 gap-[clamp(0.75rem,2vw,1.5rem)] max-w-[1100px] mx-auto max-[720px]:flex max-[720px]:max-w-none max-[720px]:overflow-x-auto max-[720px]:snap-x max-[720px]:snap-mandatory max-[720px]:-mx-[clamp(1.5rem,5vw,4rem)] max-[720px]:px-[clamp(1.5rem,5vw,4rem)] max-[720px]:pb-2 max-[720px]:[scrollbar-width:none] max-[720px]:[&::-webkit-scrollbar]:hidden"
       >
         {ITEMS.map((item, i) => (
-          <button
+          <Link
             key={i}
-            className={`bg-none border-2 rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
+            to={`/products?category=${encodeURIComponent(item.label)}`}
+            className={`bg-none border-2 rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
               i === activeIndex ? 'border-accent' : 'border-transparent'
             }`}
-            onClick={() => selectItem(i)}
-            type="button"
+            onClick={() => setActiveIndex(i)}
           >
             <img
               src={item.image}
@@ -60,7 +65,7 @@ export default function MenuCarousel() {
             <span className="bg-white text-black font-bold text-[0.85rem] py-[0.6rem] text-center">
               {item.label}
             </span>
-          </button>
+          </Link>
         ))}
       </div>
 

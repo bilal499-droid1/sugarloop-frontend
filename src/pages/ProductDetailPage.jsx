@@ -4,6 +4,7 @@ import { FaStar, FaRegStar } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
 import ProductCard from '../components/products/ProductCard'
 import Accordion from '../components/productDetail/Accordion'
+import ProductGallery from '../components/productDetail/ProductGallery'
 import Footer from '../components/Footer'
 import { PRODUCTS } from '../components/products/productsData'
 import { useCart } from '../context/CartContext'
@@ -56,9 +57,7 @@ export default function ProductDetailPage() {
         className="flex flex-col gap-6 pt-6 px-5 pb-8 lg:flex-row lg:gap-16 lg:pt-12 lg:px-[clamp(2rem,5vw,5.5rem)] lg:pb-16"
         aria-label="Product detail"
       >
-        <div className="w-full aspect-square border border-border-light overflow-hidden lg:flex-[0_0_42%] lg:max-w-[550px]">
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-        </div>
+        <ProductGallery images={product.images ?? []} name={product.name} />
 
         <div className="flex flex-col lg:flex-1 lg:max-w-[520px]">
           <h1 className="mb-4 mt-0 font-display font-bold text-2xl text-black uppercase lg:text-[2rem]">

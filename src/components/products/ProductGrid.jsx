@@ -1,8 +1,20 @@
 import ProductCard from './ProductCard'
 
+// Groups the visible products under their menu sub-heading (product.type), keeping
+// the order they appear in the catalogue: Signature before Classic, Hot before Iced.
+function groupByType(products) {
+  const groups = []
+  products.forEach((product) => {
+    const type = product.type ?? ''
+    const group = groups.find((g) => g.type === type)
+    if (group) group.items.push(product)
+    else groups.push({ type, items: [product] })
+  })
+  return groups
+}
+
 export default function ProductGrid({ products, categories, activeCategory, onSelectCategory }) {
-  const mainProducts = products.filter((p) => p.size !== 'wide')
-  const wideProducts = products.filter((p) => p.size === 'wide')
+  const groups = groupByType(products)
 
   return (
     <section
@@ -39,19 +51,21 @@ export default function ProductGrid({ products, categories, activeCategory, onSe
       </aside>
 
       <div className="flex-1 min-w-0">
-        <div className="grid grid-cols-2 gap-[0.85rem] lg:grid-cols-4 lg:grid-flow-row-dense lg:gap-5">
-          {mainProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
-        {wideProducts.length > 0 && (
-          <div className="grid grid-cols-2 gap-[0.85rem] mt-[0.85rem] lg:grid-cols-3 lg:gap-5 lg:mt-5">
-            {wideProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
+        {groups.map((group) => (
+          <section key={group.type} className="mb-8 last:mb-0 lg:mb-12" aria-label={group.type || activeCategory}>
+            {/* A heading matching the category name adds nothing, so Sandwiches stays unlabelled */}
+            {group.type && group.type !== activeCategory && (
+              <h3 className="m-0 mb-3 font-display font-bold uppercase tracking-[0.08em] text-accent text-[0.8rem] lg:text-base lg:mb-5">
+                {group.type}
+              </h3>
+            )}
+            <div className="grid grid-cols-2 gap-[0.85rem] lg:grid-cols-4 lg:grid-flow-row-dense lg:gap-5">
+              {group.items.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     </section>
   )

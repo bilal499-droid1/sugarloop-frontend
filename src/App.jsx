@@ -5,11 +5,13 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import CorporateGiftingPage from './pages/CorporateGiftingPage'
 import FaqPage from './pages/FaqPage'
 import BuildYourBoxPage from './pages/BuildYourBoxPage'
+import ScrollToTop from './components/ScrollToTop'
 import { CartProvider } from './context/CartContext'
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <CartProvider>
         <main>
           <Routes>

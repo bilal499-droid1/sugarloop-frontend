@@ -5,7 +5,7 @@ import Footer from '../components/Footer'
 import { PRODUCTS } from '../components/products/productsData'
 import { useCart } from '../context/CartContext'
 
-const BOX_SIZES = [3, 4, 6]
+const BOX_SIZES = [2, 4, 6, 12]
 const PRODUCT_TYPES = ['Donuts', 'Croissants']
 
 export default function BuildYourBoxPage() {
@@ -64,12 +64,12 @@ export default function BuildYourBoxPage() {
           <div className="mx-5 lg:mx-0 mb-4 bg-white rounded-2xl border border-[#ececec] p-4">
             <p className="m-0 font-display font-bold text-sm text-black">Select your box</p>
             <p className="mt-1 mb-3 text-xs text-[#9a9a9a]">Choose your box from the following</p>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {BOX_SIZES.map((size) => (
                 <button
                   key={size}
                   type="button"
-                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium font-display border cursor-pointer ${
+                  className={`py-2.5 rounded-lg text-sm font-medium font-display border cursor-pointer whitespace-nowrap ${
                     size === boxSize
                       ? 'bg-accent text-white border-accent'
                       : 'bg-white text-[#666] border-[#e0e0e0]'
