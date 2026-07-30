@@ -97,6 +97,22 @@ img {
   display: block;
 }
 
+/*
+  Form controls are the one place font-family isn't inherited - every browser
+  substitutes its own UI font on input/textarea/select/button unless told not to,
+  which is why typed text fell back to Arial/system while the rest of the page
+  rendered in Satoshi. Kept in @layer base so an explicit font-* utility (say
+  font-price on a button) still wins over it.
+*/
+@layer base {
+  input,
+  textarea,
+  select,
+  button {
+    font-family: inherit;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee-scroll {
     animation: none;

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import donutImg from '../../assets/a1.jpeg'
-import croissantImg from '../../assets/a5.jpeg'
-import drinkImg from '../../assets/a3.jpeg'
-import sandwichImg from '../../assets/a2.jpeg'
+import donutImg from '../../assets/a1.webp'
+import croissantImg from '../../assets/a5.webp'
+import drinkImg from '../../assets/a3.webp'
+import sandwichImg from '../../assets/a2.webp'
 
 const ITEMS = [
   { label: 'Donuts', image: donutImg },

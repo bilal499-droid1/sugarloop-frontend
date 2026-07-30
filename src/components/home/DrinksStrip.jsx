@@ -27,7 +27,10 @@ const DRINKS = [
 
 export default function DrinksStrip() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 leading-[0]" aria-label="Featured drinks">
+    <div
+      className="grid grid-cols-2 sm:grid-cols-4 gap-[clamp(0.5rem,1.2vw,1rem)] leading-[0] bg-white"
+      aria-label="Featured drinks"
+    >
       {DRINKS.map((drink, i) => (
         <div
           className={`aspect-[480/1042] overflow-hidden ${drink.onMobile ? '' : 'hidden sm:block'}`}

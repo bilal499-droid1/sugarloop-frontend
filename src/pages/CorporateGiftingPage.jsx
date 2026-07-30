@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
-import giftBoxDesktop from '../assets/DC.png'
-import giftBoxMobile from '../assets/Rectangle 1131.png'
+import giftBoxDesktop from '../assets/DC.webp'
+import giftBoxMobile from '../assets/Rectangle 1131.webp'
 
 const FIELDS = ['Name', 'Phone', 'Email', 'Company', 'Subject']
 

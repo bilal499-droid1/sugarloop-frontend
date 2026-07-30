@@ -1,7 +1,7 @@
-import desktopHeroBg from '../../assets/zz.png'
+import desktopHeroBg from '../../assets/zz.webp'
 // BM.png is 1639x1959 (0.837), cut to match the mobile hero's 393/471 slot, so
 // bg-cover shows it whole with the baked-in MENU centred.
-import mobileHeroBg from '../../assets/BM.png'
+import mobileHeroBg from '../../assets/BM.webp'
 import ShopNav from './ShopNav'
 
 export default function ProductsHero({ categories, activeCategory, onSelectCategory }) {

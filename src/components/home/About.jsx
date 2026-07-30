@@ -1,4 +1,4 @@
-import aboutImage from '../../assets/about.jpg'
+import aboutImage from '../../assets/about.webp'
 
 const STATS = [
   { value: '2000+', label: 'Happy Customers' },
@@ -14,7 +14,7 @@ export default function About() {
     >
       <div className="grid grid-cols-[1.3fr_1fr] max-[900px]:grid-cols-1 gap-[clamp(2rem,5vw,4rem)] items-start">
         <div className="flex flex-col gap-[clamp(1.25rem,3vw,2rem)]">
-          <h2 className="font-display font-bold text-[clamp(2.5rem,5vw,4.5rem)] m-0 tracking-[-0.02em]">
+          <h2 className="font-display font-bold text-[clamp(2.5rem,5vw,4.5rem)] m-0 tracking-[-0.02em] text-accent">
             ABOUT US
           </h2>
 

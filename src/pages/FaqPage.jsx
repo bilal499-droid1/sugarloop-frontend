@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { FaChevronDown, FaChevronLeft, FaChevronRight, FaStar, FaRegStar } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
-import testimonialCardBg from '../assets/card1.png'
-import avatar1 from '../assets/faq-avatar-1.jpg'
-import avatar2 from '../assets/faq-avatar-2.jpg'
-import avatar3 from '../assets/faq-avatar-3.jpg'
-import avatar4 from '../assets/faq-avatar-4.jpg'
-import avatar5 from '../assets/faq-avatar-5.jpg'
-import avatar6 from '../assets/faq-avatar-6.jpg'
-import avatar7 from '../assets/faq-avatar-7.jpg'
+import testimonialCardBg from '../assets/card1.webp'
+import avatar1 from '../assets/faq-avatar-1.webp'
+import avatar2 from '../assets/faq-avatar-2.webp'
+import avatar3 from '../assets/faq-avatar-3.webp'
+import avatar4 from '../assets/faq-avatar-4.webp'
+import avatar5 from '../assets/faq-avatar-5.webp'
+import avatar6 from '../assets/faq-avatar-6.webp'
+import avatar7 from '../assets/faq-avatar-7.webp'
 
 // Full literal class strings (not built via interpolation) so Tailwind's
 // static scanner can detect them — arbitrary values built from interpolated
@@ -26,28 +26,32 @@ const AVATAR_LAYOUT = [
 
 const FAQS = [
   {
-    q: 'Is there a delivery charge?',
-    a: 'Delivery is free on orders over Rs 1500 within city limits. Below that, a flat Rs 150 delivery charge applies.',
-  },
-  {
-    q: 'Who is the CEO of Sugarloop?',
-    a: 'Saif is the CEO of Sugarloop, leading the brand since it was founded.',
-  },
-  {
-    q: 'Is there a discount on Sugarloop?',
-    a: 'We run seasonal discounts and a loyalty rewards program throughout the year — follow our Instagram for the latest offers.',
-  },
-  {
-    q: 'Where is Sugarloop located?',
-    a: "We have multiple branches across DHA — check the “Find Sugarloop” section below for the closest one to you.",
-  },
-  {
-    q: 'Is Sugarloop a fitness brand?',
-    a: 'No, Sugarloop is a bakery and dessert brand — though we do love a post-workout treat.',
+    q: 'Where are Sugarloop branches located?',
+    a: 'Sugarloop has multiple branches across Rawalpindi and Islamabad. You can find your nearest outlet through our Locations page.',
   },
   {
     q: "What are Sugarloop's opening hours?",
-    a: "We're open daily from 9am to 11pm, including public holidays.",
+    a: 'Our opening hours may vary by location. Please check the individual branch listing for the most up-to-date timings.',
+  },
+  {
+    q: 'Do you offer delivery?',
+    a: 'Yes! Sugarloop offers delivery through our available delivery channels. Delivery availability may vary by location.',
+  },
+  {
+    q: 'Which areas do you deliver to?',
+    a: 'Delivery coverage depends on the branch and your location. Enter your address through FoodPanda to check availability.',
+  },
+  {
+    q: 'Can I schedule an order for a specific time?',
+    a: 'Yes, scheduled orders may be placed in advance, subject to availability.',
+  },
+  {
+    q: 'Do you take bulk orders?',
+    a: 'Yes! We accept bulk orders for birthdays, weddings, corporate events, parties, and other occasions. Send your queries at sugarlooppk@gmail.com',
+  },
+  {
+    q: 'Who can I contact for corporate partnerships?',
+    a: 'For corporate, brand, location, and partnership inquiries, please send an email at sugarlooppk@gmail.com',
   },
 ]
 
@@ -116,6 +120,15 @@ export default function FaqPage() {
     setSubmitted(true)
   }
 
+  // The box starts short and grows to fit what's typed: reset to auto first so it
+  // can shrink again on delete, then match the content. max-h caps the growth and
+  // hands over to scrolling.
+  const handleQuestionChange = (e) => {
+    setQuestion(e.target.value)
+    e.target.style.height = 'auto'
+    e.target.style.height = `${e.target.scrollHeight}px`
+  }
+
   return (
     <>
       <ShopNav />
@@ -136,7 +149,9 @@ export default function FaqPage() {
         className="pt-[clamp(1.5rem,4vw,3rem)] px-5 pb-[clamp(2rem,5vw,3.5rem)] bg-[#fafafa] border-t border-faq-border"
         aria-label="Frequently asked questions"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[0.9rem] lg:gap-x-12 lg:gap-y-5 max-w-[1400px] mx-auto">
+        {/* items-start: grid items stretch to the row height by default, so opening
+            one card would drag its neighbour taller with it. */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-[0.9rem] lg:gap-x-12 lg:gap-y-5 max-w-[1400px] mx-auto">
           {FAQS.map((item) => (
             <FaqItem key={item.q} {...item} />
           ))}
@@ -252,12 +267,13 @@ export default function FaqPage() {
           Got a Question? Ask away
         </h2>
 
-        <form className="relative max-w-[1113px] mx-auto" onSubmit={handleSubmit}>
+        {/* 1113px * 0.7 - kept centred by mx-auto, so it narrows evenly from both sides. */}
+        <form className="relative max-w-[779px] mx-auto" onSubmit={handleSubmit}>
           <textarea
-            className="w-full min-h-[220px] lg:min-h-[420px] py-[1.1rem] px-[1.2rem] lg:pb-20 bg-[#f5f5f5] border border-[#dfdfdf] rounded-[14px] font-display text-[0.9rem] text-black resize-y placeholder:text-[#9e9e9e]"
+            className="w-full min-h-[7rem] lg:min-h-[10rem] max-h-[60vh] overflow-y-auto py-[1.1rem] px-[1.2rem] lg:pb-20 bg-[#f5f5f5] border border-[#dfdfdf] rounded-[14px] font-display text-[0.9rem] text-black resize-y placeholder:text-[#9e9e9e]"
             placeholder="Write your question"
             value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            onChange={handleQuestionChange}
             required
           />
           <button

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
-import logo from '../assets/sugarLoop 1.png'
+import logo from '../assets/sugarLoop 1.webp'
 
 const linkBaseClass =
   'no-underline font-display font-bold text-[1.5rem] tracking-[0.01em] whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110'

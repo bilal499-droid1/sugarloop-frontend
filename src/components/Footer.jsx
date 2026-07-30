@@ -58,7 +58,7 @@ export default function Footer() {
         <Link
           to="/"
           aria-label="Sugarloop home"
-          className="shrink-0 ml-[calc(clamp(1.5rem,5vw,4rem)*-1-4.774rem)] sm:ml-[calc(clamp(1.5rem,5vw,4rem)*-1-7.639rem)]"
+          className="shrink-0 ml-[calc(clamp(1.5rem,5vw,4rem)*-0.55-2.626rem)] sm:ml-[calc(clamp(1.5rem,5vw,4rem)*-1-7.639rem)]"
         >
           <img
             src={donutMark}

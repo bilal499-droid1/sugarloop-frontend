@@ -1,7 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
 import ProductsHero from '../components/products/ProductsHero'
 import ProductGrid from '../components/products/ProductGrid'
-import MobileTabBar from '../components/products/MobileTabBar'
 import Footer from '../components/Footer'
 import { CATEGORIES, PRODUCTS } from '../components/products/productsData'
 
@@ -40,7 +39,6 @@ export default function ProductsPage() {
         onSelectCategory={setActiveCategory}
       />
       <Footer />
-      <MobileTabBar />
     </>
   )
 }
