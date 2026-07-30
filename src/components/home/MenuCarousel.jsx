@@ -83,22 +83,6 @@ export default function MenuCarousel({ title = 'MENU', linkToCategory = true }) 
           )
         })}
       </div>
-
-      <div className="flex justify-center gap-2 mt-[clamp(1.25rem,3vw,2rem)]" role="tablist" aria-label="Menu items">
-        {ITEMS.map((_, i) => (
-          <button
-            key={i}
-            className={`w-2 h-2 rounded-full border-none cursor-pointer p-0 ${
-              i === activeIndex ? 'bg-accent' : 'bg-[#d9d9d9]'
-            }`}
-            onClick={() => selectItem(i)}
-            aria-label={`Show item ${i + 1}`}
-            aria-selected={i === activeIndex}
-            role="tab"
-            type="button"
-          />
-        ))}
-      </div>
     </section>
   )
 }

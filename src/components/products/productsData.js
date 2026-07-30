@@ -68,6 +68,12 @@ import caramelLatteImg from '../../assets/category/caramel latte.jpg'
 import icedCappuccino2 from '../../assets/category/iced cappuccino 2.jpg'
 import icedLatte1 from '../../assets/category/iced latte 1.jpg'
 import icedCaramelLatte1 from '../../assets/category/iced caramel latte 1.jpg'
+// Frappe studio shots live in src/assets (not category/), square 2194x2194 on white.
+import caramelFrappe1 from '../../assets/caramel.jpg'
+import cookiesCreamFrappe1 from '../../assets/Cookies&Cream.jpg'
+import hazelnutFrappe1 from '../../assets/Hazlenut.jpg'
+import doubleChocolateFrappe1 from '../../assets/DoubleChocolate.jpg'
+import mochaFrappe1 from '../../assets/Mocha.jpg'
 
 export const CATEGORIES = ['Croissants', 'Donuts', 'Drinks', 'Sandwiches']
 
@@ -132,11 +138,11 @@ export const PRODUCTS = withPrimaryImage([
   { id: 34, name: 'Iced Caramel Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedCaramelLatte1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
 
   // ---- Drinks / Frappes (Blended Iced, 799) ----
-  { id: 35, name: 'Caramel Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 36, name: 'Cookies & Cream Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 37, name: 'Hazelnut Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 38, name: 'Double Chocolate Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 39, name: 'Mocha Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 35, name: 'Caramel Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [caramelFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 36, name: 'Cookies & Cream Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [cookiesCreamFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 37, name: 'Hazelnut Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [hazelnutFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 38, name: 'Double Chocolate Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [doubleChocolateFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 39, name: 'Mocha Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [mochaFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
 
   // ---- Drinks / Chillers + Extras ----
   { id: 40, name: 'Passion Fruit Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [passionFruit1, passionFruit2], description: DRINK_DESCRIPTION, reviews: REVIEWS },

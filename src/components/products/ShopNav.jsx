@@ -5,13 +5,18 @@ import { useCart } from '../../context/CartContext'
 import MobileNavMenu from '../MobileNavMenu'
 import SugarLoopMark from '../SugarLoopMark'
 
+// Steps up to 2xl only past 1536px - at 24px the five links plus the enlarged
+// logo need ~1393px, which forces the whole document to scroll sideways on
+// 1024-1280 laptops.
+const navLinkBase = 'no-underline text-base xl:text-xl 2xl:text-2xl'
+
 // 900 is the heaviest Satoshi face, so the extra weight comes from a same-color
 // stroke thickening the glyphs - same trick MobileNavMenu uses for its links.
-const navLinkClass =
-  // Steps up to 2xl only past 1536px - at 24px the five links plus the enlarged
-  // logo need ~1393px, which forces the whole document to scroll sideways on
-  // 1024-1280 laptops.
-  'text-accent no-underline font-black text-base xl:text-xl 2xl:text-2xl [-webkit-text-stroke:0.6px_#587ea2]'
+const navLinkClass = `${navLinkBase} text-accent font-black [-webkit-text-stroke:0.6px_#587ea2]`
+
+// onImage variant: the links sit on the hero photo rather than a light page, so
+// no stroke - the weight is what the design asks for, not a legibility crutch.
+const navLinkOnImageClass = `${navLinkBase} text-white font-medium`
 
 const NAV_ITEMS = [
   { label: 'Products', to: '/products' },
@@ -33,7 +38,9 @@ function ShopNavLink({ item, className, onClick }) {
   )
 }
 
-export default function ShopNav() {
+// onImage is opt-in: ShopNav also renders on Corporate Gifting, FAQ, Build a Box
+// and Product Detail, which are light pages where white links would vanish.
+export default function ShopNav({ onImage = false }) {
   const { count } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -46,7 +53,7 @@ export default function ShopNav() {
       <ul className="hidden lg:flex list-none gap-[clamp(1.5rem,3vw,3rem)] m-0 ml-auto p-0">
         {NAV_ITEMS.map((item) => (
           <li key={item.label}>
-            <ShopNavLink item={item} className={navLinkClass} />
+            <ShopNavLink item={item} className={onImage ? navLinkOnImageClass : navLinkClass} />
           </li>
         ))}
       </ul>

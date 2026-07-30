@@ -1,5 +1,7 @@
 import desktopHeroBg from '../../assets/zz.png'
-import mobileHeroBg from '../../assets/mv2.png'
+// BM.png is 1639x1959 (0.837), cut to match the mobile hero's 393/471 slot, so
+// bg-cover shows it whole with the baked-in MENU centred.
+import mobileHeroBg from '../../assets/BM.png'
 import ShopNav from './ShopNav'
 
 export default function ProductsHero({ categories, activeCategory, onSelectCategory }) {
@@ -16,14 +18,13 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.15)_35%,rgba(0,0,0,0.05)_100%)]" />
 
-        <ShopNav />
+        <ShopNav onImage />
 
         <div className="relative z-[2] mt-10 px-5 lg:mt-[clamp(2rem,6vw,5rem)] lg:px-[clamp(2rem,5vw,5.5rem)]">
-          {/* zz.png has MENU baked in, so past lg the live heading drops to
-              screen-reader-only rather than printing the word twice. */}
-          <h1 className="m-0 font-display font-black uppercase text-white tracking-[-0.03em] leading-[1] text-center text-[2.25rem] [-webkit-text-stroke:1px_#fff] lg:sr-only">
-            MENU
-          </h1>
+          {/* Both backgrounds (BM.png on mobile, zz.png past lg) have MENU baked
+              in, so the live heading stays screen-reader-only rather than
+              printing the word twice. */}
+          <h1 className="sr-only">MENU</h1>
         </div>
       </div>
 

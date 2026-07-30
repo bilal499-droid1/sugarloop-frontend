@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
-import giftBoxDesktop from '../assets/Rectangle 1134.png'
+import giftBoxDesktop from '../assets/DC.png'
 import giftBoxMobile from '../assets/Rectangle 1131.png'
 
 const FIELDS = ['Name', 'Phone', 'Email', 'Company', 'Subject']
@@ -24,13 +24,32 @@ export default function CorporateGiftingPage() {
       <ShopNav />
 
       <section
-        className="flex flex-col pt-6 px-5 pb-12 bg-[#f8f8f8] lg:flex-row lg:items-center lg:gap-3 lg:pt-16 lg:pr-0 lg:pb-20 lg:pl-[clamp(2rem,5vw,5.5rem)]"
+        className="flex flex-col pt-6 px-5 pb-12 bg-[#f8f8f8] lg:flex-row lg:items-center lg:gap-3 lg:pt-8 lg:pr-0 lg:pb-12 lg:pl-[clamp(2rem,5vw,5.5rem)]"
         aria-label="Corporate gifting"
       >
-        <div className="order-first w-full aspect-[393/648] mb-6 lg:order-1 lg:aspect-[1920/1043] lg:flex-1 lg:min-w-0 lg:mb-0">
-          <picture>
+        {/* Mobile (Rectangle 1131.png, 393x648): boxes only paint rows 144-384, so
+            the slot is cut to that band and object-position pins it - cover scales
+            by width, making the 35.4% offset hold at any phone size.
+            Desktop (DC.png): no fixed slot height and no object-fit, so the file
+            renders whole at its natural 1639/1960 ratio - nothing clipped. Size is
+            driven by width instead, which is what makes the boxes read large; the
+            70rem cap stops it running away on ultrawide screens.
+            The negative margins cancel the file's own empty bands (573 rows above
+            the boxes, 434 below) so they stop pushing the layout apart: as a share
+            of the rendered width that is 573/1639*1960/1639 = 34.96% and
+            434/1639*1960/1639 = 26.48%. The image still paints in full, it just
+            overflows into space it was wasting - and ShopNav carries z-[2], so the
+            transparent overlap never sits above the nav. The cap lives on the
+            <picture> so margin percentages, which resolve against the parent's
+            width, always match the image's own width. */}
+        <div className="order-first w-full aspect-[393/241] mb-2 lg:order-1 lg:flex-1 lg:min-w-0 lg:aspect-auto lg:h-auto lg:mb-0">
+          <picture className="block w-full h-full lg:h-auto lg:max-w-[70rem] lg:ml-auto">
             <source media="(min-width: 1024px)" srcSet={giftBoxDesktop} />
-            <img src={giftBoxMobile} alt="Sugarloop corporate gift box" className="w-full h-full object-cover" />
+            <img
+              src={giftBoxMobile}
+              alt="Sugarloop corporate gift box"
+              className="w-full h-full object-cover [object-position:50%_35.4%] lg:h-auto lg:mt-[-34.96%] lg:mb-[-26.48%]"
+            />
           </picture>
         </div>
 
@@ -38,8 +57,13 @@ export default function CorporateGiftingPage() {
           <h1 className="m-0 font-display font-bold text-[1.9rem] text-accent tracking-[-0.02em] lg:text-[2.5rem] lg:leading-[1.05] lg:whitespace-nowrap">
             Corporate Gifting
           </h1>
-          <p className="mt-2 mb-7 max-w-[22rem] text-[0.8rem] leading-[1.7] text-[#6d6d6d] lg:text-base lg:whitespace-nowrap">
-            From celebrating major company milestones to showing everyday<br />appreciation
+          {/* The <br /> is a desktop-only line break: on mobile the copy already
+              wraps inside the narrow column, and forcing it leaves "appreciation"
+              stranded on its own line. */}
+          <p className="mt-1 mb-4 max-w-[22rem] text-[0.8rem] leading-[1.45] text-[#6d6d6d] lg:mt-2 lg:mb-7 lg:text-base lg:leading-[1.7] lg:whitespace-nowrap">
+            From celebrating major company milestones to showing everyday{' '}
+            <br className="hidden lg:inline" />
+            appreciation
           </p>
 
           {submitted ? (
