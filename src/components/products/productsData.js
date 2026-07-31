@@ -50,9 +50,10 @@ import bakedCinnamon2 from '../../assets/category/baked cinnamon 2.webp'
 import signatureChicken1 from '../../assets/category/signature chicken 1.webp'
 import smokedTikka1 from '../../assets/category/tikka sandwich 1.webp'
 import smokedTikka2 from '../../assets/category/tikka sandwich 2.webp'
-// Note: 'fajita sandwich 2.jpg', 'iced cappuccino 1.jpg' and 'iced latte 2.jpg'
-// are corrupt on disk (all-0xFF filler, no JPEG data) so they aren't imported.
+// Note: 'iced cappuccino 1.jpg' and 'iced latte 2.jpg' are corrupt on disk
+// (all-0xFF filler, no JPEG data) so they aren't imported.
 import sizzlingFajita1 from '../../assets/category/fajita sandwich 1.webp'
+import sizzlingFajita2 from '../../assets/category/fajita sandwich 2.webp'
 import passionFruit1 from '../../assets/category/passion fruit chiller 1.webp'
 import passionFruit2 from '../../assets/category/passion fruit chiller 2.webp'
 import wildBerry1 from '../../assets/category/wild berry chiller 1.webp'
@@ -122,7 +123,7 @@ export const PRODUCTS = withPrimaryImage([
   { id: 22, name: 'Signature Chicken', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [signatureChicken1], description: DESCRIPTION, reviews: REVIEWS },
   { id: 23, name: 'Classic Scrambled Egg', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', description: DESCRIPTION, reviews: REVIEWS },
   { id: 24, name: 'Smoked Tikka Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [smokedTikka1, smokedTikka2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 25, name: 'Sizzling Fajita', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [sizzlingFajita1], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 25, name: 'Sizzling Fajita', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [sizzlingFajita1, sizzlingFajita2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 26, name: 'Signature Beef Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Drinks / Hot Coffee ----
