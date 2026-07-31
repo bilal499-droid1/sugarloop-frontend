@@ -22,6 +22,15 @@ const MORE_PAGES = [
   { label: 'About us', href: '/#about' },
 ]
 
+// MORE_PAGES rides the desktop-only hamburger, so on a phone those pages had no
+// route in at all - the drawer carried Home/Menu/Contact and nothing else. It gets
+// both lists instead. Products is dropped from the tail because Menu is already
+// pointing at /products.
+const MOBILE_NAV_ITEMS = [
+  ...NAV_ITEMS,
+  ...MORE_PAGES.filter((item) => item.to !== '/products'),
+]
+
 const navLinkClass =
   'inline-block text-white no-underline font-bold text-nav-link whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110'
 
@@ -95,7 +104,7 @@ export default function Hero() {
 
         <MobileNavMenu
           open={menuOpen}
-          items={NAV_ITEMS}
+          items={MOBILE_NAV_ITEMS}
           onClose={() => setMenuOpen(false)}
           variant="light"
         />
