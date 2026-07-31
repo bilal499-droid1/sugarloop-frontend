@@ -13,7 +13,9 @@ const ITEMS = [
 ]
 
 export default function MenuCarousel({ title = 'MENU', linkToCategory = true }) {
-  const [activeIndex, setActiveIndex] = useState(1) // center card highlighted, matches Figma sample
+  // Opens on the first card so the mobile scroller starts at its left gap rather
+  // than mid-track with cards clipped at both edges.
+  const [activeIndex, setActiveIndex] = useState(0)
   const trackRef = useRef(null)
 
   // Horizontal-only centering: avoids scrollIntoView, which would also move the page vertically
