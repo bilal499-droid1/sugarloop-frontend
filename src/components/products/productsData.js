@@ -39,6 +39,8 @@ import whiteChocolate1 from '../../assets/category/white chocolate 1.webp'
 import whiteChocolate2 from '../../assets/category/whitechocolate 2.webp'
 import vanillaGlazed1 from '../../assets/category/vanilla glazed 1.webp'
 import vanillaGlazed2 from '../../assets/category/vanilla glazed 2.webp'
+import chocolateGlazed1 from '../../assets/category/chocolate glazed 1.webp'
+import chocolateGlazed2 from '../../assets/category/chocolate glazed 2.webp'
 import chocolateCroissant1 from '../../assets/category/chocolate croissant 1.webp'
 import chocolateCroissant2 from '../../assets/category/chocolate croissant 2.webp'
 import chocolateCroissant3 from '../../assets/category/chocolate croissant 3 (2).webp'
@@ -114,7 +116,7 @@ export const PRODUCTS = withPrimaryImage([
   { id: 13, name: 'Chocolate Sprinkle', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateSprinkle1, chocolateSprinkle2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 14, name: 'Classic Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicChocolate2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 15, name: 'White Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [whiteChocolate1, whiteChocolate2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 16, name: 'Chocolate Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', description: DESCRIPTION, reviews: REVIEWS },
+  { id: 16, name: 'Chocolate Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateGlazed1, chocolateGlazed2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 17, name: 'Vanilla Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [vanillaGlazed1, vanillaGlazed2], description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Fresh Bakes ----
