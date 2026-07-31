@@ -1,12 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
+const isNonSquare = (img) =>
+  !!img && !!img.naturalWidth && !!img.naturalHeight &&
+  Math.abs(img.naturalWidth / img.naturalHeight - 1) > 0.02
+
 // Horizontal scroll-snap gallery for the product detail page. Swipe on touch,
 // arrows / thumbnails on desktop. Falls back to a single tile when a product
 // has one photo, and to the neutral placeholder when it has none.
 export default function ProductGallery({ images = [], name }) {
   const trackRef = useRef(null)
   const [index, setIndex] = useState(0)
+
+  // Which photos are non-square, so they can be shown whole instead of sliced to
+  // fill the square frame. Held in state rather than toggled on the node: this
+  // component re-renders on every scroll, and React would restore the JSX
+  // className each time, undoing any class added directly to the element.
+  const [wholeShots, setWholeShots] = useState({})
+
+  // Measured from both a ref and onLoad: React attaches onLoad after mount, so a
+  // photo the browser already had cached never fires it - the ref covers those.
+  const measure = (img, i) => {
+    if (!isNonSquare(img)) return
+    setWholeShots((current) => (current[i] ? current : { ...current, [i]: true }))
+  }
 
   // Keep the active dot/thumbnail in sync with wherever the user scrolled to.
   useEffect(() => {
@@ -62,14 +79,11 @@ export default function ProductGallery({ images = [], name }) {
               alt={`${name} — photo ${i + 1} of ${images.length}`}
               loading={i === 0 ? 'eager' : 'lazy'}
               draggable="false"
-              onLoad={(event) => {
-                const { naturalWidth, naturalHeight } = event.currentTarget
-                if (Math.abs(naturalWidth / naturalHeight - 1) > 0.02) {
-                  event.currentTarget.classList.remove('object-cover')
-                  event.currentTarget.classList.add('object-contain', 'bg-[#eceef3]')
-                }
-              }}
-              className="w-full h-full flex-none object-cover snap-center"
+              ref={(el) => measure(el, i)}
+              onLoad={(event) => measure(event.currentTarget, i)}
+              className={`w-full h-full flex-none snap-center ${
+                wholeShots[i] ? 'object-contain bg-[#eceef3]' : 'object-cover'
+              }`}
             />
           ))}
         </div>

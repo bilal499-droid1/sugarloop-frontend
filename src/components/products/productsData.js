@@ -57,6 +57,9 @@ import sizzlingFajita2 from '../../assets/category/fajita sandwich 2.webp'
 import passionFruit1 from '../../assets/category/passion fruit chiller 1.webp'
 import passionFruit2 from '../../assets/category/passion fruit chiller 2.webp'
 import wildBerry1 from '../../assets/category/wild berry chiller 1.webp'
+// Supplied as a 2:3 portrait like sssc1, so it keeps that ratio rather than being
+// squared off; the gallery switches to object-contain for non-square shots.
+import wildBerry2 from '../../assets/category/wild berry chiller 2.webp'
 // Shipped exactly as supplied (2:3 portrait, 3857x5786). ProductCard and
 // ProductGallery detect non-square photos and switch to object-contain, so this
 // is shown whole instead of being sliced to fill the square frame.
@@ -69,6 +72,7 @@ import caramelLatteImg from '../../assets/category/caramel latte.webp'
 import icedCappuccino2 from '../../assets/category/iced cappuccino 2.webp'
 import icedLatte1 from '../../assets/category/iced latte 1.webp'
 import icedCaramelLatte1 from '../../assets/category/iced caramel latte 1.webp'
+import icedSpanishLatte1 from '../../assets/category/iced spanish latte 1.webp'
 // Frappe studio shots live in src/assets (not category/), square 2194x2194 on white.
 import caramelFrappe1 from '../../assets/caramel.webp'
 import cookiesCreamFrappe1 from '../../assets/Cookies&Cream.webp'
@@ -135,7 +139,7 @@ export const PRODUCTS = withPrimaryImage([
   // ---- Drinks / Iced Coffee ----
   { id: 31, name: 'Iced Cappuccino', price: 599, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedCappuccino2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 32, name: 'Iced Latte', price: 599, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedLatte1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 33, name: 'Iced Spanish Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 33, name: 'Iced Spanish Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedSpanishLatte1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 34, name: 'Iced Caramel Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedCaramelLatte1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
 
   // ---- Drinks / Frappes (Blended Iced, 799) ----
@@ -147,7 +151,7 @@ export const PRODUCTS = withPrimaryImage([
 
   // ---- Drinks / Chillers + Extras ----
   { id: 40, name: 'Passion Fruit Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [passionFruit1, passionFruit2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 41, name: 'Wild Berry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [wildBerry1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 41, name: 'Wild Berry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [wildBerry1, wildBerry2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 42, name: 'Strawberry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [strawberryChillerSc, strawberryChiller2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 43, name: 'Water', price: 120, category: 'Drinks', type: 'Extras', size: 'sm', description: 'Chilled bottled water.', reviews: REVIEWS },
 ])

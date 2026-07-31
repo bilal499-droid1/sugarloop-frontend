@@ -4,6 +4,7 @@ import { FaShoppingCart } from 'react-icons/fa'
 import { useCart } from '../../context/CartContext'
 import MobileNavMenu from '../MobileNavMenu'
 import SugarLoopMark from '../SugarLoopMark'
+import plogo from '../../assets/Plogo.svg'
 
 // Steps up to 2xl only past 1536px - at 24px the five links plus the enlarged
 // logo need ~1393px, which forces the whole document to scroll sideways on
@@ -47,7 +48,14 @@ export default function ShopNav({ onImage = false }) {
   return (
     <nav className="relative z-[2] flex items-center justify-between gap-4 pt-5 px-5 pb-0 lg:pt-10 lg:px-[clamp(2rem,5vw,5.5rem)] lg:pb-0">
       <Link to="/" aria-label="Sugarloop home">
-        <SugarLoopMark className="h-[7.2rem] w-auto aspect-[432/288] block" />
+        {/* Plogo is a white mark, so it only works over the hero photo - the light
+            pages keep the blue wordmark or the logo would vanish into the page.
+            It carries its own 432x307.47 ratio, so height alone sizes it. */}
+        {onImage ? (
+          <img src={plogo} alt="Sugarloop" className="h-[7.2rem] w-auto block" />
+        ) : (
+          <SugarLoopMark className="h-[7.2rem] w-auto aspect-[432/288] block" />
+        )}
       </Link>
 
       <ul className="hidden lg:flex list-none gap-[clamp(1.5rem,3vw,3rem)] m-0 ml-auto p-0">
@@ -58,8 +66,12 @@ export default function ShopNav({ onImage = false }) {
         ))}
       </ul>
 
+      {/* Cart follows the links: white over the hero photo, accent on the light
+          pages where a white cart would disappear. */}
       <div
-        className="relative flex items-center text-accent text-[1.1rem] ml-auto mr-3 lg:ml-8 lg:text-[1.25rem]"
+        className={`relative flex items-center text-[1.1rem] ml-auto mr-3 lg:ml-8 lg:text-[1.25rem] ${
+          onImage ? 'text-white' : 'text-accent'
+        }`}
         aria-label={`Cart, ${count} items`}
       >
         <FaShoppingCart />
