@@ -114,7 +114,11 @@ export default function BuildYourBoxPage() {
                     onClick={() => handleRemoveSlot(i)}
                     aria-label={`Remove ${item.name} from box`}
                   >
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="w-full h-full block bg-[linear-gradient(135deg,#eef1f4_0%,#e3e8ec_100%)]" />
+                    )}
                     <span className="absolute inset-0 bg-black/50 text-white text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100">
                       Remove
                     </span>
@@ -173,11 +177,20 @@ export default function BuildYourBoxPage() {
                   disabled={isFull}
                 >
                   <div className="relative border border-border-light rounded-[6px] overflow-hidden aspect-square">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-                    />
+                    {/* A few catalogue items have no photo yet; ProductCard shows the same
+                        neutral tile for them rather than a broken <img>. */}
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                      />
+                    ) : (
+                      <span
+                        className="w-full h-full block bg-[linear-gradient(135deg,#eef1f4_0%,#e3e8ec_100%)]"
+                        aria-hidden="true"
+                      />
+                    )}
                     <span className="absolute top-2 right-2 w-[2.3rem] h-[2.3rem] rounded-full bg-accent text-white flex items-center justify-center gap-px shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
                       <span className="font-price italic font-semibold text-[0.5rem]">Rs</span>
                       <span className="font-price font-bold text-[0.85rem]">{product.price}</span>
