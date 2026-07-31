@@ -28,7 +28,7 @@ const DRINKS = [
 export default function DrinksStrip() {
   return (
     <div
-      className="grid grid-cols-2 sm:grid-cols-4 gap-[clamp(0.5rem,1.2vw,1rem)] leading-[0] bg-white"
+      className="grid grid-cols-2 sm:grid-cols-4 leading-[0] bg-white"
       aria-label="Featured drinks"
     >
       {DRINKS.map((drink, i) => (
