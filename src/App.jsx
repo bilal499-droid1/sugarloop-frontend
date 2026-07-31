@@ -5,6 +5,7 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import CorporateGiftingPage from './pages/CorporateGiftingPage'
 import FaqPage from './pages/FaqPage'
 import BuildYourBoxPage from './pages/BuildYourBoxPage'
+import NotFoundPage from './pages/NotFoundPage'
 import ScrollToTop from './components/ScrollToTop'
 import PageLoader from './components/PageLoader'
 import { CartProvider } from './context/CartContext'
@@ -23,6 +24,7 @@ export default function App() {
               <Route path="/corporate-gifting" element={<CorporateGiftingPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/build-your-box" element={<BuildYourBoxPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
         </PageLoader>
