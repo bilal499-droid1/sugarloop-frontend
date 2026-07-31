@@ -127,10 +127,8 @@ export const PRODUCTS = withPrimaryImage([
 
   // ---- Sandwiches ----
   { id: 22, name: 'Signature Chicken', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [signatureChicken1], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 23, name: 'Classic Scrambled Egg', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', description: DESCRIPTION, reviews: REVIEWS },
   { id: 24, name: 'Smoked Tikka Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [smokedTikka1, smokedTikka2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 25, name: 'Sizzling Fajita', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [sizzlingFajita1, sizzlingFajita2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 26, name: 'Signature Beef Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Drinks / Hot Coffee ----
   { id: 27, name: 'Cappuccino', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [cappuccinoImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
