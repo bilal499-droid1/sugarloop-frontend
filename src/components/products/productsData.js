@@ -60,9 +60,9 @@ import wildBerry1 from '../../assets/category/wild berry chiller 1.webp'
 // Supplied as 2:3 portraits, square-cropped from the top so they fill the gallery
 // frame edge to edge like the other chiller shots instead of sitting in bars.
 import wildBerry2 from '../../assets/category/wild berry chiller 2.webp'
-// Shipped exactly as supplied (2:3 portrait, 3857x5786). ProductCard and
-// ProductGallery detect non-square photos and switch to object-contain, so this
-// is shown whole instead of being sliced to fill the square frame.
+// Was a 2:3 portrait shown whole, which left it in bars while the square shots
+// beside it filled the frame. Cropped square about the centre - the glass sits
+// mid-frame, so that keeps it from rim to base where a top crop cut the base off.
 import strawberryChillerSc from '../../assets/sssc1.webp'
 import strawberryChiller2 from '../../assets/category/strawberry chiller 2.webp'
 import cappuccinoImg from '../../assets/category/cappuccino.webp'
