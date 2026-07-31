@@ -41,9 +41,13 @@ export default function CorporateGiftingPage() {
             overflows into space it was wasting - and ShopNav carries z-[2], so the
             transparent overlap never sits above the nav. The cap lives on the
             <picture> so margin percentages, which resolve against the parent's
-            width, always match the image's own width. */}
+            width, always match the image's own width.
+            Desktop renders at 80% (w-4/5, cap 70rem -> 56rem). Scaling the
+            <picture> rather than the <img> is what keeps those percentage
+            margins in step: shrinking the image alone would leave them sized
+            against a parent that had not moved, and the bands would reappear. */}
         <div className="order-first w-full aspect-[393/241] mb-2 lg:order-1 lg:flex-1 lg:min-w-0 lg:aspect-auto lg:h-auto lg:mb-0">
-          <picture className="block w-full h-full lg:h-auto lg:max-w-[70rem] lg:ml-auto">
+          <picture className="block w-full h-full lg:h-auto lg:w-4/5 lg:max-w-[56rem] lg:ml-auto">
             <source media="(min-width: 1024px)" srcSet={giftBoxDesktop} />
             <img
               src={giftBoxMobile}
