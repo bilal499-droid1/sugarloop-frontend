@@ -11,9 +11,9 @@ import plogo from '../../assets/Plogo.svg'
 // 1024-1280 laptops.
 const navLinkBase = 'no-underline text-base xl:text-xl 2xl:text-2xl'
 
-// 900 is the heaviest Satoshi face, so the extra weight comes from a same-color
-// stroke thickening the glyphs - same trick MobileNavMenu uses for its links.
-const navLinkClass = `${navLinkBase} text-accent font-black [-webkit-text-stroke:0.6px_#587ea2]`
+// Medium to match the on-image variant: black plus a same-color stroke thickening
+// the glyphs read far heavier than the rest of these pages.
+const navLinkClass = `${navLinkBase} text-accent font-medium`
 
 // onImage variant: the links sit on the hero photo rather than a light page, so
 // no stroke - the weight is what the design asks for, not a legibility crutch.
@@ -28,7 +28,9 @@ const NAV_ITEMS = [
   { label: 'Build a Box', to: '/build-your-box' },
   { label: 'Corporate Gifting', to: '/corporate-gifting' },
   { label: 'FAQ', to: '/faq' },
-  { label: 'About us', href: '/#about' },
+  // `to` rather than `href` so the router handles it: a plain anchor reloads the
+  // whole app, and ScrollToTop only sees the hash on a client-side navigation.
+  { label: 'About us', to: '/#about' },
 ]
 
 function ShopNavLink({ item, className, onClick }) {

@@ -8,8 +8,11 @@ const STATS = [
 
 export default function About() {
   return (
+    // id is the target for the "About us" nav links, which point at /#about.
+    // Without it the hash matched nothing and the browser just stayed at the top.
     <section
-      className="bg-bg-section flex flex-col gap-[clamp(1.5rem,4vw,2.5rem)] py-[clamp(2.5rem,6vw,5rem)] px-[clamp(1.5rem,5vw,6rem)]"
+      id="about"
+      className="bg-bg-section flex flex-col gap-[clamp(1.5rem,4vw,2.5rem)] py-[clamp(2.5rem,6vw,5rem)] px-[clamp(1.5rem,5vw,6rem)] scroll-mt-4"
       aria-label="About us"
     >
       <div className="grid grid-cols-[1.3fr_1fr] max-[900px]:grid-cols-1 gap-[clamp(2rem,5vw,4rem)] items-start">
