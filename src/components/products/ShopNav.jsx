@@ -19,6 +19,10 @@ const navLinkClass = `${navLinkBase} text-accent font-black [-webkit-text-stroke
 // no stroke - the weight is what the design asks for, not a legibility crutch.
 const navLinkOnImageClass = `${navLinkBase} text-white font-medium`
 
+// The mark reads oversized on a phone, where it takes a real share of the width.
+// 5.76rem is 80% of the desktop 7.2rem, which is unchanged from lg up.
+const logoSizeClass = 'h-[5.76rem] lg:h-[7.2rem]'
+
 const NAV_ITEMS = [
   { label: 'Products', to: '/products' },
   { label: 'Build a Box', to: '/build-your-box' },
@@ -52,9 +56,9 @@ export default function ShopNav({ onImage = false }) {
             pages keep the blue wordmark or the logo would vanish into the page.
             It carries its own 432x307.47 ratio, so height alone sizes it. */}
         {onImage ? (
-          <img src={plogo} alt="Sugarloop" className="h-[7.2rem] w-auto block" />
+          <img src={plogo} alt="Sugarloop" className={`${logoSizeClass} w-auto block`} />
         ) : (
-          <SugarLoopMark className="h-[7.2rem] w-auto aspect-[432/288] block" />
+          <SugarLoopMark className={`${logoSizeClass} w-auto aspect-[432/288] block`} />
         )}
       </Link>
 
@@ -89,9 +93,14 @@ export default function ShopNav({ onImage = false }) {
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((open) => !open)}
       >
-        <span className="block h-[2px] w-full bg-black rounded-[1px]" />
-        <span className="block h-[2px] w-full bg-black rounded-[1px]" />
-        <span className="block h-[2px] w-full bg-black rounded-[1px]" />
+        {/* Same switch as the links and cart: white over the hero photo, black on
+            the light pages where white bars would be invisible. */}
+        {[0, 1, 2].map((bar) => (
+          <span
+            key={bar}
+            className={`block h-[2px] w-full rounded-[1px] ${onImage ? 'bg-white' : 'bg-black'}`}
+          />
+        ))}
       </button>
 
       {/* variant="light" so this drawer matches the one the home page hero opens */}
