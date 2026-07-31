@@ -57,8 +57,8 @@ import sizzlingFajita2 from '../../assets/category/fajita sandwich 2.webp'
 import passionFruit1 from '../../assets/category/passion fruit chiller 1.webp'
 import passionFruit2 from '../../assets/category/passion fruit chiller 2.webp'
 import wildBerry1 from '../../assets/category/wild berry chiller 1.webp'
-// Supplied as a 2:3 portrait like sssc1, so it keeps that ratio rather than being
-// squared off; the gallery switches to object-contain for non-square shots.
+// Supplied as 2:3 portraits, square-cropped from the top so they fill the gallery
+// frame edge to edge like the other chiller shots instead of sitting in bars.
 import wildBerry2 from '../../assets/category/wild berry chiller 2.webp'
 // Shipped exactly as supplied (2:3 portrait, 3857x5786). ProductCard and
 // ProductGallery detect non-square photos and switch to object-contain, so this
