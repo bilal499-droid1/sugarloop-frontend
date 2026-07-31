@@ -49,7 +49,10 @@ export default function MenuCarousel({ title = 'MENU', linkToCategory = true }) 
         className="grid grid-cols-4 gap-[clamp(0.75rem,2vw,1.5rem)] max-w-[1100px] mx-auto max-[720px]:flex max-[720px]:max-w-none max-[720px]:overflow-x-auto max-[720px]:snap-x max-[720px]:snap-mandatory max-[720px]:-mx-[clamp(1.5rem,5vw,4rem)] max-[720px]:px-[clamp(1.5rem,5vw,4rem)] max-[720px]:pb-2 max-[720px]:[scrollbar-width:none] max-[720px]:[&::-webkit-scrollbar]:hidden"
       >
         {ITEMS.map((item, i) => {
-          const cardClass = `bg-none border-[1.5px] rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
+          // p-[0.5rem] insets the photo from the border so the tile reads as a card
+          // rather than a bare image; the inner radius is stepped down from the
+          // outer one by roughly that padding so the two curves stay concentric.
+          const cardClass = `bg-none border-[1.5px] rounded-[20px] p-[0.5rem] cursor-pointer flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
             i === activeIndex ? 'border-accent' : 'border-transparent'
           }`
           const cardContent = (
@@ -57,9 +60,9 @@ export default function MenuCarousel({ title = 'MENU', linkToCategory = true }) 
               <img
                 src={item.image}
                 alt={item.label}
-                className="w-full aspect-[601/888] object-cover bg-[#111]"
+                className="w-full aspect-[601/888] object-cover bg-[#111] rounded-[14px]"
               />
-              <span className="bg-white text-black font-bold text-[0.85rem] py-[0.6rem] text-center">
+              <span className="bg-white text-black font-bold text-[0.85rem] pt-[0.65rem] pb-[0.15rem] text-center">
                 {item.label}
               </span>
             </>

@@ -12,7 +12,7 @@ export default function HomePage() {
       <MenuCarousel title="Featured Products" linkToCategory={false} />
       <Marquee short />
       <About />
-      <Marquee />
+      <Marquee short />
       <DrinksStrip />
       <MenuCarousel />
       <Footer />
