@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaArrowRight } from 'react-icons/fa'
 import donutImg from '../../assets/a1.webp'
 import croissantImg from '../../assets/a5.webp'
 import drinkImg from '../../assets/a3.webp'
@@ -65,8 +64,10 @@ export default function MenuCarousel({ title = 'MENU', featured = false }) {
           <Link
             key={item.to}
             to={item.to}
-            className={`group bg-none border-[1.5px] rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
-              i === activeIndex ? 'border-accent' : 'border-transparent'
+            // Border stays at 1.5px even when transparent so the featured row lines
+            // up with the category row rather than gaining 3px of width.
+            className={`bg-none border-[1.5px] rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
+              !featured && i === activeIndex ? 'border-accent' : 'border-transparent'
             }`}
             onClick={() => setActiveIndex(i)}
           >
@@ -79,16 +80,8 @@ export default function MenuCarousel({ title = 'MENU', featured = false }) {
                 featured ? 'aspect-square' : 'aspect-[601/888]'
               }`}
             />
-            <span className="bg-white text-black font-bold text-[0.85rem] py-[0.6rem] px-3 flex items-center justify-center gap-2">
+            <span className="bg-white text-black font-bold text-[0.85rem] py-[0.6rem] px-3 text-center">
               {item.label}
-              {featured && (
-                <span
-                  aria-hidden="true"
-                  className="w-[1.4rem] h-[1.4rem] shrink-0 rounded-full bg-accent text-white flex items-center justify-center text-[0.6rem] transition-transform duration-300 ease-out group-hover:translate-x-1"
-                >
-                  <FaArrowRight />
-                </span>
-              )}
             </span>
           </Link>
         ))}
