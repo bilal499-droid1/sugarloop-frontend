@@ -6,29 +6,40 @@ import MobileNavMenu from '../MobileNavMenu'
 import DesktopMenuDropdown from '../DesktopMenuDropdown'
 import SugarLoopMark from '../SugarLoopMark'
 
+// A shared reference, not a copy: it heads both the pill nav and the hamburger,
+// and MOBILE_NAV_ITEMS de-dupes by identity so the drawer lists it once.
+const HOME_ITEM = { label: 'Home', to: '/#home' }
+
+// `to` rather than `href` on the hash links so the router handles them: a plain
+// anchor reloads the whole app, and ScrollToTop only sees the hash on a
+// client-side navigation. /#home is the hero section, i.e. the page top, and
+// /#contact is the footer.
 const NAV_ITEMS = [
-  { label: 'Home', href: '#home' },
+  HOME_ITEM,
   { label: 'Menu', to: '/products' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Contact', to: '/#contact' },
 ]
 
 // Surfaced via the desktop-only hamburger next to the pill nav, so the rest of
 // the site stays reachable from the homepage without crowding Home/Menu/Contact.
+// Home leads it anyway: a hamburger that can't take you back to the top reads as
+// incomplete, even though the pill nav beside it carries the same link.
 const MORE_PAGES = [
+  HOME_ITEM,
   { label: 'Products', to: '/products' },
   { label: 'Build a Box', to: '/build-your-box' },
   { label: 'Corporate Gifting', to: '/corporate-gifting' },
   { label: 'FAQ', to: '/faq' },
-  { label: 'About us', href: '/#about' },
+  { label: 'About us', to: '/#about' },
 ]
 
 // MORE_PAGES rides the desktop-only hamburger, so on a phone those pages had no
 // route in at all - the drawer carried Home/Menu/Contact and nothing else. It gets
-// both lists instead. Products is dropped from the tail because Menu is already
-// pointing at /products.
+// both lists instead, minus the entries NAV_ITEMS already covers: Home outright,
+// and Products because Menu is already pointing at /products.
 const MOBILE_NAV_ITEMS = [
   ...NAV_ITEMS,
-  ...MORE_PAGES.filter((item) => item.to !== '/products'),
+  ...MORE_PAGES.filter((item) => !NAV_ITEMS.includes(item) && item.to !== '/products'),
 ]
 
 const navLinkClass =
@@ -60,6 +71,7 @@ export default function Hero() {
   // cropped by bg-cover; min-h only kicks in from sm up for the same reason.
   return (
     <section
+      id="home"
       className="relative w-full aspect-[1638/1959] sm:aspect-[1920/1080] sm:min-h-[500px] overflow-hidden flex flex-col justify-between py-[clamp(1.5rem,3vw,3.4rem)] px-[clamp(1.5rem,5vw,5.3rem)]"
       aria-label="Hero"
     >

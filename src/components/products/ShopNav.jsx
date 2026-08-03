@@ -33,6 +33,14 @@ const NAV_ITEMS = [
   { label: 'About us', to: '/#about' },
 ]
 
+// Home is drawer-only: the desktop row sits right beside the logo, which already
+// links home, but the drawer covers the logo and needs its own way back. Plain '/'
+// rather than '/#home' - the path change alone makes ScrollToTop reset to the top.
+const MOBILE_NAV_ITEMS = [
+  { label: 'Home', to: '/' },
+  ...NAV_ITEMS.filter((item) => item.label !== 'Products'),
+]
+
 function ShopNavLink({ item, className, onClick }) {
   return item.to ? (
     <Link to={item.to} className={className} onClick={onClick}>
@@ -108,7 +116,7 @@ export default function ShopNav({ onImage = false }) {
       {/* variant="light" so this drawer matches the one the home page hero opens */}
       <MobileNavMenu
         open={menuOpen}
-        items={NAV_ITEMS.filter((item) => item.label !== 'Products')}
+        items={MOBILE_NAV_ITEMS}
         onClose={() => setMenuOpen(false)}
         variant="light"
       />

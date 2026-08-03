@@ -39,8 +39,11 @@ function FooterLink({ link }) {
 }
 
 export default function Footer() {
+  // id="contact" is the hero nav's Contact target: the KEEP IN TOUCH column below
+  // is the only contact detail on the site, so the link lands on the footer itself.
   return (
     <footer
+      id="contact"
       className="bg-accent-dark py-[clamp(2.5rem,6vw,4rem)] px-[clamp(1.5rem,5vw,4rem)]"
       aria-label="Footer"
     >
