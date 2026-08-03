@@ -10,23 +10,27 @@
 // Each product carries an `images` array (shot 1 first). `image` is derived from
 // `images[0]` for the grid/card views; the detail page scrolls through the rest.
 import chocoholic1 from '../../assets/category/chocoholic 1.webp'
+import chocoholic2 from '../../assets/chocoholic2.webp'
 import chocoholic3 from '../../assets/category/chcoholic 3.webp'
 import lotus1 from '../../assets/category/lotus 1.webp'
+import lotus2 from '../../assets/lotus2.webp'
 import lotus3 from '../../assets/category/lotus 3.webp'
+import nutella1 from '../../assets/nutella1.webp'
 import nutella2 from '../../assets/category/nutella 2.webp'
 import nutella3 from '../../assets/category/nutella 3.webp'
 import coffeeDonut1 from '../../assets/category/coffee 1.webp'
 import coffeeDonut2 from '../../assets/category/coffee 2.webp'
+import coffeeDonut3 from '../../assets/coffee3.webp'
 import saltedCaramel1 from '../../assets/category/salted caramel 1.webp'
+import saltedCaramel2 from '../../assets/saltedcaramel2.webp'
 import saltedCaramel3 from '../../assets/category/salted caramel 3.webp'
 import bostonCreme1 from '../../assets/category/boston creme 1.webp'
 import bostonCreme2 from '../../assets/category/boston creme 2.webp'
 import bostonCreme3 from '../../assets/category/boston creme 3.webp'
-import butterCream1 from '../../assets/category/butter cream 1.webp'
-import butterCream2 from '../../assets/category/butter cream 2.webp'
 import mixBerry1 from '../../assets/category/mix berry 1.webp'
 import mixBerry2 from '../../assets/category/mix berry 2.webp'
 import mixBerry3 from '../../assets/category/mix berry 3.webp'
+import brownieFilled1 from '../../assets/browniefilled1.webp'
 import brownieFilled2 from '../../assets/category/brownie filled 2.webp'
 import mango1 from '../../assets/category/mango 1.webp'
 import mango2 from '../../assets/category/mango 2.webp'
@@ -34,6 +38,7 @@ import classicOreo1 from '../../assets/category/classic oreo 1.webp'
 import classicOreo2 from '../../assets/category/classic oreo 2.webp'
 import chocolateSprinkle1 from '../../assets/category/chocolate sprinkle 1.webp'
 import chocolateSprinkle2 from '../../assets/category/chocolate sprinkle 2.webp'
+import classicChocolate1 from '../../assets/classicchocolate1.webp'
 import classicChocolate2 from '../../assets/category/classic chocolate 2.webp'
 import whiteChocolate1 from '../../assets/category/white chocolate 1.webp'
 import whiteChocolate2 from '../../assets/category/whitechocolate 2.webp'
@@ -47,6 +52,18 @@ import chocolateCroissant3 from '../../assets/category/chocolate croissant 3 (2)
 import butterCreamCroissant1 from '../../assets/category/butter cream croissant 1.webp'
 import butterCreamCroissant2 from '../../assets/category/buttercream croissant 2.webp'
 import butterCroissant1 from '../../assets/category/butter croissant 1.webp'
+import butterCroissant2 from '../../assets/buttercroissant2.webp'
+import snicker1 from '../../assets/crafted/snicker-1.webp'
+import snickers2 from '../../assets/crafted/snickers-2.webp'
+import tiramisu1 from '../../assets/crafted/tiramisu-1.webp'
+import tiramisu2 from '../../assets/crafted/tiramisu-2.webp'
+import tiramisu3 from '../../assets/crafted/tiramisu-3.webp'
+import kinder1 from '../../assets/crafted/kinder-1.webp'
+import kinder2 from '../../assets/crafted/kinder-2.webp'
+import kinder3 from '../../assets/crafted/kinder-3.webp'
+import kitkat1 from '../../assets/crafted/kitkat-1.webp'
+import kitkat2 from '../../assets/crafted/kitkat-2.webp'
+import kitkat3 from '../../assets/crafted/kitkat-3.webp'
 import bakedCinnamon1 from '../../assets/category/baked cinnamo 1.webp'
 import bakedCinnamon2 from '../../assets/category/baked cinnamon 2.webp'
 import signatureChicken1 from '../../assets/category/signature chicken 1.webp'
@@ -81,6 +98,7 @@ import cookiesCreamFrappe1 from '../../assets/Cookies&Cream.webp'
 import hazelnutFrappe1 from '../../assets/Hazlenut.webp'
 import doubleChocolateFrappe1 from '../../assets/DoubleChocolate.webp'
 import mochaFrappe1 from '../../assets/Mocha.webp'
+import waterImg from '../../assets/water.webp'
 
 export const CATEGORIES = ['Croissants', 'Donuts', 'Drinks', 'Sandwiches']
 
@@ -100,29 +118,34 @@ const withPrimaryImage = (products) =>
 
 export const PRODUCTS = withPrimaryImage([
   // ---- Donuts / Signature (299) ----
-  { id: 1, name: 'Chocoholic', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [chocoholic1, chocoholic3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 2, name: 'Lotus', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [lotus1, lotus3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 3, name: 'Nutella', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [nutella2, nutella3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 4, name: 'Coffee', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [coffeeDonut1, coffeeDonut2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 5, name: 'Salted Caramel', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [saltedCaramel1, saltedCaramel3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 1, name: 'Chocoholic', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [chocoholic1, chocoholic2, chocoholic3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 2, name: 'Lotus', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [lotus1, lotus2, lotus3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 3, name: 'Nutella', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [nutella1, nutella2, nutella3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 4, name: 'Coffee', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [coffeeDonut1, coffeeDonut2, coffeeDonut3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 5, name: 'Salted Caramel', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [saltedCaramel1, saltedCaramel2, saltedCaramel3], description: DESCRIPTION, reviews: REVIEWS },
   { id: 6, name: 'Boston Creme', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [bostonCreme1, bostonCreme2, bostonCreme3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 7, name: 'Butter Cream', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [butterCream1, butterCream2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 8, name: 'Mix Berry', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mixBerry1, mixBerry2, mixBerry3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 9, name: 'Brownie Filled', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [brownieFilled2], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 9, name: 'Brownie Filled', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [brownieFilled1, brownieFilled2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 10, name: 'Mango', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mango1, mango2], description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Donuts / Classic ----
   { id: 12, name: 'Classic Oreo', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicOreo1, classicOreo2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 13, name: 'Chocolate Sprinkle', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateSprinkle1, chocolateSprinkle2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 14, name: 'Classic Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicChocolate2], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 14, name: 'Classic Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicChocolate1, classicChocolate2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 15, name: 'White Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [whiteChocolate1, whiteChocolate2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 16, name: 'Chocolate Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateGlazed1, chocolateGlazed2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 17, name: 'Vanilla Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [vanillaGlazed1, vanillaGlazed2], description: DESCRIPTION, reviews: REVIEWS },
 
+  // ---- Donuts / Crafted Donuts (429) ----
+  { id: 44, name: 'Snickers', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [snicker1, snickers2], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 45, name: 'Tiramisu Creme', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [tiramisu1, tiramisu2, tiramisu3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 46, name: 'Kinder Cream', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [kinder1, kinder2, kinder3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 47, name: 'KitKat Crunch', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [kitkat1, kitkat2, kitkat3], description: DESCRIPTION, reviews: REVIEWS },
+
   // ---- Fresh Bakes ----
   { id: 18, name: 'Chocolate Croissant', price: 379, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [chocolateCroissant1, chocolateCroissant2, chocolateCroissant3], description: DESCRIPTION, reviews: REVIEWS },
   { id: 19, name: 'Butter Cream Croissant', price: 370, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCreamCroissant1, butterCreamCroissant2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 20, name: 'Butter Croissant', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCroissant1], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 20, name: 'Butter Croissant', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCroissant1, butterCroissant2], description: DESCRIPTION, reviews: REVIEWS },
   { id: 21, name: 'Baked Cinnamon', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [bakedCinnamon1, bakedCinnamon2], description: DESCRIPTION, reviews: REVIEWS },
 
   // ---- Sandwiches ----
@@ -153,5 +176,5 @@ export const PRODUCTS = withPrimaryImage([
   { id: 40, name: 'Passion Fruit Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [passionFruit1, passionFruit2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 41, name: 'Wild Berry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [wildBerry1, wildBerry2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
   { id: 42, name: 'Strawberry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [strawberryChillerSc, strawberryChiller2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 43, name: 'Water', price: 120, category: 'Drinks', type: 'Extras', size: 'sm', description: 'Chilled bottled water.', reviews: REVIEWS },
+  { id: 43, name: 'Water', price: 120, category: 'Drinks', type: 'Extras', size: 'sm', images: [waterImg], description: 'Chilled bottled water.', reviews: REVIEWS },
 ])

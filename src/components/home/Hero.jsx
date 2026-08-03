@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { FaShoppingCart } from 'react-icons/fa'
 import heroBg from '../../assets/bgh1.webp'
 import mobileHeroBg from '../../assets/category/GDRGG-04.webp'
+import { useCart } from '../../context/CartContext'
 import MobileNavMenu from '../MobileNavMenu'
 import DesktopMenuDropdown from '../DesktopMenuDropdown'
 import SugarLoopMark from '../SugarLoopMark'
@@ -64,6 +66,22 @@ function NavLink({ item, className, onClick }) {
   )
 }
 
+// Always white: unlike ShopNav's onImage toggle, the hero photo is the only
+// background this nav ever sits on.
+function CartLink({ className }) {
+  const { count } = useCart()
+  return (
+    <Link to="/cart" className={`relative flex items-center text-white ${className}`} aria-label={`Cart, ${count} items`}>
+      <FaShoppingCart />
+      {count > 0 && (
+        <span className="absolute -top-2 -right-[0.6rem] min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-accent-dark text-white font-display font-bold text-[0.65rem] flex items-center justify-center">
+          {count}
+        </span>
+      )}
+    </Link>
+  )
+}
+
 export default function Hero() {
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -101,17 +119,20 @@ export default function Hero() {
       <div className="relative z-[2] w-full">
         <div className="flex sm:hidden items-center justify-between">
           <SugarLoopMark className="h-[4.4rem] w-auto aspect-[432/288]" />
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-label="Toggle menu"
-            aria-expanded={menuOpen}
-            className="flex flex-col justify-center gap-[5px] w-7 h-6 bg-none border-none cursor-pointer p-0"
-          >
-            <span className="block h-[2px] w-full bg-white rounded-[1px]" />
-            <span className="block h-[2px] w-full bg-white rounded-[1px]" />
-            <span className="block h-[2px] w-full bg-white rounded-[1px]" />
-          </button>
+          <div className="flex items-center gap-5">
+            <CartLink className="text-[1.3rem]" />
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              className="flex flex-col justify-center gap-[5px] w-7 h-6 bg-none border-none cursor-pointer p-0"
+            >
+              <span className="block h-[2px] w-full bg-white rounded-[1px]" />
+              <span className="block h-[2px] w-full bg-white rounded-[1px]" />
+              <span className="block h-[2px] w-full bg-white rounded-[1px]" />
+            </button>
+          </div>
         </div>
 
         <MobileNavMenu
@@ -138,7 +159,7 @@ export default function Hero() {
             <DesktopMenuDropdown items={MORE_PAGES} />
           </div>
 
-          <div aria-hidden="true" />
+          <CartLink className="text-[1.4rem] justify-self-end" />
         </div>
       </div>
 

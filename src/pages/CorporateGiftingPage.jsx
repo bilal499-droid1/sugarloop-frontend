@@ -6,6 +6,8 @@ import giftBoxMobile from '../assets/Rectangle 1131.webp'
 
 const FIELDS = ['Name', 'Phone', 'Email', 'Company', 'Subject']
 
+const CONTACT_EMAIL = 'sugarlooppk@gmail.com'
+
 export default function CorporateGiftingPage() {
   const [form, setForm] = useState({ Name: '', Phone: '', Email: '', Company: '', Subject: '' })
   const [submitted, setSubmitted] = useState(false)
@@ -14,8 +16,19 @@ export default function CorporateGiftingPage() {
     setForm((current) => ({ ...current, [field]: e.target.value }))
   }
 
+  // There's no backend to post to, so the enquiry is handed to the visitor's own
+  // mail client with the fields already filled in - they still press send. Nothing
+  // leaves the browser on its own, so a submit can't be silently lost either.
   const handleSubmit = (e) => {
     e.preventDefault()
+
+    const subject = form.Subject.trim() || 'Corporate gifting enquiry'
+    const body = FIELDS.map((field) => `${field}: ${form[field].trim()}`).join('\n')
+
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`
+
     setSubmitted(true)
   }
 
@@ -71,7 +84,13 @@ export default function CorporateGiftingPage() {
           </p>
 
           {submitted ? (
-            <p className="font-display font-medium text-accent-dark">Thanks! We'll be in touch shortly.</p>
+            <p className="font-display font-medium text-accent-dark">
+              Your email is ready to send in your mail app — press send and we'll be in
+              touch shortly. Not opening?{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="underline">
+                {CONTACT_EMAIL}
+              </a>
+            </p>
           ) : (
             <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
               {FIELDS.map((field) => (

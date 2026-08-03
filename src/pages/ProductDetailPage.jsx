@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { FaStar, FaRegStar } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
 import ProductCard from '../components/products/ProductCard'
@@ -21,6 +21,7 @@ function Stars({ rating }) {
 
 export default function ProductDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const product = PRODUCTS.find((p) => String(p.id) === id)
   const [qty, setQty] = useState(1)
   const [justAdded, setJustAdded] = useState(false)
@@ -47,6 +48,11 @@ export default function ProductDetailPage() {
     addItem(product, qty)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1500)
+  }
+
+  const handleCheckout = () => {
+    addItem(product, qty)
+    navigate('/cart')
   }
 
   return (
@@ -97,7 +103,7 @@ export default function ProductDetailPage() {
           <button
             type="button"
             className="w-full h-12 border-none rounded-[4px] font-display font-bold text-[0.95rem] cursor-pointer flex items-center justify-center gap-2 mb-3 bg-[#2a2a2a] text-white lg:max-w-[420px]"
-            onClick={handleAddToCart}
+            onClick={handleCheckout}
           >
             Proceed to checkout
           </button>

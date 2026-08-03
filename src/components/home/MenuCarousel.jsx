@@ -1,18 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { FaArrowRight } from 'react-icons/fa'
 import donutImg from '../../assets/a1.webp'
 import croissantImg from '../../assets/a5.webp'
 import drinkImg from '../../assets/a3.webp'
 import sandwichImg from '../../assets/a2.webp'
+import { PRODUCTS } from '../products/productsData'
 
-const ITEMS = [
-  { label: 'Donuts', image: donutImg },
-  { label: 'Croissants', image: croissantImg },
-  { label: 'Drinks', image: drinkImg },
-  { label: 'Sandwiches', image: sandwichImg },
+const CATEGORY_ITEMS = [
+  { label: 'Donuts', image: donutImg, to: '/products?category=Donuts' },
+  { label: 'Croissants', image: croissantImg, to: '/products?category=Croissants' },
+  { label: 'Drinks', image: drinkImg, to: '/products?category=Drinks' },
+  { label: 'Sandwiches', image: sandwichImg, to: '/products?category=Sandwiches' },
 ]
 
-export default function MenuCarousel({ title = 'MENU', linkToCategory = true }) {
+// One pick per category, by catalogue id: Chocolate Croissant, Mango, Mocha
+// Frappe, Sizzling Fajita. Name and photo are read from PRODUCTS rather than
+// duplicated, so a rename or a new photo flows through here on its own; filtered
+// so pulling an item from the catalogue drops it here instead of crashing.
+const FEATURED_ITEMS = [18, 10, 39, 25]
+  .map((id) => PRODUCTS.find((product) => product.id === id))
+  .filter(Boolean)
+  .map((product) => ({
+    label: product.name,
+    image: product.image,
+    to: `/products/${product.id}`,
+  }))
+
+// featured swaps the four category tiles for individual products, each linking to
+// its own detail page instead of a filtered listing.
+export default function MenuCarousel({ title = 'MENU', featured = false }) {
+  const items = featured ? FEATURED_ITEMS : CATEGORY_ITEMS
   const [activeIndex, setActiveIndex] = useState(1) // center card highlighted, matches Figma sample
   const trackRef = useRef(null)
 
@@ -30,11 +48,6 @@ export default function MenuCarousel({ title = 'MENU', linkToCategory = true }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const selectItem = (i) => {
-    setActiveIndex(i)
-    centerCard(i, 'smooth')
-  }
-
   return (
     <section
       className="py-[clamp(2.5rem,6vw,4rem)] px-[clamp(1.5rem,5vw,4rem)] bg-white text-center"
@@ -48,40 +61,37 @@ export default function MenuCarousel({ title = 'MENU', linkToCategory = true }) 
         ref={trackRef}
         className="grid grid-cols-4 gap-[clamp(0.75rem,2vw,1.5rem)] max-w-[1100px] mx-auto max-[720px]:flex max-[720px]:max-w-none max-[720px]:overflow-x-auto max-[720px]:snap-x max-[720px]:snap-mandatory max-[720px]:-mx-[clamp(1.5rem,5vw,4rem)] max-[720px]:px-[clamp(1.5rem,5vw,4rem)] max-[720px]:pb-2 max-[720px]:[scrollbar-width:none] max-[720px]:[&::-webkit-scrollbar]:hidden"
       >
-        {ITEMS.map((item, i) => {
-          const cardClass = `bg-none border-[1.5px] rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
-            i === activeIndex ? 'border-accent' : 'border-transparent'
-          }`
-          const cardContent = (
-            <>
-              <img
-                src={item.image}
-                alt={item.label}
-                className="w-full aspect-[601/888] object-cover bg-[#111]"
-              />
-              <span className="bg-white text-black font-bold text-[0.85rem] py-[0.6rem] text-center">
-                {item.label}
-              </span>
-            </>
-          )
-
-          // Without linkToCategory the card is a plain selector: it highlights and
-          // centers itself but never routes away from the page.
-          return linkToCategory ? (
-            <Link
-              key={i}
-              to={`/products?category=${encodeURIComponent(item.label)}`}
-              className={cardClass}
-              onClick={() => setActiveIndex(i)}
-            >
-              {cardContent}
-            </Link>
-          ) : (
-            <button key={i} type="button" className={cardClass} onClick={() => selectItem(i)}>
-              {cardContent}
-            </button>
-          )
-        })}
+        {items.map((item, i) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={`group bg-none border-[1.5px] rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
+              i === activeIndex ? 'border-accent' : 'border-transparent'
+            }`}
+            onClick={() => setActiveIndex(i)}
+          >
+            {/* Catalogue photos are square, so the tall category ratio would crop the
+                product itself; featured keeps them square and uncut. */}
+            <img
+              src={item.image}
+              alt={item.label}
+              className={`w-full object-cover bg-[#111] ${
+                featured ? 'aspect-square' : 'aspect-[601/888]'
+              }`}
+            />
+            <span className="bg-white text-black font-bold text-[0.85rem] py-[0.6rem] px-3 flex items-center justify-center gap-2">
+              {item.label}
+              {featured && (
+                <span
+                  aria-hidden="true"
+                  className="w-[1.4rem] h-[1.4rem] shrink-0 rounded-full bg-accent text-white flex items-center justify-center text-[0.6rem] transition-transform duration-300 ease-out group-hover:translate-x-1"
+                >
+                  <FaArrowRight />
+                </span>
+              )}
+            </span>
+          </Link>
+        ))}
       </div>
     </section>
   )

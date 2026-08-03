@@ -217,7 +217,11 @@ export default function FaqPage() {
         </div>
       </section>
 
+      {/* id="locations" is the footer's Our Locations target: this branch list is
+          the site's locations content, so the link lands here rather than on the
+          top of the FAQ. */}
       <section
+        id="locations"
         className="py-[clamp(2.5rem,6vw,4rem)] px-5 bg-[#fafafa] text-center"
         aria-label="Find Sugarloop"
       >

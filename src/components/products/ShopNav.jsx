@@ -82,7 +82,8 @@ export default function ShopNav({ onImage = false }) {
 
       {/* Cart follows the links: white over the hero photo, accent on the light
           pages where a white cart would disappear. */}
-      <div
+      <Link
+        to="/cart"
         className={`relative flex items-center text-[1.1rem] ml-auto mr-3 lg:ml-8 lg:text-[1.25rem] ${
           onImage ? 'text-white' : 'text-accent'
         }`}
@@ -94,7 +95,7 @@ export default function ShopNav({ onImage = false }) {
             {count}
           </span>
         )}
-      </div>
+      </Link>
 
       <button
         className="flex flex-col justify-center gap-1 w-[22px] h-[21px] bg-none border-none cursor-pointer p-0 lg:hidden"

@@ -16,7 +16,9 @@ const COLUMNS = [
     heading: 'KEEP IN TOUCH',
     links: [
       { label: '051-111-557-799', href: 'tel:051111557799' },
-      { label: 'Our Locations', href: '#' },
+      // `to` so the router handles it: a plain anchor reloads the whole app, and
+      // ScrollToTop only sees the hash on a client-side navigation.
+      { label: 'Our Locations', to: '/faq#locations' },
       { label: 'Instagram', href: '#' },
       { label: 'LinkedIn', href: '#' },
     ],
