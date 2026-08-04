@@ -4,7 +4,6 @@ import donutImg from '../../assets/a1.webp'
 import croissantImg from '../../assets/a5.webp'
 import drinkImg from '../../assets/a3.webp'
 import sandwichImg from '../../assets/a2.webp'
-import { PRODUCTS } from '../products/productsData'
 
 const CATEGORY_ITEMS = [
   { label: 'Donuts', image: donutImg, to: '/products?category=Donuts' },
@@ -13,23 +12,8 @@ const CATEGORY_ITEMS = [
   { label: 'Sandwiches', image: sandwichImg, to: '/products?category=Sandwiches' },
 ]
 
-// One pick per category, by catalogue id: Chocolate Croissant, Mango, Mocha
-// Frappe, Sizzling Fajita. Name and photo are read from PRODUCTS rather than
-// duplicated, so a rename or a new photo flows through here on its own; filtered
-// so pulling an item from the catalogue drops it here instead of crashing.
-const FEATURED_ITEMS = [18, 10, 39, 25]
-  .map((id) => PRODUCTS.find((product) => product.id === id))
-  .filter(Boolean)
-  .map((product) => ({
-    label: product.name,
-    image: product.image,
-    to: `/products/${product.id}`,
-  }))
-
-// featured swaps the four category tiles for individual products, each linking to
-// its own detail page instead of a filtered listing.
-export default function MenuCarousel({ title = 'MENU', featured = false }) {
-  const items = featured ? FEATURED_ITEMS : CATEGORY_ITEMS
+export default function MenuCarousel({ title = 'MENU' }) {
+  const items = CATEGORY_ITEMS
   const [activeIndex, setActiveIndex] = useState(1) // center card highlighted, matches Figma sample
   const trackRef = useRef(null)
 
@@ -64,21 +48,17 @@ export default function MenuCarousel({ title = 'MENU', featured = false }) {
           <Link
             key={item.to}
             to={item.to}
-            // Border stays at 1.5px even when transparent so the featured row lines
-            // up with the category row rather than gaining 3px of width.
+            // Border stays at 1.5px even when transparent so an unhighlighted card
+            // lines up with the highlighted one rather than losing 3px of width.
             className={`bg-none border-[1.5px] rounded-[14px] p-0 cursor-pointer overflow-hidden flex flex-col font-display no-underline transition-transform duration-300 ease-out hover:scale-105 max-[720px]:flex-none max-[720px]:w-[68vw] max-[720px]:max-w-[260px] max-[720px]:snap-center ${
-              !featured && i === activeIndex ? 'border-accent' : 'border-transparent'
+              i === activeIndex ? 'border-accent' : 'border-transparent'
             }`}
             onClick={() => setActiveIndex(i)}
           >
-            {/* Catalogue photos are square, so the tall category ratio would crop the
-                product itself; featured keeps them square and uncut. */}
             <img
               src={item.image}
               alt={item.label}
-              className={`w-full object-cover bg-[#111] ${
-                featured ? 'aspect-square' : 'aspect-[601/888]'
-              }`}
+              className="w-full aspect-[601/888] object-cover bg-[#111]"
             />
             <span className="bg-white text-black font-bold text-[0.85rem] py-[0.6rem] px-3 text-center">
               {item.label}
