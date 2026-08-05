@@ -92,7 +92,7 @@ export default function ProductDetailPage() {
 
           <button
             type="button"
-            className="w-full h-12 border-none rounded-[4px] font-display font-bold text-[0.95rem] cursor-pointer flex items-center justify-center gap-2 mb-3 bg-accent-dark text-white lg:max-w-[420px]"
+            className="w-full h-12 border-none rounded-[4px] font-display font-bold text-[0.95rem] cursor-pointer flex items-center justify-center gap-2 mb-3 bg-accent text-white lg:max-w-[420px]"
             onClick={handleAddToCart}
           >
             {justAdded ? 'Added to cart ✓' : 'Add to cart'}

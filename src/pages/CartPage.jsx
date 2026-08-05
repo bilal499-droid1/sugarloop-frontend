@@ -52,7 +52,7 @@ function CartRow({ item, onSetQty, onRemove }) {
 
       <button
         type="button"
-        className="shrink-0 bg-none border-none text-[#b0b0b0] text-base cursor-pointer p-1 hover:text-accent-dark"
+        className="shrink-0 bg-none border-none text-[#b0b0b0] text-base cursor-pointer p-1 hover:text-accent"
         onClick={() => onRemove(item.id)}
         aria-label={`Remove ${item.name} from cart`}
       >
@@ -121,7 +121,7 @@ export default function CartPage() {
               </p>
               <a
                 href="tel:051111557799"
-                className="block w-full text-center h-12 leading-[3rem] bg-accent-dark text-white no-underline rounded-lg font-display font-bold text-sm"
+                className="block w-full text-center h-12 leading-[3rem] bg-accent text-white no-underline rounded-lg font-display font-bold text-sm"
               >
                 Call 051-111-557-799 to order
               </a>

@@ -25,8 +25,10 @@ const COLUMNS = [
   },
 ]
 
+// Full white rather than white/85: the footer panel is now the lighter brand blue,
+// and dimmed white on it falls below a readable contrast ratio.
 const linkClass =
-  'text-white/85 no-underline text-[1rem] transition-colors duration-200 hover:text-white'
+  'text-white no-underline text-[1rem] transition-opacity duration-200 hover:opacity-80'
 
 function FooterLink({ link }) {
   return link.to ? (
@@ -46,7 +48,7 @@ export default function Footer() {
   return (
     <footer
       id="contact"
-      className="bg-accent-dark py-[clamp(2.5rem,6vw,4rem)] px-[clamp(1.5rem,5vw,4rem)]"
+      className="bg-accent py-[clamp(2.5rem,6vw,4rem)] px-[clamp(1.5rem,5vw,4rem)]"
       aria-label="Footer"
     >
       {/* Logo holds the left edge, the link columns are pushed to the opposite end

@@ -133,7 +133,7 @@ export default function ProductGallery({ images = [], name }) {
               aria-label={`Show photo ${i + 1}`}
               aria-current={i === index}
               className={`w-16 h-16 flex-none rounded-[4px] overflow-hidden cursor-pointer bg-transparent p-0 border transition-colors duration-200 ${
-                i === index ? 'border-accent-dark' : 'border-border-light'
+                i === index ? 'border-accent' : 'border-border-light'
               }`}
             >
               <img src={src} alt="" className="w-full h-full object-cover" />

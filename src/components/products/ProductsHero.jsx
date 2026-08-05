@@ -41,8 +41,8 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
             type="button"
             className={`shrink-0 font-display font-medium rounded-cta-pill cursor-pointer whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110 text-[3.3vw] py-[1.5vw] px-[2.6vw] sm:text-[0.8rem] sm:py-[0.4rem] sm:px-4 ${
               category === activeCategory
-                ? 'bg-accent-dark text-white border border-accent-dark'
-                : 'bg-white text-accent-dark border border-accent-dark'
+                ? 'bg-accent text-white border border-accent'
+                : 'bg-white text-accent border border-accent'
             }`}
             onClick={() => onSelectCategory(category)}
           >

@@ -288,7 +288,7 @@ export default function FaqPage() {
           </button>
         </form>
         {submitted && (
-          <p className="mt-4 mb-0 font-display font-medium text-accent-dark">
+          <p className="mt-4 mb-0 font-display font-medium text-accent">
             Thanks! We'll get back to you shortly.
           </p>
         )}

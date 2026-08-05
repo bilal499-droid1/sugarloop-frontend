@@ -84,7 +84,7 @@ export default function CorporateGiftingPage() {
           </p>
 
           {submitted ? (
-            <p className="font-display font-medium text-accent-dark">
+            <p className="font-display font-medium text-accent">
               Your email is ready to send in your mail app — press send and we'll be in
               touch shortly. Not opening?{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="underline">

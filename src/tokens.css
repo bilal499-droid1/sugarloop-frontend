@@ -9,8 +9,8 @@
 @theme {
   /* ---- Color: confirmed ---- */
   --color-bg-section: #f6f6f6;      /* About Us section background */
-  --color-accent: #587ea2;          /* confirmed reused: stat numbers + menu-card CTA circle */
-  --color-accent-dark: #425b72;     /* mobile active category pill */
+  --color-accent: #587ea2;          /* the brand blue - price bubbles, footer, every CTA */
+  --color-accent-dark: #425b72;     /* darker shade of the same blue, kept for hover/pressed states */
   --color-muted-text: #d9d9d9;      /* desktop inactive sidebar category */
   --color-border-light: #efefef;    /* product card borders */
   --color-card-bg-neutral: #e0e0e0; /* menu category card outer frame */

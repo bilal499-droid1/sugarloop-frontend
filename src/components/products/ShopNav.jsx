@@ -91,7 +91,7 @@ export default function ShopNav({ onImage = false }) {
       >
         <FaShoppingCart />
         {count > 0 && (
-          <span className="absolute -top-2 -right-[0.6rem] min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-accent-dark text-white font-display font-bold text-[0.65rem] flex items-center justify-center">
+          <span className="absolute -top-2 -right-[0.6rem] min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-accent text-white font-display font-bold text-[0.65rem] flex items-center justify-center">
             {count}
           </span>
         )}

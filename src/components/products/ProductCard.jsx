@@ -55,6 +55,9 @@ export default function ProductCard({ product, to }) {
   // rather than a minus that silently deletes.
   const atLast = qty === 1
 
+  // White buttons with a blue glyph, so the control reads as part of the photo
+  // rather than a second blue badge competing with the price bubble. The hairline
+  // ring keeps them visible on the white-background product shots.
   const controlBase =
     'flex items-center justify-center rounded-full border-none cursor-pointer transition-colors duration-200'
   const buttonSize = isLg ? 'w-[2rem] h-[2rem] lg:w-9 lg:h-9' : 'w-[1.85rem] h-[1.85rem] lg:w-8 lg:h-8'
@@ -108,18 +111,18 @@ export default function ProductCard({ product, to }) {
           }`}
         >
           {qty > 0 && (
-            <div className="flex items-center gap-1 mr-1 rounded-full bg-white/95 backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.18)] p-[0.15rem] pr-2">
+            <div className="flex items-center gap-1 mr-1 rounded-full bg-white ring-1 ring-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.18)] p-[0.15rem] pr-2">
               <button
                 type="button"
                 aria-label={atLast ? `Remove ${product.name} from cart` : `Remove one ${product.name}`}
                 onClick={() => (atLast ? removeItem(product.id) : setQty(product.id, qty - 1))}
-                className={`${controlBase} ${buttonSize} bg-transparent text-accent-dark hover:bg-[#f0e3e3] hover:text-[#c0392b]`}
+                className={`${controlBase} ${buttonSize} bg-transparent text-accent hover:bg-[#f0e3e3] hover:text-[#c0392b]`}
               >
                 {atLast ? <TrashIcon /> : <MinusIcon />}
               </button>
               <span
                 aria-live="polite"
-                className={`font-display font-bold text-accent-dark leading-none min-w-[0.75rem] text-center ${
+                className={`font-display font-bold text-accent leading-none min-w-[0.75rem] text-center ${
                   isLg ? 'text-[0.9rem]' : 'text-[0.8rem]'
                 }`}
               >
@@ -132,7 +135,7 @@ export default function ProductCard({ product, to }) {
             type="button"
             aria-label={`Add ${product.name} to cart`}
             onClick={() => addItem(product, 1)}
-            className={`${controlBase} ${buttonSize} bg-accent-dark text-white shadow-[0_2px_8px_rgba(0,0,0,0.25)] hover:bg-accent`}
+            className={`${controlBase} ${buttonSize} bg-white text-accent ring-1 ring-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.18)] hover:bg-[#eef2f6]`}
           >
             <PlusIcon />
           </button>
