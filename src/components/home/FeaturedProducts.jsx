@@ -28,7 +28,7 @@ export default function FeaturedProducts({ title = 'Featured Products' }) {
           listing rather than to each product's own page. */}
       <div className="grid grid-cols-2 gap-[0.85rem] max-w-[1100px] mx-auto lg:grid-cols-4 lg:gap-5">
         {items.map((product) => (
-          <ProductCard key={product.id} product={product} to="/products" showAddToCart />
+          <ProductCard key={product.id} product={product} to="/products" />
         ))}
       </div>
     </section>
