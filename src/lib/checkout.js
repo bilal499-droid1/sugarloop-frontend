@@ -143,6 +143,32 @@ export function describeCheckoutError(error) {
       }
     }
 
+    /**
+     * The session expired or was never established. Not an error the customer caused —
+     * the checkout page sends them back to the verification step rather than showing a
+     * failure they cannot act on.
+     */
+    case 'PHONE_NOT_VERIFIED':
+    case 'SESSION_EXPIRED':
+      return {
+        title: 'Please verify your number again',
+        detail: 'Your verification has expired. It only takes a moment.',
+        canRetry: true,
+      }
+
+    /**
+     * The order named a different number than the one verified. Reachable if someone
+     * edits the phone field after verifying, so the message says exactly that.
+     */
+    case 'PHONE_MISMATCH':
+      return {
+        title: 'That is not the number you verified',
+        detail: error.details?.verifiedPhone
+          ? `This order has to use ${error.details.verifiedPhone}, or verify the new number instead.`
+          : detail,
+        canRetry: true,
+      }
+
     case 'VALIDATION_ERROR':
       return { title: 'Please check your details', detail, canRetry: true }
 

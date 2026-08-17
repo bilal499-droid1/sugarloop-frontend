@@ -5,9 +5,16 @@ import Footer from '../components/Footer'
 import { useCart } from '../context/CartContext'
 import { useBranch } from '../context/BranchContext'
 import { useCatalogue } from '../context/CatalogueContext'
-import { isApiConfigured, placeOrder, quoteCart } from '../lib/api'
+import {
+  endCustomerSession,
+  fetchVerifiedPhone,
+  isApiConfigured,
+  placeOrder,
+  quoteCart,
+} from '../lib/api'
 import { describeCheckoutError, findUnorderableLines, toApiItems } from '../lib/checkout'
 import { reverseGeocode } from '../lib/geocode'
+import PhoneVerification from '../components/checkout/PhoneVerification'
 
 /**
  * Checkout.
@@ -27,6 +34,15 @@ const PK_MOBILE = /^(\+92|92|0)3\d{9}$/
 
 function normalisePhone(value) {
   return value.replace(/[\s()-]/g, '')
+}
+
+/**
+ * The single canonical form the server stores and compares against, so `03001234567`,
+ * `+923001234567` and `923001234567` are recognised as one number rather than three.
+ * Mirrors the transform in the API's own phone validator.
+ */
+function toE164(value) {
+  return `+92${value.replace(/^\+?92|^0/, '')}`
 }
 
 /* -------------------------------------------------------------------------- */
@@ -105,6 +121,35 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState(null)
   const [touched, setTouched] = useState(false)
+
+  /**
+   * The phone this browser has proved it holds, or null.
+   *
+   * Checked once on mount: the session lasts four days, so a returning customer skips
+   * verification entirely rather than being asked to prove the same number again on
+   * every order.
+   */
+  const [verifiedPhone, setVerifiedPhone] = useState(null)
+  const [checkingSession, setCheckingSession] = useState(isApiConfigured)
+
+  useEffect(() => {
+    if (!isApiConfigured) return
+
+    const controller = new AbortController()
+
+    fetchVerifiedPhone({ signal: controller.signal })
+      .then((phone) => {
+        if (controller.signal.aborted) return
+        setVerifiedPhone(phone)
+        // Pre-fill so a returning customer is not retyping a number we already know.
+        if (phone) setContact((current) => (current.phone ? current : { ...current, phone }))
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCheckingSession(false)
+      })
+
+    return () => controller.abort()
+  }, [])
 
   /**
    * Checkout identifies products by their Mongo id, which only the live catalogue
@@ -247,6 +292,25 @@ export default function CheckoutPage() {
   const isValid = Object.keys(errors).length === 0
 
   /**
+   * Whether the number in the form is the one this browser actually verified.
+   *
+   * Compared after normalising both sides, because `03001234567` and `+923001234567` are
+   * the same number and the server stores the E.164 form. Editing the phone after
+   * verifying silently drops back to unverified — which is correct: the server would
+   * refuse that order with PHONE_MISMATCH, and finding out here beats finding out on
+   * submit.
+   */
+  const normalisedPhone = normalisePhone(contact.phone)
+  const phoneIsVerified =
+    Boolean(verifiedPhone) &&
+    PK_MOBILE.test(normalisedPhone) &&
+    toE164(normalisedPhone) === verifiedPhone
+
+  /** Verification is asked for only once there is a valid number to send a code to. */
+  const needsVerification =
+    canReachApi && !checkingSession && !phoneIsVerified && PK_MOBILE.test(normalisedPhone)
+
+  /**
    * The button is NOT disabled for an incomplete form, and that is deliberate.
    *
    * Field errors only appear once the customer has tried to submit. If an incomplete
@@ -259,12 +323,15 @@ export default function CheckoutPage() {
    * order needs an `expectedTotal` that the customer was actually shown, and there is no
    * honest way to submit without one.
    */
-  const canSubmit = Boolean(quote) && !submitting
+  const canSubmit = Boolean(quote) && !submitting && phoneIsVerified
 
   /** Why the button cannot go through yet, in the order the customer should fix it. */
   const blockingReason = (() => {
     if (unorderable.length > 0) return 'Remove and re-add the items flagged above.'
     if (!canReachApi) return null
+    if (phoneIsVerified === false && PK_MOBILE.test(normalisedPhone) && !checkingSession) {
+      return 'Verify your number to place the order.'
+    }
     if (quoting) return 'Working out your total…'
     if (quoteError) return quoteError.title
     if (!quote) {
@@ -327,12 +394,20 @@ export default function CheckoutPage() {
       navigate(`/order/${order.orderNumber}`, { replace: true, state: { order } })
     } catch (error) {
       setSubmitError(describeCheckoutError(error))
+
       // A total that moved is dropped and re-fetched, so the panel shows the NEW number
       // beside the message explaining it changed — rather than leaving the old total on
       // screen next to a warning that it is wrong.
       if (error?.code === 'PRICE_CHANGED') {
         setQuote(null)
         setRequoteNonce((n) => n + 1)
+      }
+
+      // The four-day session lapsed, or the server disagrees about which number was
+      // verified. Dropping it re-renders the verification step rather than leaving a
+      // "✓ Number verified" tick above an order the API just refused.
+      if (['PHONE_NOT_VERIFIED', 'SESSION_EXPIRED', 'PHONE_MISMATCH'].includes(error?.code)) {
+        setVerifiedPhone(null)
       }
     } finally {
       inFlight.current = false
@@ -539,7 +614,47 @@ export default function CheckoutPage() {
                   autoComplete="tel"
                 />
               </Field>
+
+              {/* Confirmation rather than a step: a returning customer inside their
+                  four-day session sees this instead of being asked to prove the same
+                  number again.
+
+                  The escape hatch matters as much as the tick. A session lasts four days
+                  and browsers get shared — a phone on a counter, a family laptop — so
+                  without a way out, whoever verified first silently owns every order
+                  placed from that browser until the session lapses. */}
+              {phoneIsVerified && (
+                <div className="flex items-center justify-between gap-3">
+                  <p className="m-0 text-[0.7rem] font-display font-bold text-accent">
+                    ✓ Number verified
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await endCustomerSession()
+                      setVerifiedPhone(null)
+                      setContact((current) => ({ ...current, phone: '' }))
+                    }}
+                    className="bg-none border-none p-0 text-[0.7rem] text-text-body underline cursor-pointer"
+                  >
+                    Not you? Use another number
+                  </button>
+                </div>
+              )}
             </Card>
+
+            {/* Sits directly under the number it verifies, and appears only once a valid
+                one has been typed — offering to send a code to an incomplete number would
+                spend a real message on a typo. */}
+            {needsVerification && (
+              <PhoneVerification
+                phone={toE164(normalisedPhone)}
+                onVerified={(phone) => {
+                  setVerifiedPhone(phone)
+                  setSubmitError(null)
+                }}
+              />
+            )}
           </div>
 
           {/* ---- Summary: every number here came from the server ---- */}
