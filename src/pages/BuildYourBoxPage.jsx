@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { FaPlus } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
-import { PRODUCTS } from '../components/products/productsData'
 import { useCart } from '../context/CartContext'
+import { useCatalogue } from '../context/CatalogueContext'
 
 const BOX_SIZES = [2, 4, 6, 12]
 const PRODUCT_TYPES = ['Donuts', 'Croissants']
@@ -14,8 +14,21 @@ export default function BuildYourBoxPage() {
   const [slots, setSlots] = useState(Array(BOX_SIZES[0]).fill(null))
   const [justAdded, setJustAdded] = useState(false)
   const { addItem } = useCart()
+  const { products } = useCatalogue()
 
-  const options = PRODUCTS.filter((p) => p.category === productType)
+  /**
+   * The server requires every item in a box to be `boxEligible` and in stock at the
+   * assigned branch, and re-checks both when the box is priced. Both are filtered here
+   * so a box cannot be built out of items that would be rejected at checkout.
+   *
+   * Each condition is checked for an explicit false rather than falsiness: `boxEligible`
+   * is absent on the bundled fallback catalogue, and `inStock` is absent whenever no
+   * branch has been chosen. Treating either absence as "not allowed" would empty this
+   * page the moment the API is unreachable.
+   */
+  const options = products.filter(
+    (p) => p.category === productType && p.boxEligible !== false && p.inStock !== false
+  )
   const filledCount = slots.filter(Boolean).length
   const isFull = filledCount === boxSize
   const total = slots.reduce((sum, item) => sum + (item ? item.price : 0), 0)

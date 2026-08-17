@@ -4,6 +4,10 @@ dist/
 *.log
 .DS_Store
 
+# Per-machine API host. `.env.example` is the committed template.
+.env.local
+.env.*.local
+
 # Full-size camera masters for the DrinksStrip videos (~232MB). The web-sized
 # 720p re-encodes in src/assets/pm*.mp4 are what ship; these stay local.
 src/assets/video-originals/
@@ -11,3 +15,13 @@ src/assets/video-originals/
 # Uncropped 2:3 masters of the catalogue photos that ship square. Kept local in
 # case a different crop is ever wanted.
 src/assets/photo-originals/
+
+# Client planning material for the backend build - mirrors the backend repo's own
+# docs/ (also gitignored there). This repository is PUBLIC; these stay local.
+BACKEND-DESIGN.md
+BACKEND-INPUTS.md
+BACKEND-KICKOFF.md
+BACKEND-QUESTIONS.md
+
+# Unrelated scratch, not part of this app.
+cpp/

@@ -1,28 +1,22 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { FaStar, FaRegStar } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
 import ProductCard from '../components/products/ProductCard'
 import Accordion from '../components/productDetail/Accordion'
 import ProductGallery from '../components/productDetail/ProductGallery'
 import Footer from '../components/Footer'
-import { PRODUCTS } from '../components/products/productsData'
 import { useCart } from '../context/CartContext'
-
-function Stars({ rating }) {
-  return (
-    <span className="inline-flex gap-[2px] text-[#f0b429] text-[0.75rem]">
-      {Array.from({ length: 5 }, (_, i) =>
-        i < rating ? <FaStar key={i} /> : <FaRegStar key={i} />
-      )}
-    </span>
-  )
-}
+import { useCatalogue } from '../context/CatalogueContext'
+import { useBranch } from '../context/BranchContext'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const product = PRODUCTS.find((p) => String(p.id) === id)
+  // Products keep their legacy numeric id through the merge, so every /products/:id
+  // URL that already exists still resolves once the API is the source.
+  const { products, findById } = useCatalogue()
+  const { branch } = useBranch()
+  const product = findById(id)
   const [qty, setQty] = useState(1)
   const [justAdded, setJustAdded] = useState(false)
   const { addItem } = useCart()
@@ -40,9 +34,13 @@ export default function ProductDetailPage() {
     )
   }
 
-  const related = PRODUCTS.filter((p) => p.id !== product.id)
+  const related = products.filter((p) => p.id !== product.id)
     .slice(0, 4)
     .map((p) => ({ ...p, size: 'sm' }))
+
+  // Absent means no branch was named, so availability is unknown — only an explicit
+  // false is a sold-out product. See BranchContext.
+  const soldOut = product.inStock === false
 
   const handleAddToCart = () => {
     addItem(product, qty)
@@ -90,23 +88,45 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
-          <button
-            type="button"
-            className="w-full h-12 border-none rounded-[4px] font-display font-bold text-[0.95rem] cursor-pointer flex items-center justify-center gap-2 mb-3 bg-accent text-white lg:max-w-[420px]"
-            onClick={handleAddToCart}
-          >
-            {justAdded ? 'Added to cart ✓' : 'Add to cart'}
-            <span className="w-1 h-1 rounded-full bg-current opacity-60" />
-            Rs {product.price * qty}
-          </button>
+          {soldOut ? (
+            /* Both buttons replaced rather than disabled: the server refuses a sold-out
+               item at quote time, so letting it into the cart only moves the bad news to
+               checkout. Naming the branch matters — it is sold out HERE, and switching
+               branch may well fix it. */
+            <div className="w-full mb-3 px-4 py-3 rounded-[4px] bg-[#f4f4f4] border border-border-light lg:max-w-[420px]">
+              <p className="m-0 font-display font-bold text-[0.95rem] text-[#c0392b]">
+                Sold out{branch ? ` at ${branch.name}` : ''}
+              </p>
+              {/* The second line matters more than the first: this is only sold out at
+                  the shop being previewed. A delivery order is matched to a branch by
+                  address, so this customer may well be served by one that has it — and
+                  a flat "sold out" would talk them out of an order we could fill. */}
+              <p className="m-0 mt-1 font-display text-xs text-text-body">
+                That’s stock at this shop. Try another above — and if you’re ordering
+                delivery, your branch is set by your address, so this may still reach you.
+              </p>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="w-full h-12 border-none rounded-[4px] font-display font-bold text-[0.95rem] cursor-pointer flex items-center justify-center gap-2 mb-3 bg-accent text-white lg:max-w-[420px]"
+                onClick={handleAddToCart}
+              >
+                {justAdded ? 'Added to cart ✓' : 'Add to cart'}
+                <span className="w-1 h-1 rounded-full bg-current opacity-60" />
+                Rs {product.price * qty}
+              </button>
 
-          <button
-            type="button"
-            className="w-full h-12 border-none rounded-[4px] font-display font-bold text-[0.95rem] cursor-pointer flex items-center justify-center gap-2 mb-3 bg-[#2a2a2a] text-white lg:max-w-[420px]"
-            onClick={handleCheckout}
-          >
-            Proceed to checkout
-          </button>
+              <button
+                type="button"
+                className="w-full h-12 border-none rounded-[4px] font-display font-bold text-[0.95rem] cursor-pointer flex items-center justify-center gap-2 mb-3 bg-[#2a2a2a] text-white lg:max-w-[420px]"
+                onClick={handleCheckout}
+              >
+                Proceed to checkout
+              </button>
+            </>
+          )}
 
           <div className="mt-4">
             <Accordion title="Description">
@@ -114,15 +134,6 @@ export default function ProductDetailPage() {
             </Accordion>
             <Accordion title="Special instructions">
               <p>Any allergies or special requests? Let us know and we'll do our best to accommodate.</p>
-            </Accordion>
-            <Accordion title="Reviews" defaultOpen>
-              {product.reviews.map((review) => (
-                <div className="py-3" key={review.name}>
-                  <p className="mb-[0.15rem] m-0 font-display font-bold text-[0.85rem]">{review.name}</p>
-                  <Stars rating={review.rating} />
-                  <p className="mt-[0.35rem] m-0 text-[0.85rem] leading-[1.6] text-text-body">{review.text}</p>
-                </div>
-              ))}
             </Accordion>
           </div>
         </div>

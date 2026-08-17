@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { PRODUCTS } from '../components/products/productsData'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useCatalogue } from './CatalogueContext'
 
 const CartContext = createContext(null)
 
@@ -9,10 +9,19 @@ const STORAGE_KEY = 'sugarloop.cart.v1'
 
 // Catalogue images are hashed build artifacts (a1-Cvv41XKx.jpeg), so a stored URL
 // goes stale the moment the site is rebuilt. Anything with a catalogue id gets its
-// name/price/image re-read from PRODUCTS on load; that also means a price change
-// on the site is reflected in carts that were saved before it.
-function rehydrate(item) {
-  const product = PRODUCTS.find((p) => p.id === item.id)
+// name/price/image re-read from the catalogue on load; that also means a price change
+// is reflected in carts that were saved before it.
+//
+// The catalogue is now passed in rather than imported, because it may be the LIVE one
+// from the API. A cart line showing a price the products page no longer agrees with is
+// the kind of discrepancy a customer notices at exactly the wrong moment.
+//
+// An item with no match is left exactly as stored — a discontinued product is not
+// silently deleted from someone's cart here. The server refuses it at quote time with
+// ITEMS_UNAVAILABLE, naming the item, which is a better place to explain it than a
+// line vanishing on page load with no account of why.
+function rehydrate(item, catalogue) {
+  const product = catalogue.find((p) => String(p.id) === String(item.id))
   if (!product) return item
   return {
     ...item,
@@ -25,7 +34,7 @@ function rehydrate(item) {
 // localStorage throws in Safari private mode and when the quota is full, and the
 // stored JSON can be anything if a user has edited it - so every read is guarded
 // and anything malformed is dropped rather than crashing the app on boot.
-function readStoredCart() {
+function readStoredCart(catalogue) {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
@@ -39,15 +48,32 @@ function readStoredCart() {
           Number.isFinite(item.qty) &&
           item.qty > 0
       )
-      .map(rehydrate)
+      .map((item) => rehydrate(item, catalogue))
   } catch {
     return []
   }
 }
 
 export function CartProvider({ children }) {
-  // Lazy initialiser: reads storage once on mount instead of on every render.
-  const [items, setItems] = useState(readStoredCart)
+  const { products } = useCatalogue()
+
+  // The storage listener below is registered once and must not be torn down and
+  // rebuilt every time the catalogue updates, so it reads the current catalogue
+  // through a ref rather than closing over a stale one.
+  const catalogueRef = useRef(products)
+  catalogueRef.current = products
+
+  // Lazy initialiser: reads storage once on mount instead of on every render. At this
+  // point `products` is still the bundled catalogue, so this is synchronous and the
+  // first paint is unchanged — the live prices arrive in the effect below.
+  const [items, setItems] = useState(() => readStoredCart(products))
+
+  // When the API catalogue lands, re-read names and prices off it. Without this a
+  // returning customer's saved cart would keep quoting whatever the prices were on the
+  // day the bundle was built, while the products page showed the live ones.
+  useEffect(() => {
+    setItems((current) => current.map((item) => rehydrate(item, products)))
+  }, [products])
 
   useEffect(() => {
     try {
@@ -60,7 +86,7 @@ export function CartProvider({ children }) {
   // Keeps tabs in sync: adding from one tab updates the badge in the others.
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key === STORAGE_KEY) setItems(readStoredCart())
+      if (e.key === STORAGE_KEY) setItems(readStoredCart(catalogueRef.current))
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)

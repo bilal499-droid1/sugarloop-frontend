@@ -55,6 +55,13 @@ export default function ProductCard({ product, to }) {
   // rather than a minus that silently deletes.
   const atLast = qty === 1
 
+  /**
+   * `inStock` is absent unless the catalogue was fetched for a specific branch, and an
+   * absent field is NOT a sold-out product — it means nobody has named a branch, so
+   * availability is unknown. Only an explicit `false` marks the tile.
+   */
+  const soldOut = product.inStock === false
+
   // White buttons with a blue glyph, so the control reads as part of the photo
   // rather than a second blue badge competing with the price bubble. The hairline
   // ring keeps them visible on the white-background product shots.
@@ -90,6 +97,20 @@ export default function ProductCard({ product, to }) {
           )}
         </Link>
 
+        {/* Desaturating the photo carries the message before any label is read, and
+            keeps a sold-out tile from competing with the ones that can be bought. */}
+        {soldOut && (
+          <>
+            <span
+              className="pointer-events-none absolute inset-0 bg-white/55 backdrop-grayscale"
+              aria-hidden="true"
+            />
+            <span className="pointer-events-none absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white font-display font-bold text-[0.6rem] uppercase tracking-wide">
+              Sold out
+            </span>
+          </>
+        )}
+
         <span
           className={`pointer-events-none absolute top-2 right-2 w-[2.3rem] h-[2.3rem] rounded-full bg-accent text-white flex items-center justify-center gap-px shadow-[0_2px_6px_rgba(0,0,0,0.2)] ${
             isLg ? 'lg:w-14 lg:h-14 lg:top-4 lg:right-4' : ''
@@ -104,11 +125,14 @@ export default function ProductCard({ product, to }) {
         </span>
 
         {/* Quantity stepper over the photo: one tap adds, and the same control then
-            steps the line down or bins it, so nobody has to open the product page. */}
+            steps the line down or bins it, so nobody has to open the product page.
+            Hidden entirely when sold out — the server refuses the item at quote time
+            anyway, and a disabled-looking button invites repeated tapping to find out
+            why. What is left is a tile that plainly cannot be added. */}
         <div
           className={`absolute bottom-2 right-2 flex items-center ${
             isLg ? 'lg:bottom-4 lg:right-4' : ''
-          }`}
+          } ${soldOut ? 'hidden' : ''}`}
         >
           {qty > 0 && (
             <div className="flex items-center gap-1 mr-1 rounded-full bg-white ring-1 ring-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.18)] p-[0.15rem] pr-2">

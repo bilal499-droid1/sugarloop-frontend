@@ -1,17 +1,19 @@
 import ProductCard from '../products/ProductCard'
-import { PRODUCTS } from '../products/productsData'
+import { useCatalogue } from '../../context/CatalogueContext'
 
 // One pick per category, by catalogue id: Chocolate Croissant, Mango, Mocha
-// Frappe, Sizzling Fajita. Everything shown is read from PRODUCTS rather than
+// Frappe, Sizzling Fajita. Everything shown is read from the catalogue rather than
 // duplicated, so a rename, a new photo or a price change flows through here on its
-// own; filtered so pulling an item from the catalogue drops it here instead of
-// crashing.
+// own; filtered so pulling an item from the catalogue — including an admin retiring
+// it on the backend — drops it here instead of crashing.
 const FEATURED_IDS = [18, 10, 39, 25]
 
 export default function FeaturedProducts({ title = 'Featured Products' }) {
+  const { products } = useCatalogue()
+
   // Forced to 'sm' so a catalogue item flagged as the large tile doesn't span two
   // columns and break this row of four.
-  const items = FEATURED_IDS.map((id) => PRODUCTS.find((product) => product.id === id))
+  const items = FEATURED_IDS.map((id) => products.find((product) => product.id === id))
     .filter(Boolean)
     .map((product) => ({ ...product, size: 'sm' }))
 

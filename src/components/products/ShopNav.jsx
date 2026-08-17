@@ -4,6 +4,7 @@ import { FaShoppingCart } from 'react-icons/fa'
 import { useCart } from '../../context/CartContext'
 import MobileNavMenu from '../MobileNavMenu'
 import SugarLoopMark from '../SugarLoopMark'
+import BranchPicker from './BranchPicker'
 import plogo from '../../assets/Plogo.svg'
 
 // Steps up to 2xl only past 1536px - at 24px the five links plus the enlarged
@@ -79,6 +80,12 @@ export default function ShopNav({ onImage = false }) {
           </li>
         ))}
       </ul>
+
+      {/* Which branch the visitor is shopping — what turns on sold-out marking across
+          the menu. Hidden on the hero variant, where a white-on-photo form control
+          would be unreadable, and hidden on small screens where the row is already
+          tight; the menu page carries its own copy for both cases. */}
+      {!onImage && <BranchPicker className="hidden lg:flex ml-8" />}
 
       {/* Cart follows the links: white over the hero photo, accent on the light
           pages where a white cart would disappear. */}

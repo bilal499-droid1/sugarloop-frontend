@@ -108,73 +108,68 @@ const DESCRIPTION =
 const DRINK_DESCRIPTION =
   'Made to order with freshly pulled espresso and whole milk. Tell us if you would like it lighter, sweeter, or extra cold.'
 
-const REVIEWS = [
-  { name: 'Amara Okafor', rating: 5, text: 'Genuinely one of the best bakes I\'ve had in the city. Will be back for more.' },
-  { name: 'Daniyal Raza', rating: 4, text: 'Really good flavor and texture, still fresh even a few hours after pickup.' },
-]
-
 const withPrimaryImage = (products) =>
   products.map((product) => ({ ...product, image: product.images?.[0] }))
 
 export const PRODUCTS = withPrimaryImage([
   // ---- Donuts / Signature (299) ----
-  { id: 1, name: 'Chocoholic', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [chocoholic1, chocoholic2, chocoholic3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 2, name: 'Lotus', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [lotus1, lotus2, lotus3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 3, name: 'Nutella', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [nutella1, nutella2, nutella3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 4, name: 'Coffee', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [coffeeDonut1, coffeeDonut2, coffeeDonut3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 5, name: 'Salted Caramel', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [saltedCaramel1, saltedCaramel2, saltedCaramel3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 6, name: 'Boston Creme', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [bostonCreme1, bostonCreme2, bostonCreme3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 8, name: 'Mix Berry', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mixBerry1, mixBerry2, mixBerry3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 9, name: 'Brownie Filled', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [brownieFilled1, brownieFilled2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 10, name: 'Mango', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mango1, mango2], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 1, name: 'Chocoholic', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [chocoholic1, chocoholic2, chocoholic3], description: DESCRIPTION },
+  { id: 2, name: 'Lotus', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [lotus1, lotus2, lotus3], description: DESCRIPTION },
+  { id: 3, name: 'Nutella', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [nutella1, nutella2, nutella3], description: DESCRIPTION },
+  { id: 4, name: 'Coffee', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [coffeeDonut1, coffeeDonut2, coffeeDonut3], description: DESCRIPTION },
+  { id: 5, name: 'Salted Caramel', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [saltedCaramel1, saltedCaramel2, saltedCaramel3], description: DESCRIPTION },
+  { id: 6, name: 'Boston Creme', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [bostonCreme1, bostonCreme2, bostonCreme3], description: DESCRIPTION },
+  { id: 8, name: 'Mix Berry', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mixBerry1, mixBerry2, mixBerry3], description: DESCRIPTION },
+  { id: 9, name: 'Brownie Filled', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [brownieFilled1, brownieFilled2], description: DESCRIPTION },
+  { id: 10, name: 'Mango', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mango1, mango2], description: DESCRIPTION },
 
   // ---- Donuts / Classic ----
-  { id: 12, name: 'Classic Oreo', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicOreo1, classicOreo2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 13, name: 'Chocolate Sprinkle', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateSprinkle1, chocolateSprinkle2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 14, name: 'Classic Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicChocolate1, classicChocolate2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 15, name: 'White Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [whiteChocolate1, whiteChocolate2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 16, name: 'Chocolate Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateGlazed1, chocolateGlazed2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 17, name: 'Vanilla Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [vanillaGlazed1, vanillaGlazed2], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 12, name: 'Classic Oreo', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicOreo1, classicOreo2], description: DESCRIPTION },
+  { id: 13, name: 'Chocolate Sprinkle', price: 185, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateSprinkle1, chocolateSprinkle2], description: DESCRIPTION },
+  { id: 14, name: 'Classic Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [classicChocolate1, classicChocolate2], description: DESCRIPTION },
+  { id: 15, name: 'White Chocolate', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [whiteChocolate1, whiteChocolate2], description: DESCRIPTION },
+  { id: 16, name: 'Chocolate Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [chocolateGlazed1, chocolateGlazed2], description: DESCRIPTION },
+  { id: 17, name: 'Vanilla Glazed', price: 230, category: 'Donuts', type: 'Classic', size: 'sm', images: [vanillaGlazed1, vanillaGlazed2], description: DESCRIPTION },
 
   // ---- Donuts / Crafted Donuts (429) ----
-  { id: 44, name: 'Snickers', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [snicker1, snickers2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 45, name: 'Tiramisu Creme', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [tiramisu1, tiramisu2, tiramisu3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 46, name: 'Kinder Cream', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [kinder1, kinder2, kinder3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 47, name: 'KitKat Crunch', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [kitkat1, kitkat2, kitkat3], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 44, name: 'Snickers', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [snicker1, snickers2], description: DESCRIPTION },
+  { id: 45, name: 'Tiramisu Creme', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [tiramisu1, tiramisu2, tiramisu3], description: DESCRIPTION },
+  { id: 46, name: 'Kinder Cream', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [kinder1, kinder2, kinder3], description: DESCRIPTION },
+  { id: 47, name: 'KitKat Crunch', price: 429, category: 'Donuts', type: 'Crafted Donuts', size: 'sm', images: [kitkat1, kitkat2, kitkat3], description: DESCRIPTION },
 
   // ---- Fresh Bakes ----
-  { id: 18, name: 'Chocolate Croissant', price: 379, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [chocolateCroissant1, chocolateCroissant2, chocolateCroissant3], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 19, name: 'Butter Cream Croissant', price: 370, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCreamCroissant1, butterCreamCroissant2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 20, name: 'Butter Croissant', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCroissant1, butterCroissant2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 21, name: 'Baked Cinnamon', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [bakedCinnamon1, bakedCinnamon2], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 18, name: 'Chocolate Croissant', price: 379, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [chocolateCroissant1, chocolateCroissant2, chocolateCroissant3], description: DESCRIPTION },
+  { id: 19, name: 'Butter Cream Croissant', price: 370, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCreamCroissant1, butterCreamCroissant2], description: DESCRIPTION },
+  { id: 20, name: 'Butter Croissant', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [butterCroissant1, butterCroissant2], description: DESCRIPTION },
+  { id: 21, name: 'Baked Cinnamon', price: 299, category: 'Croissants', type: 'Fresh Bakes', size: 'sm', images: [bakedCinnamon1, bakedCinnamon2], description: DESCRIPTION },
 
   // ---- Sandwiches ----
-  { id: 22, name: 'Signature Chicken', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [signatureChicken1], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 24, name: 'Smoked Tikka Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [smokedTikka1, smokedTikka2], description: DESCRIPTION, reviews: REVIEWS },
-  { id: 25, name: 'Sizzling Fajita', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [sizzlingFajita1, sizzlingFajita2], description: DESCRIPTION, reviews: REVIEWS },
+  { id: 22, name: 'Signature Chicken', price: 349, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [signatureChicken1], description: DESCRIPTION },
+  { id: 24, name: 'Smoked Tikka Melt', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [smokedTikka1, smokedTikka2], description: DESCRIPTION },
+  { id: 25, name: 'Sizzling Fajita', price: 499, category: 'Sandwiches', type: 'Sandwiches', size: 'sm', images: [sizzlingFajita1, sizzlingFajita2], description: DESCRIPTION },
 
   // ---- Drinks / Hot Coffee ----
-  { id: 27, name: 'Cappuccino', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [cappuccinoImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 28, name: 'Latte', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [latteImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 29, name: 'Spanish Latte', price: 599, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [spanishLatteImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 30, name: 'Caramel Latte', price: 599, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [caramelLatteImg], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 27, name: 'Cappuccino', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [cappuccinoImg], description: DRINK_DESCRIPTION },
+  { id: 28, name: 'Latte', price: 499, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [latteImg], description: DRINK_DESCRIPTION },
+  { id: 29, name: 'Spanish Latte', price: 599, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [spanishLatteImg], description: DRINK_DESCRIPTION },
+  { id: 30, name: 'Caramel Latte', price: 599, category: 'Drinks', type: 'Hot Coffee', size: 'sm', images: [caramelLatteImg], description: DRINK_DESCRIPTION },
 
   // ---- Drinks / Iced Coffee ----
-  { id: 31, name: 'Iced Cappuccino', price: 599, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedCappuccino2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 32, name: 'Iced Latte', price: 599, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedLatte1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 33, name: 'Iced Spanish Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedSpanishLatte1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 34, name: 'Iced Caramel Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedCaramelLatte1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 31, name: 'Iced Cappuccino', price: 599, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedCappuccino2], description: DRINK_DESCRIPTION },
+  { id: 32, name: 'Iced Latte', price: 599, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedLatte1], description: DRINK_DESCRIPTION },
+  { id: 33, name: 'Iced Spanish Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedSpanishLatte1], description: DRINK_DESCRIPTION },
+  { id: 34, name: 'Iced Caramel Latte', price: 699, category: 'Drinks', type: 'Iced Coffee', size: 'sm', images: [icedCaramelLatte1], description: DRINK_DESCRIPTION },
 
   // ---- Drinks / Frappes (Blended Iced, 799) ----
-  { id: 35, name: 'Caramel Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [caramelFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 36, name: 'Cookies & Cream Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [cookiesCreamFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 37, name: 'Hazelnut Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [hazelnutFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 38, name: 'Double Chocolate Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [doubleChocolateFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 39, name: 'Mocha Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [mochaFrappe1], description: DRINK_DESCRIPTION, reviews: REVIEWS },
+  { id: 35, name: 'Caramel Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [caramelFrappe1], description: DRINK_DESCRIPTION },
+  { id: 36, name: 'Cookies & Cream Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [cookiesCreamFrappe1], description: DRINK_DESCRIPTION },
+  { id: 37, name: 'Hazelnut Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [hazelnutFrappe1], description: DRINK_DESCRIPTION },
+  { id: 38, name: 'Double Chocolate Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [doubleChocolateFrappe1], description: DRINK_DESCRIPTION },
+  { id: 39, name: 'Mocha Frappe', price: 799, category: 'Drinks', type: 'Blended Iced', size: 'sm', images: [mochaFrappe1], description: DRINK_DESCRIPTION },
 
   // ---- Drinks / Chillers + Extras ----
-  { id: 40, name: 'Passion Fruit Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [passionFruit1, passionFruit2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 41, name: 'Wild Berry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [wildBerry1, wildBerry2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 42, name: 'Strawberry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [strawberryChillerSc, strawberryChiller2], description: DRINK_DESCRIPTION, reviews: REVIEWS },
-  { id: 43, name: 'Water', price: 120, category: 'Drinks', type: 'Extras', size: 'sm', images: [waterImg], description: 'Chilled bottled water.', reviews: REVIEWS },
+  { id: 40, name: 'Passion Fruit Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [passionFruit1, passionFruit2], description: DRINK_DESCRIPTION },
+  { id: 41, name: 'Wild Berry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [wildBerry1, wildBerry2], description: DRINK_DESCRIPTION },
+  { id: 42, name: 'Strawberry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [strawberryChillerSc, strawberryChiller2], description: DRINK_DESCRIPTION },
+  { id: 43, name: 'Water', price: 120, category: 'Drinks', type: 'Extras', size: 'sm', images: [waterImg], description: 'Chilled bottled water.' },
 ])
