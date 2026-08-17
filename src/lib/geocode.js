@@ -1,18 +1,17 @@
 /**
- * Turning coordinates into a street address the customer recognises.
+ * Turning coordinates into a street address, to pre-fill the address fields.
  *
- * ⚠️ **Interim.** Geocoding belongs on the backend — Step 9 (`POST /branches/resolve`)
- * is specified to take an address, geocode it with a server-held Google Maps key, and
- * return the branch. When that lands, this file should be deleted and the call moved
- * behind our own API. Two reasons it belongs there and not here:
+ * **This is a convenience, not a decision.** The geocoding that matters — placing a typed
+ * address and choosing which branch delivers to it — moved server-side in Step 9
+ * (`POST /branches/resolve`), where the Maps key is unreadable by page scripts and paid
+ * lookups are cached across every customer. Nothing here influences which branch is
+ * assigned, what the order costs, or whether it is inside the delivery radius.
  *
- *   1. A Maps key in the browser is a key anyone can read out of the bundle and spend.
- *   2. Geocoding is billed per lookup, so it wants a server-side cache — the same
- *      address gets looked up over and over by the same person retrying a checkout.
+ * All this does is save the customer typing after they tap "Use my current location". It
+ * still sends their coordinates to OpenStreetMap, so it runs only on that tap, never on
+ * page load, and a failure costs an autofill rather than a checkout.
  *
- * Until then this uses OpenStreetMap's Nominatim, which needs no key. Note what that
- * means: the customer's coordinates are sent to a third party. It happens only when
- * they press the button, never on page load, and the order works fine without it.
+ * Worth moving behind our own API too if the reverse lookup ever becomes load-bearing.
  */
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org/reverse'

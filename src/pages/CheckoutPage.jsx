@@ -166,18 +166,47 @@ export default function CheckoutPage() {
 
   const isDelivery = fulfilment === FULFILMENT.DELIVERY
 
+  /**
+   * A typed address good enough to geocode.
+   *
+   * Joined with the area because "House 12, Street 4" alone is ambiguous across a city,
+   * and the two fields together are what a person would actually say out loud.
+   */
+  const addressText = [address.line1.trim(), address.area.trim(), address.city.trim()]
+    .filter(Boolean)
+    .join(', ')
+
+  const hasUsableAddress = address.line1.trim().length >= 5
+
   /** Everything the server needs to price this cart, or null while it is incomplete. */
   const quoteRequest = useMemo(() => {
     if (!canReachApi || items.length === 0 || unorderable.length > 0) return null
-    if (isDelivery && !location) return null
+    // Delivery needs somewhere to deliver TO — a pin or an address the server can place.
+    if (isDelivery && !location && !hasUsableAddress) return null
     if (!isDelivery && !branchCode) return null
 
     return {
       fulfilment,
       items: toApiItems(items),
-      ...(isDelivery ? { location } : { branchCode }),
+      ...(isDelivery
+        ? // Coordinates win when we have them: a GPS fix states where someone is more
+          // precisely than a line of text, and it costs the server no geocoding lookup.
+          location
+          ? { location }
+          : { addressText }
+        : { branchCode }),
     }
-  }, [canReachApi, items, unorderable, isDelivery, location, branchCode, fulfilment])
+  }, [
+    canReachApi,
+    items,
+    unorderable,
+    isDelivery,
+    location,
+    branchCode,
+    fulfilment,
+    addressText,
+    hasUsableAddress,
+  ])
 
   /**
    * Re-price whenever anything that affects the price changes.
@@ -195,6 +224,14 @@ export default function CheckoutPage() {
       return
     }
 
+    /**
+     * An address-based quote reaches a geocoder, which is billed per lookup, so it waits
+     * appreciably longer than a coordinate one. At 300ms every pause in typing "House 12,
+     * Street 4" would be its own paid call for a partial address nobody asked about.
+     * Coordinates cost nothing extra and stay snappy.
+     */
+    const debounceMs = quoteRequest.addressText ? 1200 : 300
+
     const controller = new AbortController()
     const timer = setTimeout(() => {
       setQuoting(true)
@@ -211,7 +248,7 @@ export default function CheckoutPage() {
         .finally(() => {
           if (!controller.signal.aborted) setQuoting(false)
         })
-    }, 300)
+    }, debounceMs)
 
     return () => {
       clearTimeout(timer)
@@ -286,7 +323,9 @@ export default function CheckoutPage() {
     errors.phone = 'Enter a Pakistani mobile number, e.g. 03001234567.'
   if (isDelivery && address.line1.trim().length < 5)
     errors.line1 = 'A street address is required so the rider can find you.'
-  if (isDelivery && !location) errors.location = 'We need your location to find your nearest shop.'
+  // No location error: sharing a pin is now optional. The address alone is enough for the
+  // server to place the order, and the street address above is required regardless
+  // because a rider cannot deliver to coordinates.
   if (!isDelivery && !branchCode) errors.branchCode = 'Choose which shop you will collect from.'
 
   const isValid = Object.keys(errors).length === 0
@@ -336,7 +375,7 @@ export default function CheckoutPage() {
     if (quoteError) return quoteError.title
     if (!quote) {
       return isDelivery
-        ? 'Share your location to see your total.'
+        ? 'Enter your address, or share your location, to see your total.'
         : 'Choose a shop to see your total.'
     }
     if (touched && !isValid) return 'Please fix the highlighted fields above.'
@@ -494,9 +533,8 @@ export default function CheckoutPage() {
             {isDelivery ? (
               <Card title="Where are we taking it?">
                 <Field
-                  label="Your location"
-                  hint="We use this to find your nearest shop and check you are inside our 2 km delivery area."
-                  error={touched ? errors.location : undefined}
+                  label="Your location (optional)"
+                  hint="Sharing it is the most accurate way to find your nearest shop — or just type your address below and we will look it up."
                 >
                   <button
                     type="button"

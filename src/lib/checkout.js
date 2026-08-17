@@ -116,6 +116,19 @@ export function describeCheckoutError(error) {
     case 'ITEMS_UNAVAILABLE':
       return { title: 'Something in your cart has sold out', detail, canRetry: false }
 
+    /**
+     * The geocoder could not place the typed address. Common for a specific building —
+     * OpenStreetMap in particular knows areas far better than it knows shop names — so the
+     * advice is to widen the address or use the location button, which needs no geocoder.
+     */
+    case 'ADDRESS_NOT_FOUND':
+      return {
+        title: 'We could not find that address',
+        detail:
+          'Try adding the sector or area, or tap "Use my current location" — that works without needing to look the address up.',
+        canRetry: true,
+      }
+
     case 'INVALID_BOX':
       return {
         title: 'One of your boxes needs rebuilding',

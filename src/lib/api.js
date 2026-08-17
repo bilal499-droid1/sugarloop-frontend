@@ -153,6 +153,28 @@ export function fetchBranches({ signal } = {}) {
 }
 
 /**
+ * Which branch delivers to a place — from coordinates, or from a typed address.
+ *
+ * `POST` because a home address must never travel in a URL: query strings are logged by
+ * proxies, kept in browser history and leaked in referrers.
+ *
+ * Geocoding lives behind this endpoint rather than in the browser for two reasons. The
+ * Maps key stays server-side, where nobody can read it out of the bundle and spend it;
+ * and lookups are billed per call, so the server can cache them across every customer
+ * while a browser could only ever cache its own.
+ *
+ * Throws `OUTSIDE_DELIVERY_AREA` (naming the nearest shop and its distance) or
+ * `ADDRESS_NOT_FOUND` — both are answers to show the customer, not failures to swallow.
+ */
+export function resolveDeliveryBranch({ location, address }, { signal } = {}) {
+  return request('/branches/resolve', {
+    method: 'POST',
+    body: location ? { location } : { address },
+    signal,
+  })
+}
+
+/**
  * Prices a cart. The server is the only thing that decides what anything costs.
  *
  * Send `{ fulfilment, items, location? , branchCode? }` — ids and quantities, never a
