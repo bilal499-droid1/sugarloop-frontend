@@ -9,12 +9,16 @@
  * So there is exactly one place that unwraps `data` and one that reads `error.code`,
  * instead of every caller remembering which shape a given endpoint returns.
  *
- * ⚠️ This file is READ-ONLY against the API on purpose. The catalogue is the only thing
- * wired up so far; pricing (`POST /checkout/quote`) and order placement (`POST /orders`)
- * are deliberately NOT here. Order placement has no phone verification behind it yet —
- * the backend's own route file says it must not be public before OTP ships — so adding
- * it needs to be a decision somebody makes on purpose, not something that quietly
- * appears because a helper was available.
+ * ⚠️ **Order placement is wired up here, and it is not yet safe to expose publicly.**
+ *
+ * `POST /orders` has no phone verification behind it — the backend's own route file
+ * says so plainly: nothing checks that the phone number on an order belongs to whoever
+ * placed it, which is the gap that lets prank orders reach a real address and put a
+ * rider on the road for a Cash-on-Delivery order nobody intends to accept.
+ *
+ * It is here because the checkout UI cannot be built or tested without it. It must NOT
+ * reach production until customer OTP ships. Until then this belongs on a staging
+ * deploy, or behind a build that real customers cannot reach.
  */
 
 /**
@@ -46,7 +50,14 @@ export class ApiError extends Error {
  */
 const DEFAULT_TIMEOUT_MS = 8000
 
-async function request(path, { signal, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+/**
+ * Longer than a menu fetch. Placing an order is a deliberate click on a button the
+ * customer waited to press; giving up on it at 8 seconds risks the worst outcome
+ * available — an order the server accepted and the browser reported as failed.
+ */
+const WRITE_TIMEOUT_MS = 20000
+
+async function request(path, { method = 'GET', body, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   if (!isApiConfigured) {
     throw new ApiError(0, 'API_NOT_CONFIGURED', 'VITE_API_BASE_URL is not set')
   }
@@ -60,22 +71,30 @@ async function request(path, { signal, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
 
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
+      method,
+      headers: {
+        Accept: 'application/json',
+        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     })
 
-    // Read the body before checking `ok`: the API puts its error envelope in the body
+    // Read the payload before checking `ok`: the API puts its error envelope in the body
     // of a 4xx, and that message is more useful than "Request failed with 422".
-    let body = null
+    //
+    // Named `payload` rather than `body` deliberately — `body` is this function's own
+    // parameter, and a `let body` here would shadow it for the WHOLE block, putting the
+    // fetch call above into the temporal dead zone.
+    let payload = null
     try {
-      body = await response.json()
+      payload = await response.json()
     } catch {
-      body = null
+      payload = null
     }
 
     if (!response.ok) {
-      const error = body?.error
+      const error = payload?.error
       throw new ApiError(
         response.status,
         error?.code ?? 'HTTP_ERROR',
@@ -84,7 +103,7 @@ async function request(path, { signal, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
       )
     }
 
-    return body?.data
+    return payload?.data
   } finally {
     clearTimeout(timer)
     signal?.removeEventListener('abort', onCallerAbort)
@@ -111,4 +130,52 @@ export function fetchProducts({ branchId, signal } = {}) {
 /** The branches, with server-computed `isOpenNow` / `isAcceptingOrders`. */
 export function fetchBranches({ signal } = {}) {
   return request('/branches', { signal })
+}
+
+/**
+ * Prices a cart. The server is the only thing that decides what anything costs.
+ *
+ * Send `{ fulfilment, items, location? , branchCode? }` — ids and quantities, never a
+ * price. Comes back with the branch it assigned, a per-line breakdown, and the totals
+ * to display verbatim. Every amount is `{ amount, formatted }` where `amount` is
+ * hundredths of a rupee, so nothing here has to divide by 100 and start rounding.
+ *
+ * Also the gate for everything else: stock, opening hours, the Rs 500 minimum and the
+ * 2 km delivery radius are all enforced in this one call, and each refusal comes back
+ * as a distinct `error.code`. See `describeCheckoutError` in `checkout.js`.
+ */
+export function quoteCart(request_, { signal } = {}) {
+  return request('/checkout/quote', { method: 'POST', body: request_, signal })
+}
+
+/**
+ * Places a Cash-on-Delivery order. Returns the created order.
+ *
+ * `expectedTotal` is mandatory and is the grand total the customer was actually shown.
+ * The server re-prices the whole cart from scratch and **rejects** rather than silently
+ * repricing if anything moved since the quote — a sold-out tray, an admin price change.
+ * That refusal is a feature: it is what stops someone being charged a number they never
+ * agreed to.
+ *
+ * ⚠️ See the warning at the top of this file. Nothing verifies the phone number yet.
+ */
+export function placeOrder(order, { signal } = {}) {
+  return request('/orders', {
+    method: 'POST',
+    body: order,
+    signal,
+    timeoutMs: WRITE_TIMEOUT_MS,
+  })
+}
+
+/**
+ * One order, by its number.
+ *
+ * Requires the phone it was placed with. Order numbers run in sequence and are trivially
+ * enumerable, so the phone is the only thing standing between a stranger and every
+ * order placed today. Replaced by the OTP session in Sprint 2.
+ */
+export function fetchOrderByNumber(orderNumber, phone, { signal } = {}) {
+  const query = new URLSearchParams({ phone })
+  return request(`/orders/${encodeURIComponent(orderNumber)}?${query}`, { signal })
 }

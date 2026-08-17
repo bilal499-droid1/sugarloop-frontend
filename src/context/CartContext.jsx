@@ -20,14 +20,53 @@ const STORAGE_KEY = 'sugarloop.cart.v1'
 // silently deleted from someone's cart here. The server refuses it at quote time with
 // ITEMS_UNAVAILABLE, naming the item, which is a better place to explain it than a
 // line vanishing on page load with no account of why.
+//
+// `apiId` (the Mongo _id) is re-read alongside the price because checkout identifies
+// products by it. It only exists once the LIVE catalogue has loaded — the bundled
+// fallback has no such id — which is why a cart can be perfectly displayable and still
+// not be orderable. `checkout.js` is what notices that.
 function rehydrate(item, catalogue) {
+  // A box is priced from its contents, not from a catalogue row of its own, so it
+  // rehydrates by re-reading every child. Without this a saved box would keep quoting
+  // whatever its contents cost on the day it was built.
+  if (item.kind === 'box') return rehydrateBox(item, catalogue)
+
   const product = catalogue.find((p) => String(p.id) === String(item.id))
   if (!product) return item
   return {
     ...item,
+    apiId: product.apiId,
     name: product.name,
     price: product.price,
     image: product.images?.[0],
+  }
+}
+
+/**
+ * A Build Your Box line.
+ *
+ * `contents` holds the LOCAL catalogue ids of everything in the box, in the order they
+ * were placed. Storing the contents rather than just the total is what makes the box
+ * orderable at all: `POST /orders` takes `{ kind: 'box', boxSize, productIds }` and
+ * prices it server-side, so a box that remembers only its own total cannot be sent.
+ *
+ * A child that has vanished from the catalogue is kept in place rather than dropped —
+ * silently shrinking a box of 6 into a box of 5 would fail the server's "exactly N
+ * items" check with a confusing message. Left intact, `checkout.js` can say plainly
+ * that the box needs rebuilding.
+ */
+function rehydrateBox(item, catalogue) {
+  const children = (item.contents ?? []).map((id) =>
+    catalogue.find((p) => String(p.id) === String(id))
+  )
+
+  if (children.some((child) => !child)) return item
+
+  return {
+    ...item,
+    price: children.reduce((sum, child) => sum + child.price, 0),
+    image: children[0]?.images?.[0],
+    childApiIds: children.map((child) => child.apiId),
   }
 }
 
@@ -106,10 +145,18 @@ export function CartProvider({ children }) {
           ...current,
           {
             id: product.id,
+            // Carried so checkout can name this product to the API without re-fetching
+            // the catalogue to look it up. Absent on the bundled fallback.
+            apiId: product.apiId,
             name: product.name,
             price: product.price,
             image: product.image ?? product.images?.[0],
             qty,
+            // Set by addBox; a plain catalogue product has no kind and defaults to one.
+            ...(product.kind ? { kind: product.kind } : {}),
+            ...(product.boxSize ? { boxSize: product.boxSize } : {}),
+            ...(product.contents ? { contents: product.contents } : {}),
+            ...(product.childApiIds ? { childApiIds: product.childApiIds } : {}),
           },
         ]
       })

@@ -114,17 +114,27 @@ export default function CartPage() {
                 <p className="m-0 font-price font-bold text-lg text-accent">Rs {subtotal}</p>
               </div>
 
-              {/* There's no payment backend yet, so checkout is a phone order rather
-                  than a fake "Pay now" button that would go nowhere. */}
+              {/* Deliberately not showing a delivery fee or a grand total here: this
+                  page has no idea whether the order is delivery or pickup, whether the
+                  shop is open, or whether anything is sold out. Those are the server's
+                  answers and they arrive on the checkout page. Quoting a total here that
+                  the next page contradicts is worse than quoting none. */}
               <p className="mt-4 mb-3 text-xs text-text-body">
-                Ready to order? Give us a call and we'll take it from here.
+                Delivery and your total are worked out at checkout.
               </p>
-              <a
-                href="tel:051111557799"
+              <Link
+                to="/checkout"
                 className="block w-full text-center h-12 leading-[3rem] bg-accent text-white no-underline rounded-lg font-display font-bold text-sm"
               >
-                Call 051-111-557-799 to order
-              </a>
+                Proceed to checkout
+              </Link>
+
+              <p className="mt-3 mb-0 text-[0.7rem] text-text-body text-center">
+                Prefer to order by phone?{' '}
+                <a href="tel:051111557799" className="text-accent font-bold">
+                  051-111-557-799
+                </a>
+              </p>
             </div>
           </>
         )}

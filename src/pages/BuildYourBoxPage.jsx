@@ -51,13 +51,29 @@ export default function BuildYourBoxPage() {
     setSlots((current) => current.map((slot, i) => (i === index ? null : slot)))
   }
 
+  /**
+   * The box goes into the cart WITH its contents.
+   *
+   * It used to carry only a name and a total, which made it impossible to order: the
+   * API prices a box from `{ boxSize, productIds }` and computes the total itself. A
+   * line that remembered only its own total had nothing to send.
+   *
+   * `contents` are local catalogue ids so the cart can re-read prices and photos after a
+   * rebuild; `childApiIds` are the Mongo ids checkout actually posts. Both are kept
+   * because they answer different questions and deriving one from the other needs the
+   * live catalogue, which may not have loaded yet.
+   */
   const handleAddToCart = () => {
     if (!isFull) return
     const box = {
       id: `box-${boxSize}-${productType}-${Date.now()}`,
+      kind: 'box',
+      boxSize,
       name: `Box of ${boxSize} — ${productType}`,
       price: total,
       image: slots[0]?.image,
+      contents: slots.map((item) => item.id),
+      childApiIds: slots.map((item) => item.apiId),
     }
     addItem(box, 1)
     setJustAdded(true)

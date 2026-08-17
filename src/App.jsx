@@ -6,6 +6,8 @@ import CorporateGiftingPage from './pages/CorporateGiftingPage'
 import FaqPage from './pages/FaqPage'
 import BuildYourBoxPage from './pages/BuildYourBoxPage'
 import CartPage from './pages/CartPage'
+import CheckoutPage from './pages/CheckoutPage'
+import OrderConfirmationPage from './pages/OrderConfirmationPage'
 import NotFoundPage from './pages/NotFoundPage'
 import StaffLoginPage from './pages/staff/StaffLoginPage'
 import StaffOrdersPage from './pages/staff/StaffOrdersPage'
@@ -39,6 +41,11 @@ export default function App() {
                   <Route path="/faq" element={<FaqPage />} />
                   <Route path="/build-your-box" element={<BuildYourBoxPage />} />
                   <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  {/* Kept out of /cart/* so a bookmarked confirmation is a stable URL of
+                      its own. The order number is enough to identify it; the API still
+                      demands the phone before it hands anything over. */}
+                  <Route path="/order/:orderNumber" element={<OrderConfirmationPage />} />
 
                   {/* The staff console. Its own auth context and API client — see
                       staffApi.js — rather than anything the storefront routes share,
