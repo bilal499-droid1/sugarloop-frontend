@@ -433,3 +433,88 @@ export function resetStaffPassword(id, password) {
 export function deactivateStaffUser(id) {
   return data(`${USERS}/${id}`, { method: 'DELETE' }).then((body) => body.staffUser)
 }
+
+const PRODUCTS = '/staff/products'
+
+/**
+ * The catalogue, as an admin manages it.
+ *
+ * Admin-only server-side, like the team list — a branch manager gets 403 on every call
+ * here. Their only write anywhere in the catalogue is the per-branch stock toggle, and
+ * that separation is the rule the pricing engine rests on: one global price list, with
+ * only availability varying by shop.
+ *
+ * Unlike the public menu, this includes discontinued items by default. They are the ones
+ * an admin is usually hunting for — the product that stopped appearing on the site.
+ *
+ * Resolves to `{ items, meta }` like the other lists, same cursor pagination.
+ */
+export async function fetchStaffProducts({ signal, ...filters } = {}) {
+  const query = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') query.set(key, value)
+  }
+
+  const { data: items, meta } = await authed(`${PRODUCTS}?${query}`, { signal })
+  return { items, meta }
+}
+
+export function fetchStaffProduct(id, { signal } = {}) {
+  return data(`${PRODUCTS}/${id}`, { signal }).then((response) => response.product)
+}
+
+/**
+ * ⚠️ `price` is PAISA, not rupees. Rs 299 is `29900`.
+ *
+ * The conversion happens once, in `toPaisa` below, and never anywhere else. Every screen
+ * shows rupees because that is what a person types off a menu; every request carries the
+ * stored integer because that is the only form the server accepts. A float that slips
+ * through here is a rounding error in somebody's bill.
+ */
+export function createStaffProduct(product) {
+  return data(PRODUCTS, { method: 'POST', body: product }).then((response) => response.product)
+}
+
+/** Send only what changed — an empty patch is a 422, deliberately. */
+export function updateStaffProduct(id, changes) {
+  return data(`${PRODUCTS}/${id}`, { method: 'PATCH', body: changes }).then(
+    (response) => response.product
+  )
+}
+
+/**
+ * Discontinues a product. The server never deletes one.
+ *
+ * Every order line references a product, so removing the document would leave historical
+ * orders that nobody can reprint or dispute. This takes it off the menu instead —
+ * everywhere and permanently, which is what "delete" means to whoever clicked it — and
+ * `updateStaffProduct(id, { isActive: true })` brings it back.
+ *
+ * Distinct from the stock toggle: that is one branch saying "the tray is empty today".
+ */
+export function discontinueStaffProduct(id) {
+  return data(`${PRODUCTS}/${id}`, { method: 'DELETE' }).then((response) => response.product)
+}
+
+/**
+ * Rupees as typed → paisa as stored. The single place this conversion is allowed to
+ * happen.
+ *
+ * `Math.round` rather than a truncation: 4.35 * 100 is 434.99999999999994 in binary
+ * floating point, and `Math.trunc` would quietly bill Rs 4.34. Returns null for anything
+ * that is not a finite number, so a half-typed field submits nothing rather than NaN.
+ */
+export function toPaisa(rupees) {
+  // `Number('')` and `Number('   ')` are both 0, not NaN — so without this an empty
+  // price box would submit a free product rather than being caught as missing.
+  if (typeof rupees === 'string' && rupees.trim() === '') return null
+
+  const value = Number(rupees)
+  if (!Number.isFinite(value)) return null
+  return Math.round(value * 100)
+}
+
+/** Paisa as stored → rupees for an input box. The exact inverse of `toPaisa`. */
+export function toRupees(paisa) {
+  return Number.isFinite(paisa) ? paisa / 100 : ''
+}

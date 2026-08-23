@@ -14,6 +14,7 @@ import StaffOrdersPage from './pages/staff/StaffOrdersPage'
 import StaffStockPage from './pages/staff/StaffStockPage'
 import StaffTeamPage from './pages/staff/StaffTeamPage'
 import StaffEnquiriesPage from './pages/staff/StaffEnquiriesPage'
+import StaffProductsPage from './pages/staff/StaffProductsPage'
 import StaffAccountPage from './pages/staff/StaffAccountPage'
 import RequireStaffAuth from './components/staff/RequireStaffAuth'
 import RequireAdmin from './components/staff/RequireAdmin'
@@ -74,6 +75,7 @@ export default function App() {
                               <Route element={<RequireAdmin />}>
                                 <Route path="team" element={<StaffTeamPage />} />
                                 <Route path="enquiries" element={<StaffEnquiriesPage />} />
+                                <Route path="products" element={<StaffProductsPage />} />
                               </Route>
                             </Route>
                           </Route>

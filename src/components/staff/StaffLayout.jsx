@@ -1,5 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { FaClipboardList, FaEnvelopeOpenText, FaSignOutAlt, FaUsers, FaWarehouse } from 'react-icons/fa'
+import {
+  FaClipboardList,
+  FaDonate,
+  FaEnvelopeOpenText,
+  FaSignOutAlt,
+  FaUsers,
+  FaWarehouse,
+} from 'react-icons/fa'
 import { useStaffAuth } from '../../context/StaffAuthContext'
 import SugarLoopMark from '../SugarLoopMark'
 
@@ -51,6 +58,10 @@ export default function StaffLayout() {
                 offer the API is guaranteed to refuse is worse than no offer. */}
             {isAdmin && (
               <>
+                <NavLink to="/staff/products" className={navLinkClass}>
+                  <FaDonate className="text-xs" aria-hidden="true" />
+                  Products
+                </NavLink>
                 <NavLink to="/staff/enquiries" className={navLinkClass}>
                   <FaEnvelopeOpenText className="text-xs" aria-hidden="true" />
                   Enquiries

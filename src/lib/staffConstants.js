@@ -118,3 +118,9 @@ export function generatePassword() {
   const bytes = crypto.getRandomValues(new Uint32Array(GENERATED_LENGTH))
   return Array.from(bytes, (byte) => SAFE_ALPHABET[byte % SAFE_ALPHABET.length]).join('')
 }
+
+/**
+ * Mirrors PRODUCT_CATEGORIES on the server. Four, fixed — a category is a section of the
+ * printed menu, not a tag, so this is a closed list rather than free text.
+ */
+export const PRODUCT_CATEGORIES = ['Donuts', 'Croissants', 'Sandwiches', 'Drinks']

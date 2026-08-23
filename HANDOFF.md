@@ -123,6 +123,12 @@ order board, and nothing on the public site should be able to import a credentia
   "we'll get back to you shortly" and send nothing anywhere — and it had no name or email
   field, so there was no address to reply to even in principle. It now takes both, because
   an answer needs somewhere to go. The phone is optional on this kind, server-side.
+- **Products screen in the console** — admin-only catalogue management: create, edit,
+  discontinue and put back. Closes the gap where changing a price meant a developer
+  editing a seed file and re-running it. ⚠️ The price box is in **rupees** and the request
+  is in **paisa**; `toPaisa` in `lib/staffApi.js` is the only place that conversion is
+  allowed to happen, and it is unit-tested — getting it backwards does not throw, it just
+  prices a donut at Rs 2.99.
 - **Lint and tests exist.** `npm run check` is lint + tests, matching the backend.
 
 ## What is not built
