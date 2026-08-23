@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FaChevronDown, FaChevronLeft, FaChevronRight, FaStar, FaRegStar } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
+import { isApiConfigured, submitEnquiry } from '../lib/api'
 import testimonialCardBg from '../assets/card1.webp'
 import avatar1 from '../assets/faq-avatar-1.webp'
 import avatar2 from '../assets/faq-avatar-2.webp'
@@ -10,6 +11,8 @@ import avatar4 from '../assets/faq-avatar-4.webp'
 import avatar5 from '../assets/faq-avatar-5.webp'
 import avatar6 from '../assets/faq-avatar-6.webp'
 import avatar7 from '../assets/faq-avatar-7.webp'
+
+const CONTACT_EMAIL = 'sugarlooppk@gmail.com'
 
 // Full literal class strings (not built via interpolation) so Tailwind's
 // static scanner can detect them — arbitrary values built from interpolated
@@ -107,7 +110,12 @@ export default function FaqPage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const [activeBranch, setActiveBranch] = useState(0)
   const [question, setQuestion] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [reference, setReference] = useState(null)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState(null)
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const testimonial = TESTIMONIALS[activeTestimonial]
   const branch = BRANCHES[activeBranch]
@@ -115,9 +123,58 @@ export default function FaqPage() {
   const nextTestimonial = () => setActiveTestimonial((i) => (i + 1) % TESTIMONIALS.length)
   const prevTestimonial = () => setActiveTestimonial((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)
 
-  const handleSubmit = (e) => {
+  /**
+   * Sends the question to the API, which stores it and emails the shop.
+   *
+   * This used to set a flag and nothing else: the page said "we'll get back to you
+   * shortly" and the question went nowhere at all — no request, no record, and no address
+   * to reply to even if someone had wanted to. A promise the page could not keep was
+   * worse than not asking, which is why the form now takes a name and an email: an answer
+   * needs somewhere to go.
+   *
+   * Posted as `kind: 'question'`, which is what separates it from a corporate gifting
+   * lead in the same inbox. The server makes the phone optional for this kind — demanding
+   * a number before somebody may ask whether the donuts contain nuts would lose more
+   * questions than it could ever help answer.
+   */
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmitted(true)
+    setError(null)
+    setFieldErrors({})
+
+    if (!isApiConfigured) {
+      setError(`We can't send that right now. Please email us at ${CONTACT_EMAIL}.`)
+      return
+    }
+
+    setSending(true)
+    try {
+      const { enquiry } = await submitEnquiry({
+        kind: 'question',
+        name: name.trim(),
+        email: email.trim(),
+        message: question.trim(),
+      })
+
+      setReference(enquiry.reference)
+      setName('')
+      setEmail('')
+      setQuestion('')
+    } catch (err) {
+      // The API returns `[{ field, message }]` on a 422, so a rejected value lands under
+      // the input that caused it rather than as one sentence for the whole form.
+      if (Array.isArray(err?.details) && err.details.length > 0) {
+        setFieldErrors(
+          Object.fromEntries(err.details.map(({ field, message }) => [field, message]))
+        )
+      } else if (err?.code === 'TOO_MANY_REQUESTS') {
+        setError("You've sent this a few times already — please give it a little while.")
+      } else {
+        setError(`Something went wrong sending that. Please try again, or email ${CONTACT_EMAIL}.`)
+      }
+    } finally {
+      setSending(false)
+    }
   }
 
   // The box starts short and grows to fit what's typed: reset to auto first so it
@@ -273,6 +330,41 @@ export default function FaqPage() {
 
         {/* 1113px * 0.7 - kept centred by mx-auto, so it narrows evenly from both sides. */}
         <form className="relative max-w-[779px] mx-auto" onSubmit={handleSubmit}>
+          {/* Name and email are what make the answer deliverable. The question used to
+              stand alone, which meant nobody could reply to it even in principle. */}
+          <div className="flex flex-col gap-3 mb-3 sm:flex-row">
+            <div className="flex-1 text-left">
+              <input
+                type="text"
+                className="w-full h-12 px-4 bg-[#f5f5f5] border border-[#dfdfdf] rounded-[14px] font-display text-[0.9rem] text-black placeholder:text-[#9e9e9e]"
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              {fieldErrors.name && (
+                <p className="mt-1 mb-0 font-display text-[0.78rem] text-red-600">
+                  {fieldErrors.name}
+                </p>
+              )}
+            </div>
+            <div className="flex-1 text-left">
+              <input
+                type="email"
+                className="w-full h-12 px-4 bg-[#f5f5f5] border border-[#dfdfdf] rounded-[14px] font-display text-[0.9rem] text-black placeholder:text-[#9e9e9e]"
+                placeholder="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              {fieldErrors.email && (
+                <p className="mt-1 mb-0 font-display text-[0.78rem] text-red-600">
+                  {fieldErrors.email}
+                </p>
+              )}
+            </div>
+          </div>
+
           <textarea
             className="w-full min-h-[7rem] lg:min-h-[10rem] max-h-[60vh] overflow-y-auto py-[1.1rem] px-[1.2rem] lg:pb-20 bg-[#f5f5f5] border border-[#dfdfdf] rounded-[14px] font-display text-[0.9rem] text-black resize-y placeholder:text-[#9e9e9e]"
             placeholder="Write your question"
@@ -280,18 +372,28 @@ export default function FaqPage() {
             onChange={handleQuestionChange}
             required
           />
+          {fieldErrors.message && (
+            <p className="mt-1 mb-0 text-left font-display text-[0.78rem] text-red-600">
+              {fieldErrors.message}
+            </p>
+          )}
           <button
             type="submit"
-            className="block w-full mt-4 lg:mt-0 h-[2.9rem] bg-accent text-white border-none rounded-xl font-display font-bold text-[1.1rem] cursor-pointer transition-transform duration-300 ease-out hover:scale-105 lg:absolute lg:right-6 lg:bottom-6 lg:w-auto lg:px-10"
+            disabled={sending}
+            className="block w-full mt-4 lg:mt-0 h-[2.9rem] bg-accent text-white border-none rounded-xl font-display font-bold text-[1.1rem] cursor-pointer transition-transform duration-300 ease-out hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 lg:absolute lg:right-6 lg:bottom-6 lg:w-auto lg:px-10"
           >
-            Submit
+            {sending ? 'Sending…' : 'Submit'}
           </button>
         </form>
-        {submitted && (
+
+        {/* The reference is the whole point of confirming: it is what the visitor can
+            quote on the phone if the answer never arrives. */}
+        {reference && (
           <p className="mt-4 mb-0 font-display font-medium text-accent">
-            Thanks! We'll get back to you shortly.
+            Thanks! We'll get back to you shortly — your reference is {reference}.
           </p>
         )}
+        {error && <p className="mt-4 mb-0 font-display font-medium text-red-600">{error}</p>}
       </section>
 
       <Footer />

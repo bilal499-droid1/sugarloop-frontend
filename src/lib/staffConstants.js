@@ -53,6 +53,21 @@ export const ENQUIRY_STATUS_LABEL = {
 
 export const ENQUIRY_STATUSES = Object.keys(ENQUIRY_STATUS_LABEL)
 
+/**
+ * The two things that arrive through a public form. Mirrors ENQUIRY_KIND on the server.
+ *
+ * They share an inbox because they are the same shape — somebody asked, somebody has to
+ * answer — but they are labelled apart because the work is not the same. A 200-box
+ * gifting lead and "do these contain nuts?" want different people and different
+ * urgencies, and an unlabelled queue buries the first behind a fortnight of the second.
+ */
+export const ENQUIRY_KIND_LABEL = {
+  corporate: 'Gifting lead',
+  question: 'Question',
+}
+
+export const ENQUIRY_KINDS = Object.keys(ENQUIRY_KIND_LABEL)
+
 /** What each state means, shown on the buttons so nobody has to guess. */
 export const ENQUIRY_STATUS_HINT = {
   new: 'Nobody has picked this up yet',

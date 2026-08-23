@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FaExclamationTriangle } from 'react-icons/fa'
 import { fetchEnquiries, fetchEnquirySummary } from '../../lib/staffApi'
-import { ENQUIRY_STATUSES, ENQUIRY_STATUS_LABEL } from '../../lib/staffConstants'
+import {
+  ENQUIRY_KINDS,
+  ENQUIRY_KIND_LABEL,
+  ENQUIRY_STATUSES,
+  ENQUIRY_STATUS_LABEL,
+} from '../../lib/staffConstants'
 import EnquiryPanel from '../../components/staff/EnquiryPanel'
 
-const EMPTY_FILTERS = { search: '', status: '', emailed: '' }
+const EMPTY_FILTERS = { search: '', status: '', kind: '', emailed: '' }
 
 const selectClass =
   'h-9 px-2 rounded-lg border border-border-light font-display text-sm text-black outline-none focus:border-accent'
@@ -48,6 +53,18 @@ function EnquiryRow({ enquiry, isSelected, onSelect }) {
         </span>
       </span>
       <span className="shrink-0 text-right">
+        {/* Which queue this row belongs to. Shown on every row rather than only when the
+            list is mixed, because the list IS mixed by default — and a gifting lead that
+            reads like a question is one somebody deprioritises by mistake. */}
+        <span
+          className={`inline-block mb-0.5 px-1.5 rounded font-display text-[0.62rem] font-semibold uppercase tracking-wide ${
+            enquiry.kind === 'question'
+              ? 'bg-black/[0.06] text-text-body'
+              : 'bg-accent/10 text-accent'
+          }`}
+        >
+          {ENQUIRY_KIND_LABEL[enquiry.kind] ?? enquiry.kind}
+        </span>
         <span className="block text-[0.7rem] font-display font-semibold text-text-body">
           {ENQUIRY_STATUS_LABEL[enquiry.status] ?? enquiry.status}
         </span>
@@ -178,6 +195,26 @@ export default function StaffEnquiriesPage() {
               {ENQUIRY_STATUS_LABEL[status]} · {summary[status] ?? 0}
             </button>
           ))}
+          {/* Counts per kind, so "how much of this is sales" is answerable at a glance
+              rather than by filtering and reading the length of the list. */}
+          {ENQUIRY_KINDS.filter((kind) => summary.kinds?.[kind] > 0).map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              onClick={() => {
+                const next = { ...EMPTY_FILTERS, kind }
+                setFilters(next)
+                setAppliedFilters(next)
+              }}
+              className={`h-8 px-3 rounded-full font-display text-xs cursor-pointer transition-colors ${
+                appliedFilters.kind === kind
+                  ? 'bg-accent text-white border-none'
+                  : 'bg-white border border-border-light text-text-body hover:border-accent'
+              }`}
+            >
+              {ENQUIRY_KIND_LABEL[kind]} · {summary.kinds[kind]}
+            </button>
+          ))}
           {summary.unemailed > 0 && (
             <button
               type="button"
@@ -230,6 +267,20 @@ export default function StaffEnquiriesPage() {
             {ENQUIRY_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {ENQUIRY_STATUS_LABEL[status]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="font-display font-medium text-xs text-text-body">Kind</span>
+          <select value={filters.kind} onChange={setSelectFilter('kind')} className={selectClass}>
+            {/* "All" first and default: a filter that hides half the queue before anyone
+                chooses one is how the other half stops being read. */}
+            <option value="">All</option>
+            {ENQUIRY_KINDS.map((kind) => (
+              <option key={kind} value={kind}>
+                {ENQUIRY_KIND_LABEL[kind]}
               </option>
             ))}
           </select>

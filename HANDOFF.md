@@ -119,10 +119,15 @@ order board, and nothing on the public site should be able to import a credentia
 - **Mobile** — done. The site is responsive via `clamp()` sizing and `max-[900px]:`
   variants; the old "no mobile CSS yet" directive is closed.
 
+- **The FAQ question form submits for real.** It posts to `POST /enquiries` as
+  `kind: 'question'` and comes back with a reference. It used to set a local flag, say
+  "we'll get back to you shortly" and send nothing anywhere — and it had no name or email
+  field, so there was no address to reply to even in principle. It now takes both, because
+  an answer needs somewhere to go. The phone is optional on this kind, server-side.
+- **Lint and tests exist.** `npm run check` is lint + tests, matching the backend.
+
 ## What is not built
 
-- **The FAQ question form** only sets local state and goes nowhere. It has no backend
-  endpoint — unlike corporate gifting, which now does.
 - **Product images from the API.** Blocked on moving Cloudinary to a client-owned account;
   until then the bundle owns the photography and `legacyId` is the join.
 
@@ -141,6 +146,34 @@ These are the same three items the backend README lists, and they gate launch:
    button. A Maps key is a two-line change in the backend's `.env`.
 
 ---
+
+## Lint and tests
+
+```bash
+npm run lint          # eslint
+npm test              # vitest, jsdom
+npm run test:watch
+npm run check         # both — what CI should run
+```
+
+Tests are co-located as `*.test.{js,jsx}`, matching the backend's convention.
+
+Two config decisions worth knowing, both in `eslint.config.js`:
+
+- **`react/jsx-uses-vars` is on.** Without it `no-unused-vars` cannot see a component
+  that is only referenced from JSX, and reports every imported component in the codebase
+  as unused — 180 false positives, which is how a team learns to ignore its linter in an
+  afternoon.
+- **`react-hooks/set-state-in-effect` is off.** It objects to `setLoading(true)` inside
+  the effect that starts a fetch, which is the pattern every data-fetching screen here
+  uses. Satisfying it means rewriting every page for a performance opinion, not a bug —
+  the cascading render it warns about is one extra render on mount. Worth revisiting if
+  this codebase adopts the React Compiler.
+
+The four remaining `react-refresh/only-export-components` warnings are the context files
+exporting both a provider and its hook. That is deliberate, and the rule is about
+fast-refresh ergonomics rather than correctness — left as warnings rather than silenced,
+so the count stays visible if it grows.
 
 ## Conventions worth matching
 

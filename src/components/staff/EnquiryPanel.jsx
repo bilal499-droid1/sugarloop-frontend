@@ -84,13 +84,20 @@ export default function EnquiryPanel({ enquiry, onChanged }) {
           {enquiry.company || <span className="text-text-body">Not given</span>}
         </Field>
         <Field label="Phone">
-          <a
-            href={`tel:${enquiry.phone.replace(/\s/g, '')}`}
-            className="inline-flex items-center gap-1.5 text-accent no-underline hover:underline"
-          >
-            <FaPhone className="text-[0.7rem]" aria-hidden="true" />
-            {enquiry.phone}
-          </a>
+          {/* Optional on a question — the server only demands it of a gifting lead, whom
+              somebody is going to ring about a quote. Rendering the link anyway would
+              give this panel a `tel:` that dials nothing. */}
+          {enquiry.phone ? (
+            <a
+              href={`tel:${enquiry.phone.replace(/\s/g, '')}`}
+              className="inline-flex items-center gap-1.5 text-accent no-underline hover:underline"
+            >
+              <FaPhone className="text-[0.7rem]" aria-hidden="true" />
+              {enquiry.phone}
+            </a>
+          ) : (
+            <span className="text-text-body">Not given</span>
+          )}
         </Field>
         <Field label="Email">
           <a
