@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FaSearch } from 'react-icons/fa'
 import StatusBadge from '../../components/staff/StatusBadge'
 import OrderDetailPanel from '../../components/staff/OrderDetailPanel'
+import UnacknowledgedAlert from '../../components/staff/UnacknowledgedAlert'
 import { useStaffAuth } from '../../context/StaffAuthContext'
 import { fetchOrders, fetchOrder, changeOrderStatus } from '../../lib/staffApi'
 import { fetchBranches } from '../../lib/api'
@@ -14,6 +15,10 @@ const time = new Intl.DateTimeFormat('en-PK', {
 })
 
 const EMPTY_FILTERS = { status: '', fulfilment: '', date: '', phone: '', branchId: '' }
+
+// Matches the cadence the API docs assume for this board. Short enough that an order
+// is on screen well before the server chases anyone about it at five minutes.
+const POLL_MS = 15_000
 
 function OrderCard({ order, selected, onSelect }) {
   return (
@@ -101,6 +106,45 @@ export default function StaffOrdersPage() {
     }
   }, [appliedFilters])
 
+  /**
+   * Keeps the board current without anybody pressing anything.
+   *
+   * The board had no polling at all: a new order appeared only when the operator changed
+   * a filter or reloaded the page, which makes an "unacknowledged order" alert
+   * meaningless — the order it is meant to warn about would not be on screen yet.
+   *
+   * Only the first page is refreshed. Re-fetching everything the operator has paged
+   * through would reset their scroll position every fifteen seconds, and the orders that
+   * need attention are the newest ones, which are on page one by definition.
+   *
+   * Selection is untouched, so an operator reading an order is not interrupted by it.
+   */
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // Skip while a write is in flight: the refreshed list would arrive without the
+      // transition that is mid-request and briefly show the old status.
+      if (document.hidden || actionBusy) return
+
+      fetchOrders(appliedFilters)
+        .then(({ items, meta }) => {
+          setOrders(items)
+          setNextCursor(meta.nextCursor ?? null)
+        })
+        // A failed poll is not worth a banner — the next one is fifteen seconds away,
+        // and blanking a board that already has content is worse than a stale one.
+        .catch(() => {})
+    }, POLL_MS)
+
+    return () => clearInterval(timer)
+  }, [appliedFilters, actionBusy])
+
+  /**
+   * What the alarm counts. `placed` is precisely "nobody has looked at this yet" — every
+   * later status is somebody having acted, which is what the server's escalation timer
+   * uses as its acknowledgement too.
+   */
+  const unacknowledged = orders.filter((order) => order.status === 'placed').length
+
   const loadMore = async () => {
     if (!nextCursor || loadingMore) return
     setLoadingMore(true)
@@ -176,6 +220,9 @@ export default function StaffOrdersPage() {
   return (
     <div>
       <h1 className="m-0 mb-4 font-display font-bold text-xl text-black">Orders</h1>
+
+      {/* Above the filters, so a filtered view cannot hide the thing that needs doing. */}
+      <UnacknowledgedAlert count={unacknowledged} />
 
       <form
         onSubmit={applyFilters}

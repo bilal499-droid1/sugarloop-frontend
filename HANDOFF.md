@@ -129,6 +129,11 @@ order board, and nothing on the public site should be able to import a credentia
   is in **paisa**; `toPaisa` in `lib/staffApi.js` is the only place that conversion is
   allowed to happen, and it is unit-tested — getting it backwards does not throw, it just
   prices a donut at Rs 2.99.
+- **The order board polls and sounds an alarm.** Every 15s, with a repeating chime while
+  any order sits in `placed`. The server chases the branch at 5 minutes and the admin at
+  10, but a phone in a kitchen during a rush is the thing least likely to be looked at —
+  the board is what somebody is actually in front of. Mutable, and it says so when the
+  browser's autoplay policy blocks the audio rather than pretending to be on.
 - **Lint and tests exist.** `npm run check` is lint + tests, matching the backend.
 
 ## What is not built
