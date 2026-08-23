@@ -205,6 +205,30 @@ export function fetchMe({ signal } = {}) {
   return data(`${AUTH}/me`, { signal }).then((body) => body.staffUser)
 }
 
+/**
+ * Changes your OWN password. Requires the current one.
+ *
+ * The server revokes every session on success — a password change is the answer to
+ * "somebody may know my password", and leaving their 7-day refresh token alive would
+ * only answer half of it. It then issues a fresh session for this caller, which is why
+ * the new access token is captured here: without that line the operator would be signed
+ * out by the act of securing their account, and people learn quickly not to do things
+ * that log them out.
+ *
+ * Distinct from the admin reset below. This one proves you are the owner; that one
+ * exists precisely because the owner cannot prove anything any more.
+ */
+export async function changeMyPassword({ currentPassword, newPassword }) {
+  const body = await data(`${AUTH}/password`, {
+    method: 'POST',
+    body: { currentPassword, newPassword },
+    withCookie: true,
+  })
+
+  accessToken = body.accessToken
+  return body.staffUser
+}
+
 /* -------------------------------------------------------------------------- */
 /* Orders                                                                      */
 /* -------------------------------------------------------------------------- */
@@ -281,4 +305,131 @@ export function setStock(productId, { inStock, branchId }) {
   if (branchId) body.branchId = branchId
 
   return data(`/staff/stock/${productId}`, { method: 'PATCH', body })
+}
+
+/* -------------------------------------------------------------------------- */
+/* Corporate enquiries — admin only                                            */
+/* -------------------------------------------------------------------------- */
+
+const ENQUIRIES = '/staff/enquiries'
+
+/**
+ * The corporate gifting inbox.
+ *
+ * `emailed: false` is the filter worth knowing about: it finds leads whose notification
+ * email never got out, which are invisible to anyone working from the shop's inbox
+ * alone. The lead is always stored first, so those exist and are recoverable — but only
+ * if somebody looks.
+ */
+export async function fetchEnquiries({ signal, ...filters } = {}) {
+  const query = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') query.set(key, value)
+  }
+
+  const { data: items, meta } = await authed(`${ENQUIRIES}?${query}`, { signal })
+  return { items, meta }
+}
+
+/** Counts per status, plus how many were never emailed. Drives the filter chips. */
+export function fetchEnquirySummary({ signal } = {}) {
+  return data(`${ENQUIRIES}/summary`, { signal }).then((body) => body.summary)
+}
+
+export function fetchEnquiry(id, { signal } = {}) {
+  return data(`${ENQUIRIES}/${id}`, { signal }).then((body) => body.enquiry)
+}
+
+/**
+ * Moves a lead along and records what was done.
+ *
+ * Status and note travel together because that is how the work happens — somebody rings
+ * a company and then marks it contacted. Sending them separately invites the second call
+ * to be forgotten, leaving a status change nobody can explain.
+ *
+ * Notes are appended server-side and cannot be edited or removed: a note that can be
+ * rewritten is not a record of what happened.
+ */
+export function updateEnquiry(id, { status, note }) {
+  const body = {}
+  if (status) body.status = status
+  if (note) body.note = note
+
+  return data(`${ENQUIRIES}/${id}`, { method: 'PATCH', body }).then((res) => res.enquiry)
+}
+
+/* -------------------------------------------------------------------------- */
+/* Staff users — admin only                                                    */
+/* -------------------------------------------------------------------------- */
+
+const USERS = '/staff/users'
+
+/**
+ * The team list.
+ *
+ * Admin-only server-side; a branch manager gets 403 on every call here, which is why
+ * `RequireAdmin` keeps them off the route and `StaffLayout` hides the link. A UI that
+ * offers a button guaranteed to fail is worse than one that offers nothing.
+ *
+ * Resolves to `{ items, meta }` like `fetchOrders` — same cursor pagination, same
+ * reason: the list changes under the reader, and offsets skip and duplicate rows when
+ * it does.
+ */
+export async function fetchStaffUsers({ signal, ...filters } = {}) {
+  const query = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') query.set(key, value)
+  }
+
+  const { data: items, meta } = await authed(`${USERS}?${query}`, { signal })
+  return { items, meta }
+}
+
+export function fetchStaffUser(id, { signal } = {}) {
+  return data(`${USERS}/${id}`, { signal }).then((body) => body.staffUser)
+}
+
+/**
+ * Creates an account.
+ *
+ * `branchId` is required for a branch manager and REFUSED for an admin — an admin scoped
+ * to one branch would be both "sees everything" and "sees one shop" at once, and which
+ * one wins would depend on which check ran first. The form enforces the same pairing so
+ * the operator finds out before the round trip.
+ */
+export function createStaffUser({ name, email, password, role, branchId }) {
+  const body = { name, email, password, role }
+  if (role !== 'admin') body.branchId = branchId
+
+  return data(USERS, { method: 'POST', body }).then((response) => response.staffUser)
+}
+
+/**
+ * Edits an account. Send only what changed — an empty patch is a 422, deliberately, since
+ * it almost always means a serialiser dropped every field.
+ *
+ * Changing a role, a branch or the active flag revokes that person's sessions server-side.
+ * They are signed out mid-shift, which is the point when someone is being demoted, and
+ * worth saying out loud in the UI when they are merely being renamed.
+ */
+export function updateStaffUser(id, changes) {
+  return data(`${USERS}/${id}`, { method: 'PATCH', body: changes }).then((body) => body.staffUser)
+}
+
+/** Admin reset — no current password, because the point is that it has been lost. */
+export function resetStaffPassword(id, password) {
+  return data(`${USERS}/${id}/password`, { method: 'POST', body: { password } }).then(
+    (body) => body.staffUser
+  )
+}
+
+/**
+ * Switches an account off. A SOFT delete: the row survives.
+ *
+ * Orders carry the id of the staff member who confirmed or failed them, so removing the
+ * document would leave that history pointing at nobody. Reversed with
+ * `updateStaffUser(id, { isActive: true })`.
+ */
+export function deactivateStaffUser(id) {
+  return data(`${USERS}/${id}`, { method: 'DELETE' }).then((body) => body.staffUser)
 }

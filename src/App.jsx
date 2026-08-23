@@ -12,7 +12,11 @@ import NotFoundPage from './pages/NotFoundPage'
 import StaffLoginPage from './pages/staff/StaffLoginPage'
 import StaffOrdersPage from './pages/staff/StaffOrdersPage'
 import StaffStockPage from './pages/staff/StaffStockPage'
+import StaffTeamPage from './pages/staff/StaffTeamPage'
+import StaffEnquiriesPage from './pages/staff/StaffEnquiriesPage'
+import StaffAccountPage from './pages/staff/StaffAccountPage'
 import RequireStaffAuth from './components/staff/RequireStaffAuth'
+import RequireAdmin from './components/staff/RequireAdmin'
 import StaffLayout from './components/staff/StaffLayout'
 import ScrollToTop from './components/ScrollToTop'
 import PageLoader from './components/PageLoader'
@@ -61,6 +65,16 @@ export default function App() {
                               <Route index element={<StaffOrdersPage />} />
                               <Route path="orders" element={<StaffOrdersPage />} />
                               <Route path="stock" element={<StaffStockPage />} />
+                              {/* Every staff member reaches their own account; only an
+                                  admin reaches other people's. RequireAdmin is a
+                                  convenience — /staff/users is admin-gated on the
+                                  server, so this changes what is offered, not what is
+                                  permitted. */}
+                              <Route path="account" element={<StaffAccountPage />} />
+                              <Route element={<RequireAdmin />}>
+                                <Route path="team" element={<StaffTeamPage />} />
+                                <Route path="enquiries" element={<StaffEnquiriesPage />} />
+                              </Route>
                             </Route>
                           </Route>
                           <Route path="*" element={<NotFoundPage />} />

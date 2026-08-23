@@ -1,35 +1,93 @@
 import { useState } from 'react'
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
+import { isApiConfigured, submitEnquiry } from '../lib/api'
 import giftBoxDesktop from '../assets/DC.webp'
 import giftBoxMobile from '../assets/Rectangle 1131.webp'
 
-const FIELDS = ['Name', 'Phone', 'Email', 'Company', 'Subject']
+/** `required` mirrors the server: a name and two ways to reach you, nothing more. */
+const FIELDS = [
+  { key: 'name', label: 'Name', type: 'text', required: true },
+  { key: 'phone', label: 'Phone', type: 'tel', required: true },
+  { key: 'email', label: 'Email', type: 'email', required: true },
+  { key: 'company', label: 'Company', type: 'text' },
+  { key: 'subject', label: 'Subject', type: 'text' },
+]
+
+const EMPTY = { name: '', phone: '', email: '', company: '', subject: '', message: '' }
 
 const CONTACT_EMAIL = 'sugarlooppk@gmail.com'
 
 export default function CorporateGiftingPage() {
-  const [form, setForm] = useState({ Name: '', Phone: '', Email: '', Company: '', Subject: '' })
-  const [submitted, setSubmitted] = useState(false)
+  const [form, setForm] = useState(EMPTY)
+  const [reference, setReference] = useState(null)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState(null)
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const handleChange = (field) => (e) => {
-    setForm((current) => ({ ...current, [field]: e.target.value }))
+    const { value } = e.target
+    setForm((current) => ({ ...current, [field]: value }))
+    // Editing a field clears the complaint about it, so a corrected value stops looking
+    // rejected the moment it is fixed.
+    if (fieldErrors[field]) {
+      setFieldErrors((current) => {
+        const { [field]: _cleared, ...rest } = current
+        return rest
+      })
+    }
   }
 
-  // There's no backend to post to, so the enquiry is handed to the visitor's own
-  // mail client with the fields already filled in - they still press send. Nothing
-  // leaves the browser on its own, so a submit can't be silently lost either.
-  const handleSubmit = (e) => {
+  /**
+   * Posts the enquiry to the API, which stores it and emails the shop.
+   *
+   * This used to build a `mailto:` link and hand the visitor a pre-filled draft they
+   * still had to send themselves — which silently did nothing on any device without a
+   * configured mail client, and there are a lot of those. A lead the shop never hears
+   * about is the one failure mode this page cannot have.
+   */
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null)
+    setFieldErrors({})
 
-    const subject = form.Subject.trim() || 'Corporate gifting enquiry'
-    const body = FIELDS.map((field) => `${field}: ${form[field].trim()}`).join('\n')
+    if (!isApiConfigured) {
+      setError(
+        `We can't submit the form right now. Please email us at ${CONTACT_EMAIL} and we'll pick it up from there.`
+      )
+      return
+    }
 
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`
+    setSending(true)
+    try {
+      const { enquiry } = await submitEnquiry({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        company: form.company.trim(),
+        subject: form.subject.trim(),
+        message: form.message.trim(),
+      })
 
-    setSubmitted(true)
+      setReference(enquiry.reference)
+      setForm(EMPTY)
+    } catch (err) {
+      // The API returns `[{ field, message }]` on a 422, so a rejected value lands under
+      // the input that caused it rather than as one sentence for the whole form.
+      if (Array.isArray(err?.details) && err.details.length > 0) {
+        setFieldErrors(
+          Object.fromEntries(err.details.map(({ field, message }) => [field, message]))
+        )
+      } else if (err?.code === 'TOO_MANY_REQUESTS') {
+        setError("You've sent this a few times already — please give it a little while.")
+      } else {
+        setError(
+          `Something went wrong sending that. Please try again, or email us at ${CONTACT_EMAIL}.`
+        )
+      }
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -83,31 +141,79 @@ export default function CorporateGiftingPage() {
             appreciation
           </p>
 
-          {submitted ? (
-            <p className="font-display font-medium text-accent">
-              Your email is ready to send in your mail app — press send and we'll be in
-              touch shortly. Not opening?{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="underline">
-                {CONTACT_EMAIL}
-              </a>
-            </p>
+          {reference ? (
+            <div className="font-display text-accent">
+              <p className="m-0 font-medium">
+                Thanks — we've got it, and we'll be in touch shortly.
+              </p>
+              <p className="m-0 mt-2 text-[0.8rem] text-[#6d6d6d]">
+                Your reference is <span className="font-bold text-accent">{reference}</span>.
+                Quote it if you call us on {CONTACT_EMAIL}.
+              </p>
+              <button
+                type="button"
+                onClick={() => setReference(null)}
+                className="mt-4 bg-transparent border-none p-0 font-display text-[0.85rem] text-accent underline cursor-pointer"
+              >
+                Send another enquiry
+              </button>
+            </div>
           ) : (
-            <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit}>
-              {FIELDS.map((field) => (
-                <input
-                  key={field}
-                  type={field === 'Email' ? 'email' : 'text'}
-                  placeholder={field}
-                  value={form[field]}
-                  onChange={handleChange(field)}
-                  className="w-full h-12 px-4 bg-[#f3f2f2] border border-[rgba(89,89,89,0.3)] rounded-[3px] font-display text-[0.9rem] text-black placeholder:text-[#9c9c9c]"
-                />
+            <form className="flex flex-col gap-4 w-full" onSubmit={handleSubmit} noValidate>
+              {error && (
+                <p
+                  role="alert"
+                  className="m-0 px-4 py-3 rounded-[3px] bg-[#fdecea] font-display text-[0.8rem] text-[#c0392b]"
+                >
+                  {error}
+                </p>
+              )}
+
+              {FIELDS.map(({ key, label, type, required }) => (
+                <div key={key} className="flex flex-col gap-1">
+                  <input
+                    type={type}
+                    placeholder={required ? `${label} *` : label}
+                    aria-label={label}
+                    value={form[key]}
+                    onChange={handleChange(key)}
+                    required={required}
+                    className="w-full h-12 px-4 bg-[#f3f2f2] border border-[rgba(89,89,89,0.3)] rounded-[3px] font-display text-[0.9rem] text-black placeholder:text-[#9c9c9c]"
+                  />
+                  {fieldErrors[key] && (
+                    <span className="font-display text-[0.7rem] text-[#c0392b]">
+                      {fieldErrors[key]}
+                    </span>
+                  )}
+                </div>
               ))}
+
+              {/* Not on the original form, which captured a lead with nowhere to say what
+                  the lead was for — leaving whoever called back to open with "you asked
+                  about something?". Optional, so it never blocks a submission. */}
+              <div className="flex flex-col gap-1">
+                <textarea
+                  placeholder="How many boxes, and when for?"
+                  aria-label="Message"
+                  value={form.message}
+                  onChange={handleChange('message')}
+                  rows={4}
+                  maxLength={2000}
+                  className="w-full py-3 px-4 bg-[#f3f2f2] border border-[rgba(89,89,89,0.3)] rounded-[3px] font-display text-[0.9rem] text-black placeholder:text-[#9c9c9c] resize-y"
+                />
+                {fieldErrors.message && (
+                  <span className="font-display text-[0.7rem] text-[#c0392b]">
+                    {fieldErrors.message}
+                  </span>
+                )}
+              </div>
+
               <button
                 type="submit"
-                className="h-12 bg-accent text-white border-none rounded-[3px] font-display font-bold text-[1.1rem] cursor-pointer transition-transform duration-300 ease-out hover:scale-105 lg:self-start lg:px-10"
+                disabled={sending}
+                className="h-12 bg-accent text-white border-none rounded-[3px] font-display font-bold text-[1.1rem] cursor-pointer transition-transform duration-300 ease-out hover:scale-105 disabled:opacity-60 disabled:cursor-wait disabled:hover:scale-100 lg:self-start lg:px-10"
               >
-                Submit
+                {sending ? 'Sending…' : 'Submit'}
               </button>
             </form>
           )}

@@ -1,35 +1,154 @@
-# Sugarloop / Roots International — Session Handoff
+# Sugarloop — Frontend Handoff
 
-Project: Vite + React marketing site in `D:\roots-international`, matching Figma designs and sample images.
-GitHub repo: https://github.com/bilal499-droid1/sugarloop-frontend (already pushed, remote `origin/main` configured).
+Vite + React storefront **and** staff console for Sugarloop, a Cash-on-Delivery donut
+shop with four branches in Islamabad.
 
-## Standing directives (apply to ALL future work)
-- **Make the app mobile responsive using Tailwind CSS.** Install any needed library, just ask first. This directive is still open — no mobile CSS has been implemented yet.
-- **Never crop images.** When using `object-fit: cover` on an image, always look up the source image's *exact native pixel dimensions* (PowerShell: `[System.Drawing.Image]::FromFile(path).Size`) and set the CSS `aspect-ratio` to exactly that ratio. Estimated/rounded ratios (e.g. `3/4` when the real ratio is `601/888`) still crop and the user has corrected this twice — don't repeat it.
-- Confirm with the user before `git push` unless they've given explicit inline permission in that same turn.
-- Dev server: `npm run dev` — port drifts across restarts (5173/5174/5175) because old processes sometimes linger. Check `Get-NetTCPConnection` (PowerShell tool, not Bash/git-bash — `$_` gets mangled there) to find/kill stray listeners.
+| | |
+|---|---|
+| This repo | `D:\roots-international` → https://github.com/bilal499-droid1/sugarloop-frontend |
+| Backend | `D:\sugarloop-backend` → https://github.com/bilal499-droid1/sugarloop-backend |
+| Hosting | Vercel (`vercel.json` rewrites everything to `index.html` for the SPA router) |
 
-## Completed so far
-- **Hero.jsx/css**: Fixed logo (`src/assets/sugarLoop 1.png`) import/placement before "Home" in nav; nav centered at top of hero (`justify-content: space-between`, removed extra bottom margin).
-- **DrinksStrip.jsx/css**: 4 placeholder images now use `src/assets/Rectangle 910.png` (native 480×1042); `aspect-ratio: 480/1042` so nothing is cropped.
-- **About.jsx/css**: Text and image columns swapped (text now left/first, image right/second); image is `src/assets/about.jpg`; grid `align-items: start` so image top aligns with "ABOUT US" heading top.
-- **MenuCarousel.jsx/css**: Reverted to grid-based 3-card layout (not coverflow). All three cards use `src/assets/Rectangle 1025.png` (native 601×888), `aspect-ratio: 601/888` to avoid cropping. Labels rendered via CSS (`.menu-carousel__label`), not baked into image.
-- **Footer.jsx/css**: Fixed Instagram/LinkedIn icons via `react-icons/fa` (`FaInstagram`, `FaLinkedin`), positioned far right; Sugarloop logo (`src/assets/sugarLoop 1.png`) positioned far left. `react-icons` added to `package.json`.
-- `.gitignore` created (`node_modules/`, `dist/`, `.vite/`, `*.log`, `.DS_Store`).
-- All above pushed to `origin/main` on the GitHub repo.
+⚠️ **This repository is public.** Client planning material (`BACKEND-*.md`) is gitignored
+and must stay that way. Nothing with a credential, a client phone number or a price
+negotiation goes in a tracked file.
 
-## In progress / not yet done
-**Mobile responsiveness** — currently being researched, no code changes made yet.
-- User provided Figma link: `https://www.figma.com/design/xUneNwNBlRg0Kw0eGEcJbw/Roots-International?node-id=2779-6184&t=DwwyEPjI7lQonDfh-0`
-- That node-id (`2779-6184`) is just an image asset ("Rectangle 1069", a pastry photo) — NOT the mobile layout frame. Don't refetch it expecting a page layout.
-- The actual mobile design frame was located by searching Figma metadata for unique site copy ("TASTE THE LOOP"): **frame `2819:6527`, named "iPhone 14 & 15 Pro - 1"**, fileKey `xUneNwNBlRg0Kw0eGEcJbw`, position x=81984 y=7036, size 393×3141. Use this node ID directly with `get_design_context` / `get_screenshot` next time instead of re-deriving it.
-- User also asked to reference `src/assets/sample3.png` (a 116×887px mobile mockup thumbnail — low-res but shows overall section order: header/nav, hero, about, drinks strip, menu, footer).
-- A `get_screenshot` call for node `2819:6527` had succeeded and returned a short-lived asset URL, but the download/view of that screenshot was never completed (interrupted). **Next step in a new session: re-run `get_screenshot` (or `get_design_context`) for fileKey `xUneNwNBlRg0Kw0eGEcJbw`, node `2819:6527` fresh — the previous asset URL will have expired.**
-- Figma file metadata is huge (1.6M+ chars) — if `get_metadata` is needed again, don't grep the raw dump with Bash (unreliable on giant single-line JSON); instead save to a temp file and parse with `node -e '...JSON.parse...'` and string search.
+---
 
-## Next steps for a new session
-1. Fetch fresh Figma screenshot/design context for node `2819:6527` (mobile frame) to get exact mobile spacing/typography/breakpoints.
-2. Cross-reference with `assets/sample3.png`.
-3. Implement Tailwind-based responsive breakpoints across `Hero`, `About`, `DrinksStrip`, `MenuCarousel`, `Footer`, and `App.jsx`.
-4. Test in browser at mobile viewport widths before considering done.
-5. Confirm with user before pushing to GitHub.
+## Standing directives — apply to all future work
+
+- **Never crop images.** With `object-fit: cover`, look up the source image's *exact*
+  native pixel dimensions (PowerShell: `[System.Drawing.Image]::FromFile(path).Size`) and
+  set CSS `aspect-ratio` to exactly that ratio. Rounded ratios (`3/4` when the real one is
+  `601/888`) still crop, and this has been corrected twice.
+- **Confirm before `git push`** unless permission was given inline in the same turn.
+- **Tailwind only** — there are no `.css` files per component. `src/tokens.css` holds the
+  theme (`accent`, `text-body`, `border-light`, `bg-section`, `font-display`, `font-price`);
+  use those tokens rather than re-typing hexes.
+- **The browser never sends a price.** It sends `{ productId, qty }` and renders whatever
+  the server says things cost. Any code path that computes a total locally is a bug.
+- Dev server: `npm run dev`. The port drifts (5173/5174/5175) when old processes linger —
+  find them with `Get-NetTCPConnection` via the **PowerShell** tool, not Bash (`$_` gets
+  mangled in git-bash).
+
+---
+
+## Running the whole thing locally
+
+```powershell
+# 1. backend  (D:\sugarloop-backend)
+npm run seed        # 4 branches, 43 products, 172 stock rows, 5 staff — prints a password once
+npm run dev         # http://localhost:4000
+
+# 2. frontend (D:\roots-international)
+cp .env.example .env.local     # VITE_API_BASE_URL=http://localhost:4000/api/v1
+npm run dev
+```
+
+`VITE_API_BASE_URL` is **inlined at build time** — changing it needs a restart of Vite, and
+a rebuild for a deploy. Leaving it **empty** is a supported mode: every API call
+short-circuits and the site runs entirely off the bundled catalogue, which is how a preview
+build with no backend behaves.
+
+The backend's `CORS_ORIGINS` must list the dev origin (`http://localhost:5173`) or the
+browser blocks calls before they reach a route.
+
+Staff sign-in for local work: `admin@sugarloop.pk` / the password `npm run seed` printed.
+Branch managers are `dha1.manager@`, `dha2.manager@`, `bahria4.manager@`, `nust.manager@`.
+
+---
+
+## How the app is put together
+
+```
+src/
+  lib/
+    api.js            storefront client — anonymous, one envelope unwrap, 8s/20s timeouts
+    staffApi.js       staff client — Bearer token in MEMORY, refresh-cookie loop, one
+                      in-flight refresh shared by all callers
+    catalogue.js      merges API products onto the bundled ones by `legacyId`
+    checkout.js       cart → quote request shape, plus error-code → human copy
+    geocode.js        browser geolocation; the actual geocoding is server-side
+    otp.js            phone normalisation + OTP error copy
+  context/
+    BranchContext     which branch the visitor is shopping (stock is per branch)
+    CatalogueContext  the merged menu — branch-scoped, so it sits inside BranchContext
+    CartContext       localStorage cart of intent — ids and quantities, never prices
+    StaffAuthContext  the console's session; 'checking' → 'signedIn' | 'signedOut'
+  components/
+    home/ products/ productDetail/   the storefront
+    checkout/PhoneVerification.jsx   the OTP step
+    staff/                           console shell, auth gate, order panel, badges
+  pages/
+    storefront pages + staff/ (login, orders, stock)
+```
+
+Provider order in `App.jsx` is deliberate: **branch → catalogue → cart**. The catalogue
+fetch is branch-scoped, and the cart re-reads names and prices off the catalogue.
+
+`StaffAuthProvider` wraps only the `/staff/*` subtree, and `staffApi.js` is a separate
+module from `api.js` on purpose: a bug in the customer cart must not be able to reach an
+order board, and nothing on the public site should be able to import a credentialed client.
+
+### Two clients, two credentials
+
+| | storefront (`api.js`) | staff console (`staffApi.js`) |
+|---|---|---|
+| Credential | OTP session, httpOnly cookie, 4 days | access token in memory (15 min) + refresh cookie (7 days) |
+| Sent on | only the endpoints that need it (`withSession`) | every call, as `Authorization: Bearer` |
+| Survives reload | yes — cookie | yes — `bootstrap()` trades the cookie for a new access token |
+| Never in localStorage | — | **never**; a token there is one XSS from being someone else's |
+
+---
+
+## What works today
+
+- **Storefront on live data** — catalogue, branches, per-branch stock, with the bundled
+  `productsData.js` as both the photography source (the API seeds `images: []`) and the
+  offline fallback.
+- **Checkout** — cart → server quote → address (typed *or* location pin, geocoded
+  server-side) → phone OTP → place order → `/order/:orderNumber` tracking.
+- **Staff console at `/staff`** — login, order board with per-order legal transitions, the
+  fail-reason form, per-branch stock toggles, an admin-only **Team** screen (add, edit,
+  reset password, switch off/on), an admin-only **Enquiries** inbox for corporate gifting
+  leads, and **Account**, where any staff member changes their own password.
+- **Corporate gifting posts for real** — the form submits to `POST /enquiries`, which
+  stores the lead and emails the shop. It used to build a `mailto:` draft the visitor had
+  to send themselves, which silently did nothing on any device without a configured mail
+  client.
+- **Mobile** — done. The site is responsive via `clamp()` sizing and `max-[900px]:`
+  variants; the old "no mobile CSS yet" directive is closed.
+
+## What is not built
+
+- **The FAQ question form** only sets local state and goes nowhere. It has no backend
+  endpoint — unlike corporate gifting, which now does.
+- **Product images from the API.** Blocked on moving Cloudinary to a client-owned account;
+  until then the bundle owns the photography and `legacyId` is the join.
+
+## Blocked on the client, not on code
+
+These are the same three items the backend README lists, and they gate launch:
+
+1. **No OTP is actually delivered.** The backend runs `OTP_TRANSPORT=log` and refuses to
+   boot in production with it. WhatsApp needs the client's Meta Business account plus
+   per-template approval (1–3 days each, ×7 templates). Calendar time — start it now.
+2. **No deploy.** No staging, no CI; the Atlas and Render accounts still need creating in
+   the client's name. This frontend is ready to point at a staging host the moment one
+   exists.
+3. **Geocoding is on OpenStreetMap.** It resolves areas but not individual buildings, so
+   some customers will be told their address cannot be found and pushed to the location
+   button. A Maps key is a two-line change in the backend's `.env`.
+
+---
+
+## Conventions worth matching
+
+- Comments explain **why**, not what. The existing files in `lib/` are the reference —
+  match that density rather than the average React codebase's.
+- Every API failure the customer can act on gets its own copy, keyed off `error.code`
+  (see `describeCheckoutError` in `checkout.js`). Never surface a raw HTTP status.
+- Loading states never blank a list that already has content — a bakery site showing an
+  empty menu because a server blipped is worse than one showing a slightly stale one.
+- List pagination is **cursor**-based (`meta.nextCursor`), because the underlying lists
+  change under the reader.

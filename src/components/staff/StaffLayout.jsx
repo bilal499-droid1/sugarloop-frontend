@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { FaClipboardList, FaSignOutAlt, FaWarehouse } from 'react-icons/fa'
+import { FaClipboardList, FaEnvelopeOpenText, FaSignOutAlt, FaUsers, FaWarehouse } from 'react-icons/fa'
 import { useStaffAuth } from '../../context/StaffAuthContext'
 import SugarLoopMark from '../SugarLoopMark'
 
@@ -15,7 +15,7 @@ const navLinkClass = ({ isActive }) =>
  *  operator's tool, not a page a customer will ever land on, and borrowing the
  *  storefront's hamburger/cart chrome would imply features that aren't here. */
 export default function StaffLayout() {
-  const { staffUser, logout } = useStaffAuth()
+  const { staffUser, isAdmin, logout } = useStaffAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -46,15 +46,39 @@ export default function StaffLayout() {
               <FaWarehouse className="text-xs" aria-hidden="true" />
               Stock
             </NavLink>
+            {/* Hidden rather than disabled for a branch manager: every /staff/users route
+                is admin-only server-side, so the link would lead nowhere but a 403. An
+                offer the API is guaranteed to refuse is worse than no offer. */}
+            {isAdmin && (
+              <>
+                <NavLink to="/staff/enquiries" className={navLinkClass}>
+                  <FaEnvelopeOpenText className="text-xs" aria-hidden="true" />
+                  Enquiries
+                </NavLink>
+                <NavLink to="/staff/team" className={navLinkClass}>
+                  <FaUsers className="text-xs" aria-hidden="true" />
+                  Team
+                </NavLink>
+              </>
+            )}
           </nav>
 
           <div className="flex items-center gap-3 ml-auto text-right">
-            <div className="leading-tight">
+            {/* The name is the way into Account — where the one thing a staff member can
+                change about themselves, their password, lives. */}
+            <NavLink
+              to="/staff/account"
+              className={({ isActive }) =>
+                `leading-tight px-2 py-1 rounded-lg no-underline transition-colors ${
+                  isActive ? 'bg-accent/10' : 'hover:bg-black/5'
+                }`
+              }
+            >
               <p className="m-0 font-display font-bold text-sm text-black">{staffUser?.name}</p>
               <p className="m-0 text-xs text-text-body">
                 {staffUser?.role === 'admin' ? 'Admin' : staffUser?.branch?.name ?? 'Branch manager'}
               </p>
-            </div>
+            </NavLink>
             <button
               type="button"
               onClick={handleLogout}

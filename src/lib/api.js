@@ -279,6 +279,31 @@ export async function endCustomerSession({ signal } = {}) {
 }
 
 /**
+ * Submits a corporate gifting enquiry.
+ *
+ * Replaces the old `mailto:` link, which was never really a submission: it handed the
+ * visitor a pre-filled draft in whatever mail client their device happened to have, and
+ * a great many have none configured at all. On those, clicking Submit did nothing
+ * visible — the enquiry was simply lost, and the shop never knew a lead existed.
+ *
+ * Now the server stores it and emails the shop. It is stored FIRST, so a lead survives
+ * the mail server being down; that is why this can report success on a request the
+ * notification half of which may still be retrying.
+ *
+ * Comes back with a short `reference` the customer can quote on the phone.
+ */
+export function submitEnquiry(enquiry, { signal } = {}) {
+  return request('/enquiries', {
+    method: 'POST',
+    body: enquiry,
+    signal,
+    // A deliberate click the visitor waited to make, like placing an order — worth more
+    // patience than a menu fetch, and far worse to report as failed if it succeeded.
+    timeoutMs: WRITE_TIMEOUT_MS,
+  })
+}
+
+/**
  * One order, by its number.
  *
  * Requires the phone it was placed with. Order numbers run in sequence and are trivially
