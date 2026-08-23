@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { FaPlus } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
+import BranchPicker from '../components/products/BranchPicker'
 import Footer from '../components/Footer'
 import { useCart } from '../context/CartContext'
 import { useCatalogue } from '../context/CatalogueContext'
+import { useBranch } from '../context/BranchContext'
+import { shortBranchName } from '../lib/branches'
 
 const BOX_SIZES = [2, 4, 6, 12]
 const PRODUCT_TYPES = ['Donuts', 'Croissants']
@@ -15,6 +18,7 @@ export default function BuildYourBoxPage() {
   const [justAdded, setJustAdded] = useState(false)
   const { addItem } = useCart()
   const { products } = useCatalogue()
+  const { branch, hasBranches } = useBranch()
 
   /**
    * The server requires every item in a box to be `boxEligible` and in stock at the
@@ -82,13 +86,35 @@ export default function BuildYourBoxPage() {
 
   return (
     <>
-      <ShopNav showBranchPicker />
+      <ShopNav />
 
       <div className="lg:flex lg:items-start lg:gap-12 lg:px-[clamp(2rem,5vw,5.5rem)] lg:py-16">
         <div className="lg:w-[380px] lg:shrink-0 lg:sticky lg:top-8">
           <h1 className="text-center lg:text-left mt-6 mb-6 lg:mt-0 font-display font-bold text-2xl lg:text-3xl text-accent">
             Build your box
           </h1>
+
+          {/* This used to be a plain <select> squeezed into the desktop nav, and hidden
+              entirely on mobile — which meant a phone visitor could never check stock
+              here at all, and the grid on the right silently showed every item as
+              available regardless of what was actually left in a real branch.
+              Card-and-pills matches the treatment on /products, so "check stock" reads
+              as the same control wherever it appears. */}
+          {hasBranches && (
+            <div className="mx-5 lg:mx-0 mb-4 rounded-2xl border border-border-light bg-bg-section p-4">
+              <p className="m-0 mb-3 font-display font-bold text-sm text-black">
+                Checking stock at
+              </p>
+
+              <BranchPicker variant="pills" />
+
+              <p className="mt-3 mb-0 font-display text-xs leading-relaxed text-text-body">
+                {branch
+                  ? `Only showing what's in stock at ${shortBranchName(branch.name)}.`
+                  : 'Choose a shop to build from what it actually has today.'}
+              </p>
+            </div>
+          )}
 
           <div className="mx-5 lg:mx-0 mb-4 bg-white rounded-2xl border border-[#ececec] p-4">
             <p className="m-0 font-display font-bold text-sm text-black">Select your box</p>
