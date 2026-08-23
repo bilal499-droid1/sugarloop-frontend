@@ -1,4 +1,5 @@
 import ProductCard from '../products/ProductCard'
+import CategoryPills from './CategoryPills'
 import { useCatalogue } from '../../context/CatalogueContext'
 
 // One pick per category, by catalogue id: Chocolate Croissant, Mango, Mocha
@@ -22,6 +23,11 @@ export default function FeaturedProducts({ title = 'Featured Products' }) {
       className="py-[clamp(2.5rem,6vw,4rem)] px-[clamp(1.5rem,5vw,4rem)] bg-white text-center"
       aria-label={title}
     >
+      {/* Moved down from the hero, where they sat over the photograph. They read as a
+          way into the shop rather than as decoration on an image, and they now open the
+          section that shows what is in it. */}
+      <CategoryPills className="mb-[clamp(1.75rem,4vw,2.75rem)]" />
+
       <h2 className="font-display font-bold text-[clamp(1.25rem,2vw,1.5rem)] tracking-[0.02em] m-0 mb-[clamp(1.5rem,4vw,2.5rem)]">
         {title}
       </h2>

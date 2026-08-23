@@ -47,13 +47,6 @@ const MOBILE_NAV_ITEMS = [
 const navLinkClass =
   'inline-block text-white no-underline font-bold text-nav-link whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110'
 
-const HERO_CATEGORIES = ['Croissants', 'Donuts', 'Drinks', 'Sandwiches']
-
-// Below sm the label and padding are in vw so all four pills stay on one line down to
-// the narrowest phones; from sm up the label matches the nav links above.
-const categoryBtnClass =
-  'inline-block shrink-0 bg-transparent text-white border border-white rounded-full font-display font-bold cursor-pointer whitespace-nowrap no-underline transition-transform duration-300 ease-out hover:scale-110 text-[2.6vw] py-[1vw] px-[1.7vw] sm:text-nav-link sm:py-[0.25rem] sm:px-[1.15rem]'
-
 function NavLink({ item, className, onClick }) {
   return item.to ? (
     <Link to={item.to} className={className} onClick={onClick}>
@@ -163,18 +156,10 @@ export default function Hero() {
         </div>
       </div>
 
+      {/* The category pills used to sit here, over the photo. They now open Featured
+          Products — see components/home/CategoryPills.jsx. The spacing they occupied is
+          kept, so the hero's proportions are unchanged. */}
       <div className="relative z-[2] flex justify-center mb-[clamp(1.5rem,5vw,4rem)]">
-        <div className="flex flex-nowrap items-center justify-center gap-[1.3vw] sm:gap-[clamp(0.75rem,2vw,1.5rem)]">
-          {HERO_CATEGORIES.map((category) => (
-            <Link
-              key={category}
-              to={`/products?category=${encodeURIComponent(category)}`}
-              className={categoryBtnClass}
-            >
-              {category.toUpperCase()}
-            </Link>
-          ))}
-        </div>
         {/* Headline is baked into bgh1.png; kept here for screen readers and SEO. */}
         <h1 className="sr-only">Taste the loop of happiness</h1>
       </div>
