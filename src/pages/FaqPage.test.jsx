@@ -29,6 +29,16 @@ vi.mock('../lib/api', () => ({
 vi.mock('../components/products/ShopNav', () => ({ default: () => null }))
 vi.mock('../components/Footer', () => ({ default: () => null }))
 
+/**
+ * The locations section reads the branch list from context. Stubbed empty so the page
+ * falls back to the bundled branches — this file is about the question form, and
+ * standing up a provider that fetches would make a network stub a prerequisite for
+ * testing a textarea.
+ */
+vi.mock('../context/BranchContext', () => ({
+  useBranch: () => ({ branches: [], branchId: null, branch: null, hasBranches: false }),
+}))
+
 const { default: FaqPage } = await import('./FaqPage')
 
 function renderPage() {

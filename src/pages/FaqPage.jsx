@@ -3,6 +3,8 @@ import { FaChevronDown, FaChevronLeft, FaChevronRight, FaStar, FaRegStar } from 
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
 import { isApiConfigured, submitEnquiry } from '../lib/api'
+import { useBranch } from '../context/BranchContext'
+import { FALLBACK_BRANCHES, branchMapUrl, shortBranchName } from '../lib/branches'
 import testimonialCardBg from '../assets/card1.webp'
 import avatar1 from '../assets/faq-avatar-1.webp'
 import avatar2 from '../assets/faq-avatar-2.webp'
@@ -68,12 +70,16 @@ const TESTIMONIALS = [
   { avatar: avatar7, name: 'Fatima Z.', rating: 4, quote: 'Lorem ipsum dolor sit amet consectetur. Congue eget est porttitor pulvinar mattis. Morbi volutpat praesent tellus.' },
 ]
 
-const BRANCHES = [
-  { name: 'DHA Branch', query: 'DHA Phase 2' },
-  { name: 'DHA Branch', query: 'DHA Phase 5' },
-  { name: 'DHA Branch', query: 'DHA Phase 6' },
-  { name: 'DHA Branch', query: 'DHA Phase 8' },
-]
+/**
+ * The branch list is fetched, not hardcoded.
+ *
+ * It used to be four literal entries all named "DHA Branch", pointing at DHA Phases 2,
+ * 5, 6 and 8 — none of which is a shop. The real four are DHA 1, DHA 2, Bahria Phase 4
+ * and NUST H-12, they live in the database with real addresses and coordinates, and the
+ * map now pins the coordinates rather than asking Google to guess from an area name.
+ *
+ * `FALLBACK_BRANCHES` covers the no-API preview build. See lib/branches.js.
+ */
 
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false)
@@ -117,8 +123,16 @@ export default function FaqPage() {
   const [error, setError] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
 
+  const { branches: apiBranches } = useBranch()
+
+  // The API wins whenever it answers; the bundle is the floor for a preview build with
+  // no backend. Either way these are real shops — the old list was not.
+  const branches = apiBranches.length > 0 ? apiBranches : FALLBACK_BRANCHES
+
   const testimonial = TESTIMONIALS[activeTestimonial]
-  const branch = BRANCHES[activeBranch]
+  // Clamped rather than indexed blindly: the list arrives a tick after first paint, and
+  // a stale index from a longer list would leave this undefined mid-render.
+  const branch = branches[Math.min(activeBranch, branches.length - 1)]
 
   const nextTestimonial = () => setActiveTestimonial((i) => (i + 1) % TESTIMONIALS.length)
   const prevTestimonial = () => setActiveTestimonial((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)
@@ -288,12 +302,24 @@ export default function FaqPage() {
 
         <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-12 max-w-[1300px] mx-auto text-left">
           <ul className="list-none m-0 p-0 lg:flex-[0_0_320px]">
-            {BRANCHES.map((b, i) => (
+            {branches.map((b, i) => (
               <li
-                key={i}
-                className="flex items-center justify-between gap-4 py-4 border-b border-border-light"
+                key={b.id}
+                className="flex items-start justify-between gap-4 py-4 border-b border-border-light"
               >
-                <p className="m-0 font-display font-bold text-[1.1rem] text-accent">{b.name}</p>
+                <span className="min-w-0">
+                  <span className="block font-display font-bold text-[1.1rem] text-accent">
+                    {shortBranchName(b.name)}
+                  </span>
+                  {/* The address is the point of a "Find Sugarloop" section, and the old
+                      list had none — four identical names told a visitor nothing about
+                      which shop was near them. */}
+                  {b.address && (
+                    <span className="block mt-1 font-display text-xs text-text-body">
+                      {b.address}
+                    </span>
+                  )}
+                </span>
                 <button
                   type="button"
                   className={`shrink-0 h-8 px-[0.9rem] border-2 border-accent rounded-[3px] font-display font-medium text-xs cursor-pointer ${
@@ -301,7 +327,7 @@ export default function FaqPage() {
                   }`}
                   onClick={() => setActiveBranch(i)}
                 >
-                  View details
+                  View on map
                 </button>
               </li>
             ))}
@@ -309,9 +335,9 @@ export default function FaqPage() {
 
           <div className="w-full aspect-[473/339] lg:flex-1 lg:aspect-[1126/807] rounded-[10px] overflow-hidden border border-border-light">
             <iframe
-              key={branch.query}
-              title={`Map — ${branch.name}, ${branch.query}`}
-              src={`https://www.google.com/maps?q=${encodeURIComponent(branch.query)}&output=embed`}
+              key={branch.id}
+              title={`Map — ${branch.name}`}
+              src={branchMapUrl(branch)}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               className="w-full h-full border-0"
