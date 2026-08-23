@@ -82,7 +82,7 @@ export default function BuildYourBoxPage() {
 
   return (
     <>
-      <ShopNav />
+      <ShopNav showBranchPicker />
 
       <div className="lg:flex lg:items-start lg:gap-12 lg:px-[clamp(2rem,5vw,5.5rem)] lg:py-16">
         <div className="lg:w-[380px] lg:shrink-0 lg:sticky lg:top-8">

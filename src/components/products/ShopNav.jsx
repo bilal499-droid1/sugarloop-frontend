@@ -56,7 +56,12 @@ function ShopNavLink({ item, className, onClick }) {
 
 // onImage is opt-in: ShopNav also renders on Corporate Gifting, FAQ, Build a Box
 // and Product Detail, which are light pages where white links would vanish.
-export default function ShopNav({ onImage = false }) {
+//
+// showBranchPicker is opt-in for a different reason. This nav appears on eight pages and
+// the picker only means anything on the two that show per-branch availability. On the
+// FAQ, the cart, the checkout, corporate gifting and the 404 it was a control that
+// changed nothing visible on the page it sat on — which reads as broken, not as optional.
+export default function ShopNav({ onImage = false, showBranchPicker = false }) {
   const { count } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -85,7 +90,7 @@ export default function ShopNav({ onImage = false }) {
           the menu. Hidden on the hero variant, where a white-on-photo form control
           would be unreadable, and hidden on small screens where the row is already
           tight; the menu page carries its own copy for both cases. */}
-      {!onImage && <BranchPicker className="hidden lg:flex ml-8" />}
+      {!onImage && showBranchPicker && <BranchPicker className="hidden lg:flex ml-8" />}
 
       {/* Cart follows the links: white over the hero photo, accent on the light
           pages where a white cart would disappear. */}

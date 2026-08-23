@@ -6,6 +6,7 @@ import Footer from '../components/Footer'
 import { CATEGORIES } from '../components/products/productsData'
 import { useCatalogue } from '../context/CatalogueContext'
 import { useBranch } from '../context/BranchContext'
+import { shortBranchName } from '../lib/branches'
 
 export default function ProductsPage() {
   // Live prices where the API answered, the bundled catalogue where it did not — see
@@ -48,14 +49,32 @@ export default function ProductsPage() {
           branch's stock, but a delivery order is assigned its branch by address at
           checkout, so what is sold out here may not be sold out for that customer. */}
       {hasBranches && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-6 px-5 lg:pt-10 lg:px-[clamp(2rem,5vw,5.5rem)]">
-          <BranchPicker />
-          <p className="m-0 font-display text-xs text-text-body">
-            {branch
-              ? `Showing stock at ${branch.name} — what you'd find collecting there. Delivery orders are matched to a branch by your address at checkout, so availability may differ.`
-              : 'Pick a shop to see what’s in stock there today.'}
-          </p>
-        </div>
+        <section
+          aria-label="Stock availability"
+          className="pt-6 px-5 lg:pt-10 lg:px-[clamp(2rem,5vw,5.5rem)]"
+        >
+          <div className="rounded-card-inner border border-border-light bg-bg-section px-5 py-4 lg:px-6 lg:py-5">
+            <h2 className="m-0 mb-3 font-display font-bold text-base text-black lg:text-lg">
+              Checking stock at
+            </h2>
+
+            <BranchPicker variant="pills" />
+
+            {/* One line, always in the same place. The old copy swapped between two
+                sentences of different lengths, so choosing a shop reflowed the row it
+                sat in — and the selected-branch version ran to three clauses that
+                nobody finishes reading. */}
+            <p className="mt-3 mb-0 font-display text-xs leading-relaxed text-text-body lg:text-sm">
+              {branch
+                ? `Showing what you'd find collecting from ${shortBranchName(branch.name)}.`
+                : 'Choose a shop to see what’s available there today.'}{' '}
+              <span className="text-text-body/75">
+                Delivery orders are matched to a branch by your address at checkout, so
+                availability may differ.
+              </span>
+            </p>
+          </div>
+        </section>
       )}
 
       <ProductGrid

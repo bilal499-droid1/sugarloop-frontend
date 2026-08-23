@@ -24,7 +24,7 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <>
-        <ShopNav />
+        <ShopNav showBranchPicker />
         <div className="py-16 px-5 text-center font-display">
           <p>We couldn't find that product.</p>
           <Link to="/products">Back to products</Link>
@@ -55,7 +55,7 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <ShopNav />
+      <ShopNav showBranchPicker />
 
       <section
         className="flex flex-col gap-6 pt-6 px-5 pb-8 lg:flex-row lg:gap-16 lg:pt-12 lg:px-[clamp(2rem,5vw,5.5rem)] lg:pb-16"
