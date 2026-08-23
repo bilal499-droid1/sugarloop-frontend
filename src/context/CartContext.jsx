@@ -99,8 +99,15 @@ export function CartProvider({ children }) {
   // The storage listener below is registered once and must not be torn down and
   // rebuilt every time the catalogue updates, so it reads the current catalogue
   // through a ref rather than closing over a stale one.
+  //
+  // Synced in an effect rather than assigned during render. A render can be discarded or
+  // replayed under concurrent rendering, so writing here during render can leave the ref
+  // holding a catalogue that never committed. The only reader is the storage handler,
+  // which fires long after commit, so an effect is always soon enough.
   const catalogueRef = useRef(products)
-  catalogueRef.current = products
+  useEffect(() => {
+    catalogueRef.current = products
+  }, [products])
 
   // Lazy initialiser: reads storage once on mount instead of on every render. At this
   // point `products` is still the bundled catalogue, so this is synchronous and the
