@@ -7,7 +7,7 @@ shop with four branches in Islamabad.
 |---|---|
 | This repo | `D:\roots-international` → https://github.com/bilal499-droid1/sugarloop-frontend |
 | Backend | `D:\sugarloop-backend` → https://github.com/bilal499-droid1/sugarloop-backend |
-| Hosting | Vercel (`vercel.json` rewrites everything to `index.html` for the SPA router) |
+| Hosting | none — not deployed (`vercel.json` is left from an earlier plan; see below) |
 
 ⚠️ **This repository is public.** Client planning material (`BACKEND-*.md`) is gitignored
 and must stay that way. Nothing with a credential, a client phone number or a price
@@ -46,7 +46,7 @@ npm run dev
 ```
 
 `VITE_API_BASE_URL` is **inlined at build time** — changing it needs a restart of Vite, and
-a rebuild for a deploy. Leaving it **empty** is a supported mode: every API call
+a rebuild if it ever ships. Leaving it **empty** is a supported mode: every API call
 short-circuits and the site runs entirely off the bundled catalogue, which is how a preview
 build with no backend behaves.
 
@@ -118,7 +118,6 @@ order board, and nothing on the public site should be able to import a credentia
   client.
 - **Mobile** — done. The site is responsive via `clamp()` sizing and `max-[900px]:`
   variants; the old "no mobile CSS yet" directive is closed.
-
 - **The FAQ question form submits for real.** It posts to `POST /enquiries` as
   `kind: 'question'` and comes back with a reference. It used to set a local flag, say
   "we'll get back to you shortly" and send nothing anywhere — and it had no name or email
@@ -133,17 +132,19 @@ order board, and nothing on the public site should be able to import a credentia
 
 ## Blocked on the client, not on code
 
-These are the same three items the backend README lists, and they gate launch:
+These are the same items the backend README lists, and they gate launch:
 
-1. **No OTP is actually delivered.** The backend runs `OTP_TRANSPORT=log` and refuses to
-   boot in production with it. WhatsApp needs the client's Meta Business account plus
-   per-template approval (1–3 days each, ×7 templates). Calendar time — start it now.
-2. **No deploy.** No staging, no CI; the Atlas and Render accounts still need creating in
-   the client's name. This frontend is ready to point at a staging host the moment one
-   exists.
-3. **Geocoding is on OpenStreetMap.** It resolves areas but not individual buildings, so
+1. **No message is actually delivered.** The backend runs `OTP_TRANSPORT=log` and
+   `NOTIFY_TRANSPORT=log`, and refuses to boot in production on either. WhatsApp needs the
+   client's Meta Business account plus per-template approval (1–3 days each, ×7
+   templates). Calendar time — start it now.
+2. **Geocoding is on OpenStreetMap.** It resolves areas but not individual buildings, so
    some customers will be told their address cannot be found and pushed to the location
    button. A Maps key is a two-line change in the backend's `.env`.
+
+⚠️ **Not deployed, and not being deployed for now.** `vercel.json` is here from an earlier
+plan and is harmless, but there is deliberately no CI and no hosting config — that is a
+decision, not an omission, so please don't add any. `npm run check` is the gate.
 
 ---
 
@@ -153,7 +154,7 @@ These are the same three items the backend README lists, and they gate launch:
 npm run lint          # eslint
 npm test              # vitest, jsdom
 npm run test:watch
-npm run check         # both — what CI should run
+npm run check         # both — run before every commit; there is no CI
 ```
 
 Tests are co-located as `*.test.{js,jsx}`, matching the backend's convention.
