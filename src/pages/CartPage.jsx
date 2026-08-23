@@ -4,9 +4,11 @@ import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
 import { useCart } from '../context/CartContext'
 
-function QtyStepper({ qty, onChange }) {
+function QtyStepper({ qty, onChange, className = '' }) {
   return (
-    <div className="flex items-center border border-border-light rounded-[4px] h-9 w-[6.5rem] shrink-0">
+    <div
+      className={`flex items-center border border-border-light rounded-[4px] h-9 w-[6.5rem] shrink-0 ${className}`}
+    >
       <button
         type="button"
         className="flex-[0_0_2.2rem] h-full bg-[#f2f2f2] border-none text-[1rem] cursor-pointer"
@@ -28,10 +30,28 @@ function QtyStepper({ qty, onChange }) {
   )
 }
 
+/**
+ * One line of the cart.
+ *
+ * Wraps onto two lines below `sm`, and it has to. Every element except the name is
+ * `shrink-0`, so on a 375px phone the five of them plus their gaps need 320px inside a
+ * 303px card — the row overflowed, and because the line total was a fixed `w-16` box
+ * with `text-right`, text longer than 64px spilled out of its own left edge and straight
+ * through the stepper next to it. "Rs 12996" is eight characters; four digits is an
+ * ordinary cart.
+ *
+ * So the stepper and the total drop to a line of their own on a phone, and the total is
+ * sized by its content rather than pinned to a width that a real number outgrows.
+ *
+ * `sm:contents` dissolves that grouping wrapper above the breakpoint, so the two land
+ * back in the row as direct flex children rather than being rendered twice. The explicit
+ * `order` classes are what let one DOM produce both arrangements — without them the
+ * ungrouped children default to `order: 0` and jump ahead of everything on desktop.
+ */
 function CartRow({ item, onSetQty, onRemove }) {
   return (
-    <div className="flex items-center gap-4 py-4 border-b border-border-light last:border-b-0">
-      <div className="w-16 h-16 shrink-0 rounded-[6px] overflow-hidden border border-border-light">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-3 py-4 border-b border-border-light last:border-b-0 sm:flex-nowrap sm:gap-4">
+      <div className="order-1 w-14 h-14 shrink-0 rounded-[6px] overflow-hidden border border-border-light sm:w-16 sm:h-16">
         {item.image ? (
           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
         ) : (
@@ -39,25 +59,32 @@ function CartRow({ item, onSetQty, onRemove }) {
         )}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="order-2 flex-1 min-w-0">
         <p className="m-0 font-display font-bold text-sm text-black truncate">{item.name}</p>
         <p className="mt-1 mb-0 font-price text-xs text-text-body">Rs {item.price} each</p>
       </div>
 
-      <QtyStepper qty={item.qty} onChange={(qty) => onSetQty(item.id, qty)} />
-
-      <p className="w-16 shrink-0 text-right font-price font-bold text-sm text-accent">
-        Rs {item.price * item.qty}
-      </p>
-
       <button
         type="button"
-        className="shrink-0 bg-none border-none text-[#b0b0b0] text-base cursor-pointer p-1 hover:text-accent"
+        className="order-3 shrink-0 bg-none border-none text-[#b0b0b0] text-base cursor-pointer p-1 hover:text-accent sm:order-5"
         onClick={() => onRemove(item.id)}
         aria-label={`Remove ${item.name} from cart`}
       >
         <FaTrash />
       </button>
+
+      <div className="order-4 flex w-full items-center gap-3 sm:contents">
+        <QtyStepper
+          qty={item.qty}
+          onChange={(qty) => onSetQty(item.id, qty)}
+          className="sm:order-3"
+        />
+        {/* `ml-auto` pins it to the right of its own line on a phone; on desktop the
+            wrapper is gone, so it sits inline and the margin has to go with it. */}
+        <p className="order-4 ml-auto shrink-0 whitespace-nowrap text-right font-price font-bold text-sm text-accent sm:ml-0 sm:min-w-[4.5rem]">
+          Rs {item.price * item.qty}
+        </p>
+      </div>
     </div>
   )
 }
