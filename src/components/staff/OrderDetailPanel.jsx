@@ -104,6 +104,22 @@ export default function OrderDetailPanel({ order, transitions, onChangeStatus, b
                 <span className="text-text-body italic">{order.address.notes}</span>
               </>
             )}
+            {/* The typed address is often just a sector/phase in poorly-mapped areas —
+                the pinned coordinate is the precise thing, so give the rider a map link
+                straight to it rather than making them re-type it into their own maps app. */}
+            {order.address.location?.lat != null && order.address.location?.lng != null && (
+              <>
+                <br />
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${order.address.location.lat},${order.address.location.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent"
+                >
+                  📍 Open exact pin in Google Maps
+                </a>
+              </>
+            )}
           </Field>
         )}
 

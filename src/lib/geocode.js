@@ -78,9 +78,24 @@ export async function reverseGeocode({ lat, lng }, { signal } = {}) {
      */
     const latin = (value) => (value && /[A-Za-z]/.test(value) ? value : '')
     const firstLatin = (...values) => values.map(latin).find(Boolean) ?? ''
+    /** Unlike `firstLatin`, keeps every distinct match — used where one word (just
+     *  "DHA Phase 2") is too thin to be worth typing in for the customer to correct. */
+    const joinLatin = (...values) => {
+      const seen = new Set()
+      for (const value of values) {
+        const clean = latin(value)
+        if (clean) seen.add(clean)
+      }
+      return [...seen].join(', ')
+    }
 
     return {
-      line1: latin(houseAndRoad) || firstLatin(parts.neighbourhood, parts.suburb),
+      // No house/road mapped at this point (true for most of DHA) — fall back to every
+      // area-level detail available rather than just the first, so the customer has
+      // something worth correcting instead of one bare word. `residential` is Nominatim's
+      // name for a named housing scheme/sector (e.g. "DHA Phase 2") — often the most
+      // specific thing mapped where no street is, so it leads.
+      line1: latin(houseAndRoad) || joinLatin(parts.residential, parts.neighbourhood, parts.suburb),
       area: firstLatin(parts.suburb, parts.neighbourhood, parts.city_district, parts.village),
       city: firstLatin(parts.city, parts.town, parts.state_district) || 'Islamabad',
       /** The full human-readable string, for confirming the pin landed somewhere sane. */

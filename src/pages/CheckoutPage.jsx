@@ -32,6 +32,16 @@ const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
 /** Matches the API's own rule (`order.validator.js`) so the refusal happens before the trip. */
 const PK_MOBILE = /^(\+92|92|0)3\d{9}$/
 
+/** Metres. Below this a fix is good enough to stop waiting for a better one. */
+const GOOD_ACCURACY_METRES = 50
+/** Metres. Above this the fix is coarse enough (wifi/cell triangulation, not GPS) that
+ *  it can tip a customer over a branch's 2km radius, so we warn rather than stay silent. */
+const COARSE_ACCURACY_METRES = 150
+/** How long to keep listening for a better fix before settling for the best one seen. A
+ *  single getCurrentPosition() call often returns a fast, coarse, network-based fix
+ *  before the GPS chip has locked — watchPosition lets a following, tighter fix replace it. */
+const LOCATE_WINDOW_MS = 8000
+
 function normalisePhone(value) {
   return value.replace(/[\s()-]/g, '')
 }
@@ -99,6 +109,7 @@ export default function CheckoutPage() {
   const [location, setLocation] = useState(null)
   const [locating, setLocating] = useState(false)
   const [locationError, setLocationError] = useState(null)
+  const watchIdRef = useRef(null)
   /** The human-readable place the pin landed on — shown so the customer can see at a
    *  glance that it found the right street, rather than trusting a bare tick. */
   const [placeLabel, setPlaceLabel] = useState(null)
@@ -270,40 +281,85 @@ export default function CheckoutPage() {
       return
     }
 
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current)
+      watchIdRef.current = null
+    }
+
     setLocating(true)
     setLocationError(null)
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const point = {
+    let best = null
+
+    /**
+     * A single getCurrentPosition() call often returns whatever fix the browser has
+     * cached or can get fastest — commonly wifi/cell triangulation at 500m-several km,
+     * not the GPS chip, which can take a few seconds to lock. watchPosition() keeps
+     * delivering fixes as they arrive; we keep the tightest one seen and settle once it
+     * is good enough or the window runs out, rather than trusting whichever lands first.
+     */
+    const settle = async () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current)
+        watchIdRef.current = null
+      }
+
+      if (!best) {
+        setLocating(false)
+        setLocationError('We could not read your location. Try again, or collect your order instead.')
+        return
+      }
+
+      setLocation(best)
+
+      /**
+       * Fill the address in from the pin, as a starting point the customer corrects.
+       *
+       * Two rules here. It only ever writes into a field that is still EMPTY — someone
+       * who has already typed their address must not have it overwritten by a
+       * geocoder's guess. And it is awaited but never allowed to fail the operation:
+       * the coordinates are what price and route the order, so a geocoder that is slow
+       * or down costs an autofill, not a checkout.
+       */
+      const resolved = await reverseGeocode(best)
+      if (resolved) {
+        setPlaceLabel(resolved.label)
+        setAddress((current) => ({
+          ...current,
+          line1: current.line1 || resolved.line1,
+          area: current.area || resolved.area,
+          city: current.city || resolved.city,
+        }))
+      }
+
+      setLocating(false)
+    }
+
+    const ceiling = setTimeout(settle, LOCATE_WINDOW_MS)
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        const accuracy = position.coords.accuracy
+        if (best && best.accuracy <= accuracy) return // never regress to a worse fix
+
+        best = {
           lat: Number(position.coords.latitude.toFixed(6)),
           lng: Number(position.coords.longitude.toFixed(6)),
-        }
-        setLocation(point)
-
-        /**
-         * Fill the address in from the pin, as a starting point the customer corrects.
-         *
-         * Two rules here. It only ever writes into a field that is still EMPTY — someone
-         * who has already typed their address must not have it overwritten by a
-         * geocoder's guess. And it is awaited but never allowed to fail the operation:
-         * the coordinates are what price and route the order, so a geocoder that is slow
-         * or down costs an autofill, not a checkout.
-         */
-        const resolved = await reverseGeocode(point)
-        if (resolved) {
-          setPlaceLabel(resolved.label)
-          setAddress((current) => ({
-            ...current,
-            line1: current.line1 || resolved.line1,
-            area: current.area || resolved.area,
-            city: current.city || resolved.city,
-          }))
+          accuracy,
         }
 
-        setLocating(false)
+        if (accuracy <= GOOD_ACCURACY_METRES) {
+          clearTimeout(ceiling)
+          settle()
+        }
       },
       (error) => {
+        if (best) return // a later error on an already-good watch shouldn't discard it
+        clearTimeout(ceiling)
+        if (watchIdRef.current !== null) {
+          navigator.geolocation.clearWatch(watchIdRef.current)
+          watchIdRef.current = null
+        }
         setLocating(false)
         setLocationError(
           error.code === error.PERMISSION_DENIED
@@ -311,9 +367,16 @@ export default function CheckoutPage() {
             : 'We could not read your location. Try again, or collect your order instead.'
         )
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: LOCATE_WINDOW_MS, maximumAge: 0 }
     )
   }, [])
+
+  useEffect(
+    () => () => {
+      if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current)
+    },
+    []
+  )
 
   /* ---------------------------------------------------------------------- */
 
@@ -573,10 +636,20 @@ export default function CheckoutPage() {
                       )}
                       <span className="opacity-70">
                         {location.lat}, {location.lng}
+                        {location.accuracy != null && ` (±${Math.round(location.accuracy)}m)`}
                       </span>
                     </span>
                   )}
                 </Field>
+
+                {location && location.accuracy > COARSE_ACCURACY_METRES && (
+                  <Notice
+                    title="Location is approximate"
+                    detail={`We could only get you to within ${Math.round(
+                      location.accuracy
+                    )}m — enough to find the nearest shop, but please double check the street address below so the rider has it right.`}
+                  />
+                )}
 
                 {locationError && <Notice title="Location unavailable" detail={locationError} />}
 
