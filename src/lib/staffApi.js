@@ -160,6 +160,75 @@ async function authed(path, options = {}) {
 
 const data = (path, options) => authed(path, options).then((envelope) => envelope.data)
 
+/**
+ * A PDF, fetched with the same credentials and the same one-retry refresh as everything
+ * else, then handed to the browser as a download.
+ *
+ * It cannot go through `raw`: that parses every response as JSON, which a PDF is not. So
+ * this repeats the fetch rather than sharing it — the alternative is a `responseType` flag
+ * threaded through `raw`, `authed` and `data` to serve two endpoints out of thirty.
+ *
+ * **The download is driven from a blob, not by pointing the browser at the URL.** These
+ * routes need an `Authorization` header, and a plain `window.open` or `<a href>` sends no
+ * header at all — it would arrive unauthenticated and render a 401 as the "document".
+ */
+async function downloadPdf(path, fallbackName) {
+  if (!isApiConfigured) {
+    throw new ApiError(0, 'API_NOT_CONFIGURED', 'VITE_API_BASE_URL is not set')
+  }
+
+  const request = (token) =>
+    fetch(`${API_BASE_URL}${path}`, {
+      headers: { Accept: 'application/pdf', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    })
+
+  let response = await request(accessToken)
+
+  if (response.status === 401) {
+    try {
+      await refreshOnce()
+    } catch {
+      accessToken = null
+      onSessionLost?.()
+      throw new ApiError(401, 'SESSION_EXPIRED', 'Your session has expired. Please sign in again.')
+    }
+    response = await request(accessToken)
+  }
+
+  if (!response.ok) {
+    // The failure body is still the JSON error envelope, so the operator gets the real
+    // reason rather than "could not download".
+    let parsed = null
+    try {
+      parsed = await response.json()
+    } catch {
+      parsed = null
+    }
+    throw new ApiError(
+      response.status,
+      parsed?.error?.code ?? 'HTTP_ERROR',
+      parsed?.error?.message ?? `Could not download the document (${response.status})`
+    )
+  }
+
+  // The server already named the file in Content-Disposition; prefer that over guessing.
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const named = /filename="?([^";]+)"?/i.exec(disposition)?.[1]
+
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = named ?? fallbackName
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+
+  // Revoking immediately can cancel the download in some browsers; a tick is enough.
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
 /* -------------------------------------------------------------------------- */
 /* Session                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -271,6 +340,67 @@ export function changeOrderStatus(id, { status, reason = null, note = null }) {
   if (note) body.note = note
 
   return data(`/staff/orders/${id}/status`, { method: 'PATCH', body })
+}
+
+/** The order as a PDF the branch can print or send on. */
+export function downloadOrderInvoice(id, orderNumber) {
+  return downloadPdf(`/staff/orders/${id}/invoice`, `${orderNumber ?? 'order'}-invoice.pdf`)
+}
+
+/* -------------------------------------------------------------------------- */
+/* Reports                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A day's trading.
+ *
+ * `date` is a calendar date in Asia/Karachi and may be omitted — the server defaults to
+ * today in business time, which for a shop trading to 03:00 is not the same as the
+ * browser's today at 1am.
+ *
+ * A branch manager may omit `branchId`; the server pins them to their own branch and
+ * refuses another's outright rather than quietly re-scoping.
+ */
+export function fetchDailyReport({ date, branchId, signal } = {}) {
+  const query = new URLSearchParams()
+  if (date) query.set('date', date)
+  if (branchId) query.set('branchId', branchId)
+
+  return data(`/staff/reports/daily?${query}`, { signal })
+}
+
+export function downloadDailyReport({ date, branchId } = {}) {
+  const query = new URLSearchParams()
+  if (date) query.set('date', date)
+  if (branchId) query.set('branchId', branchId)
+
+  return downloadPdf(`/staff/reports/daily.pdf?${query}`, `sugarloop-${date ?? 'today'}.pdf`)
+}
+
+/**
+ * The running total.
+ *
+ * With no `from`/`to` this is everything the shop has ever taken. The daily report cannot
+ * answer that — it covers one day and one day only — so this is a separate endpoint
+ * rather than a flag on that one.
+ */
+function summaryQuery({ from, to, branchId } = {}) {
+  const query = new URLSearchParams()
+  if (from) query.set('from', from)
+  if (to) query.set('to', to)
+  if (branchId) query.set('branchId', branchId)
+  return query
+}
+
+export function fetchSalesSummary({ from, to, branchId, signal } = {}) {
+  return data(`/staff/reports/summary?${summaryQuery({ from, to, branchId })}`, { signal })
+}
+
+export function downloadSalesSummary({ from, to, branchId } = {}) {
+  return downloadPdf(
+    `/staff/reports/summary.pdf?${summaryQuery({ from, to, branchId })}`,
+    'sugarloop-all-time.pdf'
+  )
 }
 
 /* -------------------------------------------------------------------------- */

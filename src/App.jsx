@@ -12,6 +12,7 @@ import NotFoundPage from './pages/NotFoundPage'
 import StaffLoginPage from './pages/staff/StaffLoginPage'
 import StaffOrdersPage from './pages/staff/StaffOrdersPage'
 import StaffStockPage from './pages/staff/StaffStockPage'
+import StaffReportsPage from './pages/staff/StaffReportsPage'
 import StaffTeamPage from './pages/staff/StaffTeamPage'
 import StaffEnquiriesPage from './pages/staff/StaffEnquiriesPage'
 import StaffProductsPage from './pages/staff/StaffProductsPage'
@@ -66,6 +67,9 @@ export default function App() {
                               <Route index element={<StaffOrdersPage />} />
                               <Route path="orders" element={<StaffOrdersPage />} />
                               <Route path="stock" element={<StaffStockPage />} />
+                              {/* Both roles: a manager needs their own day's takings to
+                                  run a shift, and the server scopes them to their branch. */}
+                              <Route path="reports" element={<StaffReportsPage />} />
                               {/* Every staff member reaches their own account; only an
                                   admin reaches other people's. RequireAdmin is a
                                   convenience — /staff/users is admin-gated on the

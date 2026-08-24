@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
+  FaChartBar,
   FaClipboardList,
   FaDonate,
   FaEnvelopeOpenText,
@@ -52,6 +53,13 @@ export default function StaffLayout() {
             <NavLink to="/staff/stock" className={navLinkClass}>
               <FaWarehouse className="text-xs" aria-hidden="true" />
               Stock
+            </NavLink>
+            {/* Both roles, unlike the admin-only links below: the server scopes a manager
+                to their own branch rather than refusing them, so the report is theirs to
+                read for the shift they are actually running. */}
+            <NavLink to="/staff/reports" className={navLinkClass}>
+              <FaChartBar className="text-xs" aria-hidden="true" />
+              Reports
             </NavLink>
             {/* Hidden rather than disabled for a branch manager: every /staff/users route
                 is admin-only server-side, so the link would lead nowhere but a 403. An

@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { FaBoxOpen } from 'react-icons/fa'
+import { FaBoxOpen, FaFileDownload } from 'react-icons/fa'
 import StatusBadge from './StatusBadge'
 import FailOrderForm from './FailOrderForm'
+import { downloadOrderInvoice } from '../../lib/staffApi'
 import { FULFILMENT_LABEL, ORDER_STATUS_LABEL, TERMINAL_STATUSES } from '../../lib/staffConstants'
 
 const dateTime = new Intl.DateTimeFormat('en-PK', {
@@ -57,6 +58,22 @@ function ActorLabel({ by }) {
 
 export default function OrderDetailPanel({ order, transitions, onChangeStatus, busy, actionError }) {
   const [failing, setFailing] = useState(false)
+  const [invoicing, setInvoicing] = useState(false)
+  const [invoiceError, setInvoiceError] = useState(null)
+
+  const handleInvoice = async () => {
+    setInvoicing(true)
+    setInvoiceError(null)
+    try {
+      await downloadOrderInvoice(order.id, order.orderNumber)
+    } catch (error) {
+      // A failed download must not look like a failed order — its own line, not the
+      // status form's error slot.
+      setInvoiceError(error?.message ?? 'Could not download the invoice.')
+    } finally {
+      setInvoicing(false)
+    }
+  }
 
   // { allowed: [...next legal statuses], isTerminal } — see services/orderStatus.js.
   const allowed = transitions?.allowed ?? []
@@ -76,8 +93,25 @@ export default function OrderDetailPanel({ order, transitions, onChangeStatus, b
           <p className="m-0 font-display font-bold text-lg text-black">{order.orderNumber}</p>
           <p className="m-0 text-xs text-text-body">Placed {dateTime.format(new Date(order.placedAt))}</p>
         </div>
-        <StatusBadge status={order.status} />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleInvoice}
+            disabled={invoicing}
+            className="h-8 px-3 rounded-lg border border-border-light bg-white text-xs font-display font-bold text-text-body cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-wait"
+          >
+            <FaFileDownload aria-hidden="true" />
+            {invoicing ? 'Preparing…' : 'Invoice'}
+          </button>
+          <StatusBadge status={order.status} />
+        </div>
       </div>
+
+      {invoiceError && (
+        <p className="m-0 text-xs text-[#c0392b]" role="alert">
+          {invoiceError}
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Contact">
