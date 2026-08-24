@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import SugarLoopMark from './SugarLoopMark'
+import donutVideo from '../assets/donut-video.MP4'
 
 // Floor keeps the overlay from flashing on cached routes; ceiling guarantees the
 // page is never held hostage by one stalled asset (several heroes are 4-9MB).
@@ -113,7 +113,16 @@ role="status"
         aria-live="polite"
         aria-label={loading ? 'Loading page' : undefined}
       >
-        <SugarLoopMark className="h-[5.5rem] w-auto aspect-[432/288] animate-pulse" />
+        {/* muted + playsInline are what allow autoplay on mobile Safari and Chrome */}
+        <video
+          src={donutVideo}
+          className="h-32 w-32 rounded-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        />
         <div className="w-40 h-[3px] rounded-full bg-border-light overflow-hidden">
           <div className="h-full w-1/3 rounded-full bg-accent animate-loader-sweep" />
         </div>
