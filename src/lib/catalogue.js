@@ -44,6 +44,18 @@ const MINOR_UNITS_PER_RUPEE = 100
 export function toStorefrontProduct(apiProduct) {
   const local = LOCAL_BY_ID.get(apiProduct.legacyId)
 
+  /**
+   * The API sends `[{ url, publicId, alt, order }]`; this site's components want plain
+   * src strings, which is what the bundle has always handed them. Sorted by `order`
+   * rather than trusting document order, because the first image is the one on every
+   * product tile and "which photo represents this donut" should not depend on the order
+   * an upload happened to finish in.
+   */
+  const apiImages = [...(apiProduct.images ?? [])]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((image) => image.url)
+    .filter(Boolean)
+
   return {
     // Falls back to the Mongo id for a product created after this bundle was built —
     // it has no legacyId and no local record, so it gets a string id and the
@@ -76,9 +88,20 @@ export function toStorefrontProduct(apiProduct) {
     description: apiProduct.description || local?.description || '',
     boxEligible: apiProduct.boxEligible,
 
-    // Local, always. See the note at the top of this file.
-    images: local?.images ?? [],
-    image: local?.images?.[0],
+    /**
+     * The API's own photographs win; the bundle is the fallback.
+     *
+     * This order is what lets images move to object storage one product at a time. While
+     * `Product.images` is empty the bundle answers exactly as it always did, so nothing
+     * changes until the migration runs; once a product carries its own images the site
+     * uses them and stops depending on a file being imported at build time.
+     *
+     * It is also the only way a product created in the admin console can ever have a
+     * picture — it has no `legacyId`, so `local` is undefined for it and the bundle has
+     * nothing to offer.
+     */
+    images: apiImages.length > 0 ? apiImages : (local?.images ?? []),
+    image: apiImages[0] ?? local?.images?.[0],
     size: local?.size ?? 'sm',
 
     /**
