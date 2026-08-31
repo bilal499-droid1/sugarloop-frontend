@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FaUserPlus, FaStore } from 'react-icons/fa'
 import { useStaffAuth } from '../../context/StaffAuthContext'
-import { fetchStaffUsers } from '../../lib/staffApi'
-import { fetchBranches } from '../../lib/api'
+import { fetchStaffUsers, fetchStaffBranches, updateBranch } from '../../lib/staffApi'
 import { STAFF_ROLES, STAFF_ROLE_LABEL } from '../../lib/staffConstants'
 import StaffUserPanel from '../../components/staff/StaffUserPanel'
 import StaffUserForm from '../../components/staff/StaffUserForm'
@@ -107,11 +106,17 @@ export default function StaffTeamPage() {
   const wholeTeamLoaded =
     !nextCursor && Object.values(appliedFilters).every((value) => value === '')
 
-  // The same public endpoint the storefront's branch picker uses — a dropdown of four
-  // shops does not need an authenticated route of its own.
+  /**
+   * The staff list, not the storefront's.
+   *
+   * The public endpoint hides closed branches, which would drop a shop out of this screen
+   * the moment an admin closed it — and leave no way to reopen it. This one returns them
+   * all, each carrying `isActive` and `acceptingOrders` so the controls below can render
+   * the switch rather than infer it.
+   */
   useEffect(() => {
     let active = true
-    fetchBranches()
+    fetchStaffBranches()
       .then((data) => active && setBranches(data ?? []))
       .catch(() => {})
     return () => {
@@ -189,6 +194,23 @@ export default function StaffTeamPage() {
     setBranches((current) => [...current, branch])
     setFlash(`${branch.name} added. Assign its manager next — it is in the branch list now.`)
     setMode('detail')
+  }
+
+  /** Which branch has a switch in flight, so its buttons can disable without freezing the rest. */
+  const [busyBranchId, setBusyBranchId] = useState(null)
+
+  const flipBranch = async (branch, changes, describe) => {
+    setBusyBranchId(branch.id)
+    setListError(null)
+    try {
+      const saved = await updateBranch(branch.id, changes)
+      setBranches((current) => current.map((b) => (b.id === saved.id ? saved : b)))
+      setFlash(describe(saved))
+    } catch (error) {
+      setListError(error?.message ?? 'Could not change that branch.')
+    } finally {
+      setBusyBranchId(null)
+    }
   }
 
   const selectPerson = (id) => {
@@ -327,38 +349,99 @@ export default function StaffTeamPage() {
               const staff = staffByBranch.get(branch.id) ?? []
               const isFiltered = appliedFilters.branchId === branch.id
 
+              const busy = busyBranchId === branch.id
+              const closed = branch.isActive === false
+              const paused = branch.isActive !== false && branch.acceptingOrders === false
+
               return (
-                <button
+                <div
                   key={branch.id}
-                  type="button"
-                  aria-pressed={isFiltered}
-                  onClick={() => {
-                    // Clicking the branch you are already filtered to clears it, so the
-                    // same control undoes itself rather than stranding the admin with a
-                    // filter they have to hunt for in the form above.
-                    const next = { ...filters, branchId: isFiltered ? '' : branch.id }
-                    setFilters(next)
-                    setAppliedFilters(next)
-                    setFlash(null)
-                  }}
-                  className={`flex flex-col items-start gap-0.5 px-3 py-2 rounded-xl border text-left cursor-pointer transition-colors ${
-                    isFiltered
-                      ? 'border-accent bg-accent/5'
-                      : 'border-border-light bg-white hover:border-accent'
-                  }`}
+                  className={`flex flex-col gap-1.5 px-3 py-2 rounded-xl border transition-colors ${
+                    isFiltered ? 'border-accent bg-accent/5' : 'border-border-light bg-white'
+                  } ${closed ? 'opacity-60' : ''}`}
                 >
-                  <span className="font-display font-medium text-sm text-black">
-                    {branch.name}
-                  </span>
-                  <span className="text-[0.7rem] text-text-body/80">
-                    {branch.code}
-                    {staff.length > 0
-                      ? ` · ${staff.map((person) => person.name).join(', ')}`
-                      : wholeTeamLoaded
-                        ? ' · No manager yet'
-                        : ''}
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    aria-pressed={isFiltered}
+                    onClick={() => {
+                      // Clicking the branch you are already filtered to clears it, so the
+                      // same control undoes itself rather than stranding the admin with a
+                      // filter they have to hunt for in the form above.
+                      const next = { ...filters, branchId: isFiltered ? '' : branch.id }
+                      setFilters(next)
+                      setAppliedFilters(next)
+                      setFlash(null)
+                    }}
+                    className="flex flex-col items-start gap-0.5 border-none bg-transparent p-0 text-left cursor-pointer"
+                  >
+                    <span className="font-display font-medium text-sm text-black">
+                      {branch.name}
+                      {closed && (
+                        <span className="ml-1.5 text-[0.65rem] font-semibold text-[#c0392b]">
+                          Closed
+                        </span>
+                      )}
+                      {paused && (
+                        <span className="ml-1.5 text-[0.65rem] font-semibold text-[#8a6d1f]">
+                          Paused
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[0.7rem] text-text-body/80">
+                      {branch.code}
+                      {staff.length > 0
+                        ? ` · ${staff.map((person) => person.name).join(', ')}`
+                        : wholeTeamLoaded
+                          ? ' · No manager yet'
+                          : ''}
+                    </span>
+                  </button>
+
+                  {/*
+                    Two switches, not one. Pausing stops the queue while the shop stays
+                    open and staffed; closing takes it off the storefront entirely. A
+                    closed branch cannot be paused — the pause would be invisible under a
+                    shop nobody can order from anyway.
+                  */}
+                  <div className="flex gap-1.5">
+                    {!closed && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() =>
+                          flipBranch(
+                            branch,
+                            { acceptingOrders: !branch.acceptingOrders },
+                            (b) =>
+                              b.acceptingOrders
+                                ? `${b.name} is taking orders again.`
+                                : `${b.name} has stopped taking new orders.`
+                          )
+                        }
+                        className="h-6 px-2 rounded-md border border-border-light bg-white text-[0.65rem] font-display font-semibold text-text-body cursor-pointer hover:border-accent hover:text-accent disabled:opacity-50"
+                      >
+                        {branch.acceptingOrders ? 'Pause orders' : 'Resume orders'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        flipBranch(
+                          branch,
+                          { isActive: closed },
+                          (b) =>
+                            b.isActive
+                              ? `${b.name} is open again.`
+                              : `${b.name} is closed and off the site. Its orders are untouched.`
+                        )
+                      }
+                      className="h-6 px-2 rounded-md border border-border-light bg-white text-[0.65rem] font-display font-semibold text-text-body cursor-pointer hover:border-[#c0392b] hover:text-[#c0392b] disabled:opacity-50"
+                    >
+                      {closed ? 'Reopen' : 'Close'}
+                    </button>
+                  </div>
+                </div>
               )
             })}
           </div>

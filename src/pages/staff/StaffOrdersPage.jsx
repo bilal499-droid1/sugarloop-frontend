@@ -4,6 +4,7 @@ import StatusBadge from '../../components/staff/StatusBadge'
 import OrderDetailPanel from '../../components/staff/OrderDetailPanel'
 import UnacknowledgedAlert from '../../components/staff/UnacknowledgedAlert'
 import { useStaffAuth } from '../../context/StaffAuthContext'
+ import BranchOrdersSwitch from '../../components/staff/BranchOrdersSwitch'
 import { fetchOrders, fetchOrder, changeOrderStatus } from '../../lib/staffApi'
 import { fetchBranches } from '../../lib/api'
 import { ORDER_STATUS_LABEL, ORDER_STATUSES, FULFILMENT_LABEL } from '../../lib/staffConstants'
@@ -45,7 +46,7 @@ function OrderCard({ order, selected, onSelect }) {
 }
 
 export default function StaffOrdersPage() {
-  const { isAdmin } = useStaffAuth()
+  const { isAdmin, staffUser } = useStaffAuth()
 
   const [filters, setFilters] = useState(EMPTY_FILTERS)
   const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS)
@@ -220,6 +221,13 @@ export default function StaffOrdersPage() {
   return (
     <div>
       <h1 className="m-0 mb-4 font-display font-bold text-xl text-black">Orders</h1>
+
+      {/*
+        A manager runs one shop and cannot reach Team, so the pause switch lives here —
+        the screen they are on when the kitchen is drowning. An admin has no single branch
+        to pause, and does it per branch from Team instead.
+      */}
+      {!isAdmin && <BranchOrdersSwitch branchId={staffUser?.branch?.id} />}
 
       {/* Above the filters, so a filtered view cannot hide the thing that needs doing. */}
       <UnacknowledgedAlert count={unacknowledged} />

@@ -652,10 +652,18 @@ export function toRupees(paisa) {
 const BRANCHES = '/staff/branches'
 
 /**
- * Opens a branch. Admin only.
+ * Every branch, closed ones included, each carrying both raw switches.
  *
- * Reading branches back is the PUBLIC `fetchBranches` in `api.js`, not a staff route —
- * the console's branch pickers already use it, and a list of shops is not a secret.
+ * Not the public `fetchBranches` in `api.js`: that hides `isActive: false`, so a closed
+ * shop would drop out of the console and could never be reopened from it. Use the public
+ * one for pickers that offer a live branch, this one for managing them.
+ */
+export function fetchStaffBranches({ signal } = {}) {
+  return data(BRANCHES, { signal }).then((response) => response.branches)
+}
+
+/**
+ * Opens a branch. Admin only.
  *
  * ⚠️ `location` is `{ lat, lng }`, in that order and named. The server stores GeoJSON
  * `[longitude, latitude]` and flips it on the way in; sending a bare array here would put
@@ -663,4 +671,21 @@ const BRANCHES = '/staff/branches'
  */
 export function createBranch(branch) {
   return data(BRANCHES, { method: 'POST', body: branch }).then((response) => response.branch)
+}
+
+/**
+ * Flips a branch's switches. Send only what changed — an empty patch is a 422.
+ *
+ *   `acceptingOrders`  pause the queue mid-rush. A branch manager may set this on their
+ *                      own branch; an admin on any.
+ *   `isActive`         the shop stops trading and leaves the storefront entirely. Admin
+ *                      only — the server answers 403 to a manager who tries.
+ *
+ * There is no delete. Every order stores its branch, so removing one strands the history;
+ * `isActive: false` is what deleting a branch means, and it can be undone.
+ */
+export function updateBranch(id, changes) {
+  return data(`${BRANCHES}/${id}`, { method: 'PATCH', body: changes }).then(
+    (response) => response.branch
+  )
 }
