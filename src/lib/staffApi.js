@@ -648,3 +648,19 @@ export function toPaisa(rupees) {
 export function toRupees(paisa) {
   return Number.isFinite(paisa) ? paisa / 100 : ''
 }
+
+const BRANCHES = '/staff/branches'
+
+/**
+ * Opens a branch. Admin only.
+ *
+ * Reading branches back is the PUBLIC `fetchBranches` in `api.js`, not a staff route —
+ * the console's branch pickers already use it, and a list of shops is not a secret.
+ *
+ * ⚠️ `location` is `{ lat, lng }`, in that order and named. The server stores GeoJSON
+ * `[longitude, latitude]` and flips it on the way in; sending a bare array here would put
+ * the shop in the Arabian Sea.
+ */
+export function createBranch(branch) {
+  return data(BRANCHES, { method: 'POST', body: branch }).then((response) => response.branch)
+}

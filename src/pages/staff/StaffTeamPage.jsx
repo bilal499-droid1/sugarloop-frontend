@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
-import { FaUserPlus } from 'react-icons/fa'
+import { useEffect, useMemo, useState } from 'react'
+import { FaUserPlus, FaStore } from 'react-icons/fa'
 import { useStaffAuth } from '../../context/StaffAuthContext'
 import { fetchStaffUsers } from '../../lib/staffApi'
 import { fetchBranches } from '../../lib/api'
 import { STAFF_ROLES, STAFF_ROLE_LABEL } from '../../lib/staffConstants'
 import StaffUserPanel from '../../components/staff/StaffUserPanel'
 import StaffUserForm from '../../components/staff/StaffUserForm'
+import StaffBranchForm from '../../components/staff/StaffBranchForm'
 import ResetPasswordForm from '../../components/staff/ResetPasswordForm'
 
 const EMPTY_FILTERS = { search: '', role: '', branchId: '', isActive: '' }
@@ -73,11 +74,38 @@ export default function StaffTeamPage() {
   const [listError, setListError] = useState(null)
 
   const [selectedId, setSelectedId] = useState(null)
-  /** 'detail' | 'create' | 'edit' | 'reset' — what the right-hand column is showing. */
+  /**
+   * 'detail' | 'create' | 'edit' | 'reset' | 'branch' — what the right-hand column is
+   * showing. `branch` is the odd one out: it opens a shop rather than touching a person,
+   * and lives here because a new branch exists to be assigned a manager, which is the
+   * next thing the admin does and the next screen along.
+   */
   const [mode, setMode] = useState('detail')
   const [flash, setFlash] = useState(null)
 
   const selected = people.find((person) => person.id === selectedId) ?? null
+
+  /** Who runs each shop, from the team already loaded — no second request. */
+  const staffByBranch = useMemo(() => {
+    const map = new Map()
+    for (const person of people) {
+      const branchId = person.branch?.id
+      if (!branchId) continue
+      map.set(branchId, [...(map.get(branchId) ?? []), person])
+    }
+    return map
+  }, [people])
+
+  /**
+   * "Nobody yet" is only true if the whole team is in hand.
+   *
+   * The list is filtered and cursor-paginated, so under a role filter — or before "Load
+   * more" — a branch with a manager would look unstaffed. Saying nothing is the honest
+   * answer there; claiming a manned shop has no manager would send an admin to create a
+   * second account for somebody who already exists.
+   */
+  const wholeTeamLoaded =
+    !nextCursor && Object.values(appliedFilters).every((value) => value === '')
 
   // The same public endpoint the storefront's branch picker uses — a dropdown of four
   // shops does not need an authenticated route of its own.
@@ -152,6 +180,17 @@ export default function StaffTeamPage() {
     setMode('detail')
   }
 
+  /**
+   * A new branch goes straight into the picker the create-a-manager form reads, so the
+   * admin can assign someone to it without a reload — which is the whole point of opening
+   * one from this screen.
+   */
+  const handleBranchCreated = (branch) => {
+    setBranches((current) => [...current, branch])
+    setFlash(`${branch.name} added. Assign its manager next — it is in the branch list now.`)
+    setMode('detail')
+  }
+
   const selectPerson = (id) => {
     setSelectedId(id)
     setMode('detail')
@@ -168,18 +207,32 @@ export default function StaffTeamPage() {
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="m-0 font-display font-bold text-xl text-black">Team</h1>
-        <button
-          type="button"
-          onClick={() => {
-            setMode('create')
-            setSelectedId(null)
-            setFlash(null)
-          }}
-          className="flex items-center gap-2 h-9 px-4 rounded-lg border-none bg-accent text-white font-display font-semibold text-sm cursor-pointer"
-        >
-          <FaUserPlus className="text-xs" aria-hidden="true" />
-          Add someone
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setMode('branch')
+              setSelectedId(null)
+              setFlash(null)
+            }}
+            className="flex items-center gap-2 h-9 px-4 rounded-lg border border-border-light bg-white font-display font-medium text-sm text-text-body cursor-pointer hover:border-accent hover:text-accent"
+          >
+            <FaStore className="text-xs" aria-hidden="true" />
+            Add a branch
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('create')
+              setSelectedId(null)
+              setFlash(null)
+            }}
+            className="flex items-center gap-2 h-9 px-4 rounded-lg border-none bg-accent text-white font-display font-semibold text-sm cursor-pointer"
+          >
+            <FaUserPlus className="text-xs" aria-hidden="true" />
+            Add someone
+          </button>
+        </div>
       </div>
 
       <form
@@ -258,6 +311,60 @@ export default function StaffTeamPage() {
         </p>
       )}
 
+      {/*
+        The shops themselves. Before this, a branch existed only inside two dropdowns —
+        so adding one looked like nothing had happened, and the obvious conclusion was
+        that it had failed. Clicking one filters the team down to its people, which is
+        the question this list actually gets asked: who runs that shop?
+      */}
+      {branches.length > 0 && (
+        <section aria-label="Branches" className="mb-5">
+          <h2 className="m-0 mb-2 font-display font-semibold text-[0.7rem] uppercase tracking-wide text-text-body/70">
+            Branches
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {branches.map((branch) => {
+              const staff = staffByBranch.get(branch.id) ?? []
+              const isFiltered = appliedFilters.branchId === branch.id
+
+              return (
+                <button
+                  key={branch.id}
+                  type="button"
+                  aria-pressed={isFiltered}
+                  onClick={() => {
+                    // Clicking the branch you are already filtered to clears it, so the
+                    // same control undoes itself rather than stranding the admin with a
+                    // filter they have to hunt for in the form above.
+                    const next = { ...filters, branchId: isFiltered ? '' : branch.id }
+                    setFilters(next)
+                    setAppliedFilters(next)
+                    setFlash(null)
+                  }}
+                  className={`flex flex-col items-start gap-0.5 px-3 py-2 rounded-xl border text-left cursor-pointer transition-colors ${
+                    isFiltered
+                      ? 'border-accent bg-accent/5'
+                      : 'border-border-light bg-white hover:border-accent'
+                  }`}
+                >
+                  <span className="font-display font-medium text-sm text-black">
+                    {branch.name}
+                  </span>
+                  <span className="text-[0.7rem] text-text-body/80">
+                    {branch.code}
+                    {staff.length > 0
+                      ? ` · ${staff.map((person) => person.name).join(', ')}`
+                      : wholeTeamLoaded
+                        ? ' · No manager yet'
+                        : ''}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,380px)_1fr] gap-5 items-start">
         <div className="bg-white border border-border-light rounded-2xl overflow-hidden">
           {loading ? (
@@ -290,8 +397,15 @@ export default function StaffTeamPage() {
         </div>
 
         <div>
-          {mode === 'create' ? (
+          {mode === 'branch' ? (
+            <StaffBranchForm
+              key="branch"
+              onCreated={handleBranchCreated}
+              onCancel={() => setMode('detail')}
+            />
+          ) : mode === 'create' ? (
             <StaffUserForm
+              key="create"
               mode="create"
               branches={branches}
               isSelf={false}
@@ -304,6 +418,7 @@ export default function StaffTeamPage() {
             </div>
           ) : mode === 'edit' ? (
             <StaffUserForm
+              key={`edit-${selected.id}`}
               mode="edit"
               staffUser={selected}
               branches={branches}
