@@ -73,9 +73,9 @@ function Row({ label, value }) {
   )
 }
 
-/** Reads back what an all-time total actually covered, e.g. "13 Aug 2026 — 24 Aug 2026". */
-function spanLabel(report) {
-  if (!report.firstOrderAt) return 'No orders yet'
+/** Reads back what a total actually covered, e.g. "13 Aug 2026 — 24 Aug 2026". */
+function spanLabel(report, { emptyLabel = 'No orders yet' } = {}) {
+  if (!report.firstOrderAt) return emptyLabel
 
   const day = (value) =>
     new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Karachi', dateStyle: 'medium' }).format(
@@ -85,13 +85,24 @@ function spanLabel(report) {
   return `${day(report.firstOrderAt)} — ${day(report.lastOrderAt)}`
 }
 
-const MODE = { DAY: 'day', ALL: 'all' }
+const MODE = { DAY: 'day', RANGE: 'range', ALL: 'all' }
+
+/** `YYYY-MM-DD` this many days before the given business date. */
+function daysBefore(isoDate, days) {
+  const date = new Date(`${isoDate}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() - days)
+  return date.toISOString().slice(0, 10)
+}
 
 export default function StaffReportsPage() {
   const { staffUser, isAdmin } = useStaffAuth()
 
   const [mode, setMode] = useState(MODE.DAY)
   const [date, setDate] = useState(businessToday())
+  // Defaults to the last 7 days including today — the range somebody actually wants when
+  // they reach for this control, rather than an empty pair of boxes to fill in twice.
+  const [from, setFrom] = useState(() => daysBefore(businessToday(), 6))
+  const [to, setTo] = useState(businessToday())
   const [branches, setBranches] = useState([])
   const [branchId, setBranchId] = useState('')
 
@@ -114,14 +125,31 @@ export default function StaffReportsPage() {
   }, [isAdmin])
 
   const isAllTime = mode === MODE.ALL
+  const isRange = mode === MODE.RANGE
+  /** Both windows are the same summary endpoint — all-time is simply one with no bounds. */
+  const isSummary = isAllTime || isRange
+
+  /**
+   * Caught here as well as on the server.
+   *
+   * The API answers 422 for a backwards range, which is correct but arrives as a red bar
+   * after a round trip. A date pair is trivially checkable in the browser, and the two
+   * inputs are right there to fix. ISO dates sort lexicographically, so this is the same
+   * comparison the validator makes.
+   */
+  const rangeIsBackwards = isRange && from && to && from > to
 
   useEffect(() => {
+    if (rangeIsBackwards) return
+
     const controller = new AbortController()
     setLoading(true)
     setError(null)
 
     const scope = { branchId: branchId || undefined, signal: controller.signal }
-    const request = isAllTime ? fetchSalesSummary(scope) : fetchDailyReport({ date, ...scope })
+    const request = isSummary
+      ? fetchSalesSummary(isRange ? { from, to, ...scope } : scope)
+      : fetchDailyReport({ date, ...scope })
 
     request
       .then((data) => setReport(data.report))
@@ -137,14 +165,16 @@ export default function StaffReportsPage() {
       })
 
     return () => controller.abort()
-  }, [isAllTime, date, branchId])
+  }, [isSummary, isRange, rangeIsBackwards, from, to, date, branchId])
 
   const handleDownload = async () => {
     setDownloading(true)
     setDownloadError(null)
     try {
       const scope = { branchId: branchId || undefined }
-      await (isAllTime ? downloadSalesSummary(scope) : downloadDailyReport({ date, ...scope }))
+      await (isSummary
+        ? downloadSalesSummary(isRange ? { from, to, ...scope } : scope)
+        : downloadDailyReport({ date, ...scope }))
     } catch (err) {
       setDownloadError(err?.message ?? 'Could not download the report.')
     } finally {
@@ -159,7 +189,7 @@ export default function StaffReportsPage() {
   return (
     <div>
       <h1 className="m-0 mb-4 font-display font-bold text-xl text-black">
-        {isAllTime ? 'Total sales' : 'Daily report'}
+        {isAllTime ? 'Total sales' : isRange ? 'Sales over a period' : 'Daily report'}
       </h1>
 
       <div className="mb-5 flex flex-wrap items-end gap-3 bg-white border border-border-light rounded-xl p-4">
@@ -171,6 +201,7 @@ export default function StaffReportsPage() {
           <div className="inline-flex rounded-lg border border-border-light overflow-hidden">
             {[
               [MODE.DAY, 'One day'],
+              [MODE.RANGE, 'Date range'],
               [MODE.ALL, 'All time'],
             ].map(([value, label]) => (
               <button
@@ -188,7 +219,7 @@ export default function StaffReportsPage() {
           </div>
         </div>
 
-        {!isAllTime && (
+        {mode === MODE.DAY && (
           <label className="flex flex-col gap-1.5">
             <span className="font-display font-medium text-xs text-text-body">Date</span>
             <input
@@ -198,6 +229,33 @@ export default function StaffReportsPage() {
               className="h-9 px-2 rounded-lg border border-border-light font-display text-sm text-black outline-none focus:border-accent"
             />
           </label>
+        )}
+
+        {isRange && (
+          <>
+            <label className="flex flex-col gap-1.5">
+              <span className="font-display font-medium text-xs text-text-body">From</span>
+              <input
+                type="date"
+                value={from}
+                // `max`/`min` stop the pair being crossed in the picker at all, which is
+                // better than letting it happen and then explaining it.
+                max={to || undefined}
+                onChange={(e) => setFrom(e.target.value)}
+                className="h-9 px-2 rounded-lg border border-border-light font-display text-sm text-black outline-none focus:border-accent"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="font-display font-medium text-xs text-text-body">To</span>
+              <input
+                type="date"
+                value={to}
+                min={from || undefined}
+                onChange={(e) => setTo(e.target.value)}
+                className="h-9 px-2 rounded-lg border border-border-light font-display text-sm text-black outline-none focus:border-accent"
+              />
+            </label>
+          </>
         )}
 
         {isAdmin && (
@@ -229,6 +287,12 @@ export default function StaffReportsPage() {
         </button>
       </div>
 
+      {rangeIsBackwards && (
+        <p role="alert" className="m-0 mb-3 px-3 py-2 rounded-lg bg-[#fdecea] text-xs text-[#c0392b]">
+          The start date is after the end date — the numbers below are from the last range
+          that made sense.
+        </p>
+      )}
       {error && (
         <p role="alert" className="m-0 mb-3 px-3 py-2 rounded-lg bg-[#fdecea] text-xs text-[#c0392b]">
           {error}
@@ -248,13 +312,25 @@ export default function StaffReportsPage() {
 
       {report && (
         <div className={loading ? 'opacity-60' : undefined}>
+          {/*
+            For a range this reads back the span of orders actually FOUND, not the dates
+            asked for — so a week whose orders all landed on one day says so, instead of
+            implying the whole week was trading.
+          */}
           <p className="m-0 mb-3 text-xs text-text-body">
-            {scopeLabel} · {isAllTime ? spanLabel(report) : report.date}
+            {scopeLabel} ·{' '}
+            {isRange
+              ? `${from} → ${to} · ${spanLabel(report, { emptyLabel: 'No orders in this range' })}`
+              : isAllTime
+                ? spanLabel(report)
+                : report.date}
           </p>
 
           <div className="grid grid-cols-2 max-[900px]:grid-cols-1 lg:grid-cols-4 gap-3 mb-4">
             <Stat
-              label={isAllTime ? 'Total sales to date' : 'Total taken'}
+              label={
+                isAllTime ? 'Total sales to date' : isRange ? 'Total over this period' : 'Total taken'
+              }
               value={report.takings.gross.formatted}
               hint="Completed orders only"
               strong
@@ -273,7 +349,11 @@ export default function StaffReportsPage() {
                 ))}
               {report.ordersPlaced === 0 && (
                 <p className="m-0 text-sm text-text-body">
-                  {isAllTime ? 'No orders yet.' : 'No orders on this day.'}
+                  {isAllTime
+                    ? 'No orders yet.'
+                    : isRange
+                      ? 'No orders in this range.'
+                      : 'No orders on this day.'}
                 </p>
               )}
             </Panel>
@@ -292,12 +372,14 @@ export default function StaffReportsPage() {
             </Panel>
 
             <Panel
-              title={isAllTime ? 'Best sellers' : 'What sold'}
+              title={isSummary ? 'Best sellers' : 'What sold'}
               empty={
                 report.topItems.length === 0
                   ? isAllTime
                     ? 'Nothing sold yet.'
-                    : 'Nothing sold on this day.'
+                    : isRange
+                      ? 'Nothing sold in this range.'
+                      : 'Nothing sold on this day.'
                   : null
               }
             >
