@@ -116,9 +116,11 @@ export default function CorporateGiftingPage() {
             Desktop renders at 80% (w-4/5, cap 70rem -> 56rem). Scaling the
             <picture> rather than the <img> is what keeps those percentage
             margins in step: shrinking the image alone would leave them sized
-            against a parent that had not moved, and the bands would reappear. */}
+            against a parent that had not moved, and the bands would reappear.
+            ml-auto still right-aligns it in the slot; the 100px right margin then
+            pulls it that far back off the screen edge. */}
         <div className="order-first w-full aspect-[393/241] mb-2 lg:order-1 lg:flex-1 lg:min-w-0 lg:aspect-auto lg:h-auto lg:mb-0">
-          <picture className="block w-full h-full lg:h-auto lg:w-4/5 lg:max-w-[56rem] lg:ml-auto">
+          <picture className="block w-full h-full lg:h-auto lg:w-4/5 lg:max-w-[56rem] lg:ml-auto lg:mr-[100px]">
             <source media="(min-width: 1024px)" srcSet={giftBoxDesktop} />
             <img
               src={giftBoxMobile}
@@ -128,17 +130,22 @@ export default function CorporateGiftingPage() {
           </picture>
         </div>
 
-        <div className="flex flex-col items-center text-center lg:flex-[0_0_340px] lg:items-start lg:text-left lg:max-w-[340px] lg:pr-2">
+        {/* Nudged 120px further right on desktop, on top of the section's own left
+            padding. lg-only: on a phone this is a centred stack, and a left margin
+            there would just knock it off centre. */}
+        <div className="flex flex-col items-center text-center lg:flex-[0_0_340px] lg:items-start lg:text-left lg:max-w-[340px] lg:ml-[120px] lg:pr-2">
           <h1 className="m-0 font-display font-bold text-[1.9rem] text-accent tracking-[-0.02em] lg:text-[2.5rem] lg:leading-[1.05] lg:whitespace-nowrap">
             Corporate Gifting
           </h1>
-          {/* The <br /> is a desktop-only line break: on mobile the copy already
-              wraps inside the narrow column, and forcing it leaves "appreciation"
-              stranded on its own line. */}
+          {/* The <br /> is a desktop-only line break, placed after "milestones" so the
+              two halves of the sentence each get a line — the break used to sit after
+              "everyday", which left "appreciation" stranded on its own.
+              Hidden below lg: on mobile the copy already wraps inside the narrow
+              column, and forcing a break there splits it in the wrong place. */}
           <p className="mt-1 mb-4 max-w-[22rem] text-[0.8rem] leading-[1.45] text-[#6d6d6d] lg:mt-2 lg:mb-7 lg:text-base lg:leading-[1.7] lg:whitespace-nowrap">
-            From celebrating major company milestones to showing everyday{' '}
+            From celebrating major company milestones{' '}
             <br className="hidden lg:inline" />
-            appreciation
+            to showing everyday appreciation
           </p>
 
           {reference ? (

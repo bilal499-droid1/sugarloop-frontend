@@ -8,40 +8,39 @@ import MobileNavMenu from '../MobileNavMenu'
 import DesktopMenuDropdown from '../DesktopMenuDropdown'
 import SugarLoopMark from '../SugarLoopMark'
 
-// A shared reference, not a copy: it heads both the pill nav and the hamburger,
-// and MOBILE_NAV_ITEMS de-dupes by identity so the drawer lists it once.
-const HOME_ITEM = { label: 'Home', to: '/#home' }
-
 // `to` rather than `href` on the hash links so the router handles them: a plain
 // anchor reloads the whole app, and ScrollToTop only sees the hash on a
-// client-side navigation. /#home is the hero section, i.e. the page top, and
-// /#contact is the footer.
+// client-side navigation. /#contact is the footer.
+//
+// No Home entry. This nav only ever renders on the homepage — Hero is used by
+// HomePage alone — so Home was a link to the page you are already reading, and
+// the two slots are worth more spent on the things a customer came to do.
 const NAV_ITEMS = [
-  HOME_ITEM,
   { label: 'Menu', to: '/products' },
+  { label: 'Build a Box', to: '/build-your-box' },
+  { label: 'Corporate Gifting', to: '/corporate-gifting' },
   { label: 'Contact', to: '/#contact' },
 ]
 
 // Surfaced via the desktop-only hamburger next to the pill nav, so the rest of
-// the site stays reachable from the homepage without crowding Home/Menu/Contact.
-// Home leads it anyway: a hamburger that can't take you back to the top reads as
-// incomplete, even though the pill nav beside it carries the same link.
+// the site stays reachable from the homepage without crowding the pill nav.
+// Only what the pill nav does not already carry: Build a Box and Corporate
+// Gifting have their own slots there, Menu already points at /products, and
+// Home is the page you are reading.
 const MORE_PAGES = [
-  HOME_ITEM,
-  { label: 'Products', to: '/products' },
-  { label: 'Build a Box', to: '/build-your-box' },
-  { label: 'Corporate Gifting', to: '/corporate-gifting' },
   { label: 'FAQ', to: '/faq' },
   { label: 'About us', to: '/#about' },
 ]
 
 // MORE_PAGES rides the desktop-only hamburger, so on a phone those pages had no
-// route in at all - the drawer carried Home/Menu/Contact and nothing else. It gets
-// both lists instead, minus the entries NAV_ITEMS already covers: Home outright,
-// and Products because Menu is already pointing at /products.
+// route in at all — the drawer carries both lists. Build a Box and Corporate
+// Gifting are deliberately kept out of it: they belong to the pill nav, and the
+// homepage sells them elsewhere.
+const DRAWER_EXCLUDED = ['Build a Box', 'Corporate Gifting']
+
 const MOBILE_NAV_ITEMS = [
-  ...NAV_ITEMS,
-  ...MORE_PAGES.filter((item) => !NAV_ITEMS.includes(item) && item.to !== '/products'),
+  ...NAV_ITEMS.filter((item) => !DRAWER_EXCLUDED.includes(item.label)),
+  ...MORE_PAGES,
 ]
 
 const navLinkClass =
@@ -111,7 +110,9 @@ export default function Hero() {
 
       <div className="relative z-[2] w-full">
         <div className="flex sm:hidden items-center justify-between">
-          <SugarLoopMark className="h-[4.4rem] w-auto aspect-[432/288]" />
+          <Link to="/" aria-label="Sugarloop home">
+            <SugarLoopMark className="h-[4.4rem] w-auto aspect-[432/288]" />
+          </Link>
           <div className="flex items-center gap-5">
             <CartLink className="text-[1.3rem]" />
             <button
@@ -136,7 +137,9 @@ export default function Hero() {
         />
 
         <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] items-center w-full">
-          <SugarLoopMark className="h-[7.8rem] w-auto aspect-[432/288] justify-self-start" />
+          <Link to="/" aria-label="Sugarloop home" className="justify-self-start">
+            <SugarLoopMark className="h-[7.8rem] w-auto aspect-[432/288]" />
+          </Link>
 
           <div className="flex items-center justify-center gap-3">
             <nav className="flex items-center justify-center gap-[clamp(1rem,3vw,2.75rem)] bg-overlay-nav rounded-nav-pill py-[0.85rem] px-8 w-fit max-w-full">
