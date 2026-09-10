@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import ProductsHero from '../components/products/ProductsHero'
 import ProductGrid from '../components/products/ProductGrid'
 import BranchPicker from '../components/products/BranchPicker'
@@ -19,9 +19,12 @@ export default function ProductsPage() {
   // (hero buttons, menu cards) land on the right tab even if this page is already mounted.
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedCategory = searchParams.get('category')
+  // Falls back to the FIRST tab, which is what a visitor arriving with no ?category=
+  // sees. This tracks the array rather than naming Donuts, so reordering the tabs
+  // moves the default with them instead of leaving it pointing at a moved category.
   const activeCategory = CATEGORIES.includes(requestedCategory)
     ? requestedCategory
-    : CATEGORIES[1]
+    : CATEGORIES[0]
 
   const setActiveCategory = (category) =>
     setSearchParams(
@@ -76,6 +79,25 @@ export default function ProductsPage() {
           </div>
         </section>
       )}
+
+      {/* Outside the branch panel on purpose: the box builder works with or without a
+          branch chosen, so its entry point should not vanish when the branch list fails
+          to load. When a branch IS chosen it still carries through — the builder reads
+          the same selection. Its own section rather than a row in the panel, because the
+          pills there are a single choose-one group and a link among them would read as a
+          fifth shop. */}
+      <section
+        aria-label="Build your own box"
+        className="pt-6 px-5 lg:pt-10 lg:px-[clamp(2rem,5vw,5.5rem)]"
+      >
+        <Link
+          to="/build-your-box"
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-cta-pill bg-accent text-white no-underline font-display font-bold text-sm transition-transform duration-300 ease-out hover:scale-105"
+        >
+          Build your own box
+          <span aria-hidden="true">→</span>
+        </Link>
+      </section>
 
       <ProductGrid
         products={visibleProducts}

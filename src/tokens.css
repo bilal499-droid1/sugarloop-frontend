@@ -68,6 +68,55 @@
     }
   }
 
+  /* ---- Add-to-cart feedback ---- */
+  /* Fast and eased-out: this fires on every tap of a + button, so anything
+     slower than ~250ms starts to feel like the page is lagging behind the tap. */
+  --animate-cart-toast-in: cart-toast-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes cart-toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Leaving is quicker than arriving and eases IN rather than out: an exit that
+     lingers reads as the page being slow. `forwards` holds the final frame so the
+     card stays invisible for the gap between the animation ending and React
+     unmounting it. */
+  --animate-cart-toast-out: cart-toast-out 200ms ease-in forwards;
+
+  @keyframes cart-toast-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(0.5rem) scale(0.98);
+    }
+  }
+
+  /* Overshoot then settle - the button itself acknowledges the press, so the
+     confirmation starts under the finger before the toast slides up. */
+  --animate-cart-pop: cart-pop 320ms ease-out;
+
+  @keyframes cart-pop {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.28);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
   /* ---- Page loader bar ---- */
   --animate-loader-sweep: loader-sweep 1.1s ease-in-out infinite;
 
@@ -114,7 +163,10 @@ img {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee-scroll {
+  .animate-marquee-scroll,
+  .animate-cart-toast-in,
+  .animate-cart-toast-out,
+  .animate-cart-pop {
     animation: none;
   }
 }

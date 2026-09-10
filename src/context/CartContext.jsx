@@ -1,5 +1,14 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useCatalogue } from './CatalogueContext'
+import CartToast from '../components/CartToast'
 
 const CartContext = createContext(null)
 
@@ -114,6 +123,31 @@ export function CartProvider({ children }) {
   // first paint is unchanged — the live prices arrive in the effect below.
   const [items, setItems] = useState(() => readStoredCart(products))
 
+  // Drives the cart confirmation toast. Held here rather than in the tile that was
+  // clicked because the toast outlives it — the menu re-filters, the product page
+  // navigates away, and the confirmation still has to finish showing.
+  const [toast, setToast] = useState(null)
+  const dismissToast = useCallback(() => setToast(null), [])
+
+  // `key` counts up rather than carrying a timestamp so two taps inside the same
+  // millisecond still read as two separate events, which is what restarts the toast
+  // timer and replays its entry animation.
+  // `cartLink` is opt-out because most toasts ARE about the cart. Build Your Box raises
+  // one for each donut dropped into a slot, and nothing is in the cart at that point —
+  // offering "View cart" there would send people somewhere their box does not exist yet.
+  const announce = useCallback(
+    (item, tone, note, { cartLink = true } = {}) =>
+      setToast((previous) => ({
+        key: (previous?.key ?? 0) + 1,
+        name: item.name,
+        image: item.image ?? item.images?.[0],
+        tone,
+        note,
+        cartLink,
+      })),
+    []
+  )
+
   // When the API catalogue lands, re-read names and prices off it. Without this a
   // returning customer's saved cart would keep quoting whatever the prices were on the
   // day the bundle was built, while the products page showed the live ones.
@@ -167,16 +201,31 @@ export function CartProvider({ children }) {
           },
         ]
       })
+
+      announce(product, 'added', 'Added to cart')
     }
 
-    const removeItem = (id) => setItems((current) => current.filter((item) => item.id !== id))
+    // The line is read out of `items` before it goes, because the toast needs the name
+    // and photo of something that is about to stop existing. `items` is current here —
+    // this whole value is rebuilt whenever it changes — and reading it outside the
+    // setItems updater keeps that updater pure, which StrictMode double-invokes.
+    const removeItem = (id) => {
+      const going = items.find((item) => item.id === id)
+      setItems((current) => current.filter((item) => item.id !== id))
+      if (going) announce(going, 'removed', 'Removed from cart')
+    }
 
     // qty <= 0 removes the line, which is what a quantity stepper stepping past 1
     // should do rather than leaving a zero-quantity row behind.
     const setQty = (id, qty) => {
       if (!Number.isFinite(qty)) return
+      // Delegated, so the removal is announced once — by removeItem, not twice here.
       if (qty < 1) return removeItem(id)
+      const existing = items.find((item) => item.id === id)
       setItems((current) => current.map((item) => (item.id === id ? { ...item, qty } : item)))
+      // Only on the way down. Stepping up is not a removal, and a tile’s + goes
+      // through addItem, which announces itself.
+      if (existing && qty < existing.qty) announce(existing, 'removed', 'Removed one from cart')
     }
 
     const clear = () => setItems([])
@@ -187,12 +236,20 @@ export function CartProvider({ children }) {
       removeItem,
       setQty,
       clear,
+      // Exposed so a screen with its own add/remove actions can reuse the one toast
+      // rather than growing a second notification system beside it.
+      notify: announce,
       count: items.reduce((sum, item) => sum + item.qty, 0),
       subtotal: items.reduce((sum, item) => sum + item.price * item.qty, 0),
     }
-  }, [items])
+  }, [items, announce])
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      <CartToast toast={toast} onDismiss={dismissToast} />
+    </CartContext.Provider>
+  )
 }
 
 export function useCart() {

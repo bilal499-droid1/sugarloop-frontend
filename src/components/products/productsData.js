@@ -100,7 +100,9 @@ import doubleChocolateFrappe1 from '../../assets/DoubleChocolate.webp'
 import mochaFrappe1 from '../../assets/Mocha.webp'
 import waterImg from '../../assets/water.webp'
 
-export const CATEGORIES = ['Croissants', 'Donuts', 'Drinks', 'Sandwiches']
+// Donuts lead: they are the signature line, the biggest section of the printed
+// board, and the order the home page's menu carousel already presents.
+export const CATEGORIES = ['Donuts', 'Croissants', 'Drinks', 'Sandwiches']
 
 const DESCRIPTION =
   'Baked fresh every morning with simple, honest ingredients. Best enjoyed the same day, alongside your favorite coffee.'

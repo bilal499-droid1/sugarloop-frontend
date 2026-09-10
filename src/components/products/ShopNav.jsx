@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { FaShoppingCart } from 'react-icons/fa'
 import { useCart } from '../../context/CartContext'
 import MobileNavMenu from '../MobileNavMenu'
@@ -64,6 +64,13 @@ function ShopNavLink({ item, className, onClick }) {
 export default function ShopNav({ onImage = false, showBranchPicker = false }) {
   const { count } = useCart()
   const [menuOpen, setMenuOpen] = useState(false)
+  const { pathname } = useLocation()
+
+  // A link to the page you are already on is dead weight, so the menu drops its
+  // own entry there. Exact match on purpose: /products/:id is a different page,
+  // and from a single product the way back to the full menu still has to exist.
+  const navItems =
+    pathname === '/products' ? NAV_ITEMS.filter((item) => item.to !== '/products') : NAV_ITEMS
 
   return (
     <nav className="relative z-[2] flex items-center justify-between gap-4 pt-5 px-5 pb-0 lg:pt-10 lg:px-[clamp(2rem,5vw,5.5rem)] lg:pb-0">
@@ -79,7 +86,7 @@ export default function ShopNav({ onImage = false, showBranchPicker = false }) {
       </Link>
 
       <ul className="hidden lg:flex list-none gap-[clamp(1.5rem,3vw,3rem)] m-0 ml-auto p-0">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <li key={item.label}>
             <ShopNavLink item={item} className={onImage ? navLinkOnImageClass : navLinkClass} />
           </li>

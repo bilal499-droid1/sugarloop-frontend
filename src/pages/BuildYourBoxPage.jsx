@@ -16,23 +16,44 @@ export default function BuildYourBoxPage() {
   const [productType, setProductType] = useState(PRODUCT_TYPES[0])
   const [slots, setSlots] = useState(Array(BOX_SIZES[0]).fill(null))
   const [justAdded, setJustAdded] = useState(false)
-  const { addItem } = useCart()
+  const { addItem, notify } = useCart()
   const { products } = useCatalogue()
   const { branch, hasBranches } = useBranch()
 
   /**
    * The server requires every item in a box to be `boxEligible` and in stock at the
-   * assigned branch, and re-checks both when the box is priced. Both are filtered here
-   * so a box cannot be built out of items that would be rejected at checkout.
+   * assigned branch, and re-checks both when the box is priced. Neither can reach a slot
+   * from here — but they are kept out in different ways.
    *
-   * Each condition is checked for an explicit false rather than falsiness: `boxEligible`
-   * is absent on the bundled fallback catalogue, and `inStock` is absent whenever no
-   * branch has been chosen. Treating either absence as "not allowed" would empty this
-   * page the moment the API is unreachable.
+   * `boxEligible` FILTERS: an item that can never go in a box is not a box option at all.
+   * `inStock` does NOT filter: a sold-out item is shown and greyed, the way the menu tiles
+   * do it. A silently shorter list tells the customer nothing, while a greyed tile says
+   * "we do sell this, just not at this shop today" — and the tile is disabled, so it still
+   * cannot be picked.
+   *
+   * Checked for an explicit false rather than falsiness: `boxEligible` is absent on the
+   * bundled fallback catalogue, and `inStock` is absent whenever no branch has been
+   * chosen. Treating either absence as "not allowed" would empty this page the moment
+   * the API is unreachable.
    */
-  const options = products.filter(
-    (p) => p.category === productType && p.boxEligible !== false && p.inStock !== false
+  const options = products.filter((p) => p.category === productType && p.boxEligible !== false)
+  /**
+   * Which of the ALREADY PLACED items are sold out right now.
+   *
+   * Re-read from `products` by id rather than off the slot: a slot holds the product
+   * object as it was when it was dropped in, so its `inStock` is a snapshot from that
+   * moment. Switch branch afterwards and the catalogue refetches with new stock while
+   * the slot keeps the stale copy — reading `slot.inStock` would report the old shop.
+   */
+  const soldOutSlotIds = new Set(
+    slots
+      .filter(Boolean)
+      .map((slot) => products.find((product) => product.id === slot.id))
+      .filter((product) => product?.inStock === false)
+      .map((product) => product.id)
   )
+  const unavailableInBox = slots.filter((slot) => slot && soldOutSlotIds.has(slot.id)).length
+
   const filledCount = slots.filter(Boolean).length
   const isFull = filledCount === boxSize
   const total = slots.reduce((sum, item) => sum + (item ? item.price : 0), 0)
@@ -41,7 +62,11 @@ export default function BuildYourBoxPage() {
     setSlots(Array(boxSize).fill(null))
   }, [boxSize])
 
+  // Both toasts are raised OUTSIDE the setSlots updater. An updater has to stay pure —
+  // StrictMode double-invokes it in development — so firing a notification from inside
+  // would announce twice for one tap.
   const handleAddToSlot = (product) => {
+    if (isFull) return
     setSlots((current) => {
       const nextEmpty = current.findIndex((slot) => slot === null)
       if (nextEmpty === -1) return current
@@ -49,10 +74,15 @@ export default function BuildYourBoxPage() {
       updated[nextEmpty] = product
       return updated
     })
+    notify(product, 'added', 'Added to your box', { cartLink: false })
   }
 
   const handleRemoveSlot = (index) => {
+    // Read before the state change, because the toast needs the name and photo of
+    // something that is about to leave the slot.
+    const removed = slots[index]
     setSlots((current) => current.map((slot, i) => (i === index ? null : slot)))
+    if (removed) notify(removed, 'removed', 'Removed from your box', { cartLink: false })
   }
 
   /**
@@ -68,7 +98,10 @@ export default function BuildYourBoxPage() {
    * live catalogue, which may not have loaded yet.
    */
   const handleAddToCart = () => {
-    if (!isFull) return
+    // Guarded here as well as on the button: the disabled attribute is a UI state, and
+    // a box with a sold-out item in it would be rejected by the server at checkout —
+    // where the customer has no way to fix it.
+    if (!isFull || unavailableInBox > 0) return
     const box = {
       id: `box-${boxSize}-${productType}-${Date.now()}`,
       kind: 'box',
@@ -165,14 +198,36 @@ export default function BuildYourBoxPage() {
                   <button
                     key={i}
                     type="button"
-                    className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-accent cursor-pointer group"
+                    className={`relative w-16 h-16 rounded-full overflow-hidden border-2 cursor-pointer group ${
+                      soldOutSlotIds.has(item.id) ? 'border-[#c0392b]' : 'border-accent'
+                    }`}
                     onClick={() => handleRemoveSlot(i)}
-                    aria-label={`Remove ${item.name} from box`}
+                    aria-label={
+                      soldOutSlotIds.has(item.id)
+                        ? `${item.name} is sold out here. Remove it from your box`
+                        : `Remove ${item.name} from box`
+                    }
                   >
                     {item.image ? (
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className={`w-full h-full object-cover ${
+                          soldOutSlotIds.has(item.id) ? 'grayscale' : ''
+                        }`}
+                      />
                     ) : (
                       <span className="w-full h-full block bg-[linear-gradient(135deg,#eef1f4_0%,#e3e8ec_100%)]" />
+                    )}
+                    {/* Sits under the hover overlay, so hovering still says "Remove" —
+                        which is the action this flag is asking for. */}
+                    {soldOutSlotIds.has(item.id) && (
+                      <span
+                        className="pointer-events-none absolute inset-x-0 bottom-0 bg-[#c0392b] text-white text-[0.5rem] font-bold uppercase tracking-wide text-center leading-[0.85rem]"
+                        aria-hidden="true"
+                      >
+                        Sold out
+                      </span>
                     )}
                     <span className="absolute inset-0 bg-black/50 text-white text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100">
                       Remove
@@ -190,13 +245,25 @@ export default function BuildYourBoxPage() {
               )}
             </div>
             <div className="text-center">
-              <p className="m-0 font-display font-medium text-accent text-sm">
-                {isFull ? 'Your box is ready!' : `Drop your ${productType.toLowerCase()} here`}
+              <p
+                className={`m-0 font-display font-medium text-sm ${
+                  unavailableInBox > 0 ? 'text-[#c0392b]' : 'text-accent'
+                }`}
+              >
+                {unavailableInBox > 0
+                  ? `${unavailableInBox} item${unavailableInBox > 1 ? 's' : ''} sold out at ${
+                      branch ? shortBranchName(branch.name) : 'this shop'
+                    }`
+                  : isFull
+                    ? 'Your box is ready!'
+                    : `Drop your ${productType.toLowerCase()} here`}
               </p>
               <p className="mt-1 mb-0 text-xs text-[#9a9a9a]">
-                {isFull
-                  ? `${boxSize} items selected`
-                  : `Choose your ${productType.toLowerCase()} from the following (${filledCount}/${boxSize})`}
+                {unavailableInBox > 0
+                  ? 'Tap the marked one to swap it, or pick a different shop.'
+                  : isFull
+                    ? `${boxSize} items selected`
+                    : `Choose your ${productType.toLowerCase()} from the following (${filledCount}/${boxSize})`}
               </p>
             </div>
           </div>
@@ -205,14 +272,18 @@ export default function BuildYourBoxPage() {
             <button
               type="button"
               className={`w-full h-12 rounded-lg font-display font-bold text-base flex items-center justify-center gap-2 ${
-                isFull
+                isFull && unavailableInBox === 0
                   ? 'bg-accent text-white cursor-pointer'
                   : 'bg-accent/50 text-white cursor-not-allowed'
               }`}
               onClick={handleAddToCart}
-              disabled={!isFull}
+              disabled={!isFull || unavailableInBox > 0}
             >
-              {justAdded ? 'Added to cart ✓' : 'Add to cart'}
+              {justAdded
+                ? 'Added to cart ✓'
+                : unavailableInBox > 0
+                  ? 'Swap the sold-out item'
+                  : 'Add to cart'}
               <span className="w-1 h-1 rounded-full bg-current opacity-60" />
               Rs {total}
             </button>
@@ -223,13 +294,21 @@ export default function BuildYourBoxPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-[0.85rem] lg:gap-5 px-5 lg:px-0 pb-12 lg:pb-0">
             {options.map((product) => {
               const alreadyPlaced = slots.filter((s) => s?.id === product.id).length
+              // Explicit false, not falsiness: `inStock` is absent until a branch is
+              // chosen, and absent must not read as sold out or every tile would grey
+              // out before anyone has picked a shop.
+              const soldOut = product.inStock === false
               return (
                 <button
                   key={product.id}
                   type="button"
-                  className={`group flex flex-col text-left ${isFull ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  // No opacity on a sold-out tile: the grayscale overlay below already
+                  // says it, and stacking the two makes the photo unreadable.
+                  className={`group flex flex-col text-left ${
+                    isFull || soldOut ? 'cursor-not-allowed' : 'cursor-pointer'
+                  } ${isFull && !soldOut ? 'opacity-50' : ''}`}
                   onClick={() => handleAddToSlot(product)}
-                  disabled={isFull}
+                  disabled={isFull || soldOut}
                 >
                   <div className="relative border border-border-light rounded-[6px] overflow-hidden aspect-square">
                     {/* A few catalogue items have no photo yet; ProductCard shows the same
@@ -238,7 +317,9 @@ export default function BuildYourBoxPage() {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                        className={`w-full h-full object-cover transition-transform duration-500 ease-out ${
+                          soldOut ? '' : 'group-hover:scale-110'
+                        }`}
                       />
                     ) : (
                       <span
@@ -246,12 +327,38 @@ export default function BuildYourBoxPage() {
                         aria-hidden="true"
                       />
                     )}
-                    <span className="absolute top-2 right-2 w-[2.3rem] h-[2.3rem] rounded-full bg-accent text-white flex items-center justify-center gap-px shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
-                      <span className="font-price italic font-semibold text-[0.5rem]">Rs</span>
-                      <span className="font-price font-bold text-[0.85rem]">{product.price}</span>
+                    {/* Same treatment as the menu tiles: desaturating the photo carries
+                        the message before any label is read. Rendered BEFORE the price
+                        badge so the badge paints on top of the overlay rather than under
+                        it, which is the layering ProductCard uses. */}
+                    {soldOut && (
+                      <>
+                        <span
+                          className="pointer-events-none absolute inset-0 bg-white/55 backdrop-grayscale"
+                          aria-hidden="true"
+                        />
+                        <span className="pointer-events-none absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white font-display font-bold text-[0.6rem] uppercase tracking-wide">
+                          Sold out
+                        </span>
+                      </>
+                    )}
+                    {/* Matches the menu tiles: no currency on the face of the badge, and
+                        the number sized to be read at a glance. The symbol stays for screen
+                        readers, which otherwise announce a bare figure with no unit. */}
+                    <span className="absolute top-2 right-2 w-[2.9rem] h-[2.9rem] rounded-full bg-accent text-white flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
+                      <span className="sr-only">Rs </span>
+                      <span className="font-price font-bold text-[1.1rem]">{product.price}</span>
                     </span>
+                    {/* Drops to the bottom when the Sold out pill has taken top-left. The
+                        two only ever coexist if this item was placed and the branch was
+                        switched afterwards — which is exactly when the count matters most,
+                        so it moves rather than being hidden. */}
                     {alreadyPlaced > 0 && (
-                      <span className="absolute top-2 left-2 w-5 h-5 rounded-full bg-black/70 text-white text-[0.65rem] font-bold flex items-center justify-center">
+                      <span
+                        className={`absolute left-2 ${
+                          soldOut ? 'bottom-2' : 'top-2'
+                        } w-5 h-5 rounded-full bg-black/70 text-white text-[0.65rem] font-bold flex items-center justify-center`}
+                      >
                         {alreadyPlaced}
                       </span>
                     )}

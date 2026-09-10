@@ -33,11 +33,6 @@ export default function BranchPicker({ className = '', variant = 'compact' }) {
   if (variant === 'pills') {
     return (
       <div className={`flex flex-wrap items-center gap-2 ${className}`} role="group" aria-label="Check stock at a shop">
-        <PillOption
-          isActive={!branchId}
-          onClick={() => setBranchId('')}
-          label="All shops"
-        />
         {branches.map((branch) => (
           <PillOption
             key={branch.id}
@@ -61,11 +56,12 @@ export default function BranchPicker({ className = '', variant = 'compact' }) {
         onChange={(event) => setBranchId(event.target.value)}
         className="h-9 max-w-[13rem] pl-3 pr-2 rounded-cta-pill border border-border-light bg-white font-display text-sm text-black outline-none cursor-pointer transition-colors hover:border-accent focus:border-accent"
       >
-        {/* Staying on this option is a legitimate choice, not a prompt to dismiss: it
-            means "don't claim availability either way", which is what the menu did
-            before branches existed. Naming it plainly beats a disabled placeholder
-            that implies the visitor must pick before they may browse. */}
-        <option value="">All shops</option>
+        {/* Disabled, so it labels the not-yet-chosen state without being a choice of its
+            own. It still has to EXIST: `branchId` is null until someone picks, and a
+            select whose value matches no option renders blank. */}
+        <option value="" disabled>
+          Choose a shop
+        </option>
         {branches.map((branch) => (
           <option key={branch.id} value={branch.id}>
             {shortBranchName(branch.name)}

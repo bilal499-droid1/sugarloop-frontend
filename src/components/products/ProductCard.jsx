@@ -47,6 +47,10 @@ export default function ProductCard({ product, to }) {
   // object-cover would slice a non-square photo to fill the square tile, so those
   // are shown whole instead. Detected from the file itself - no per-product config.
   const [showWhole, setShowWhole] = useState(false)
+  // Bumped on every press so the icon below remounts and replays its pop. Counters,
+  // not booleans, because pressing twice in a row has to animate twice.
+  const [addPulse, setAddPulse] = useState(0)
+  const [removePulse, setRemovePulse] = useState(0)
   const { items, addItem, setQty, removeItem } = useCart()
 
   const href = to ?? `/products/${product.id}`
@@ -112,14 +116,16 @@ export default function ProductCard({ product, to }) {
         )}
 
         <span
-          className={`pointer-events-none absolute top-2 right-2 w-[2.3rem] h-[2.3rem] rounded-full bg-accent text-white flex items-center justify-center gap-px shadow-[0_2px_6px_rgba(0,0,0,0.2)] ${
-            isLg ? 'lg:w-14 lg:h-14 lg:top-4 lg:right-4' : ''
+          className={`pointer-events-none absolute top-2 right-2 w-[2.9rem] h-[2.9rem] rounded-full bg-accent text-white flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.2)] ${
+            isLg ? 'lg:w-[4.4rem] lg:h-[4.4rem] lg:top-4 lg:right-4' : ''
           }`}
         >
-          <span className={`font-price italic font-semibold text-[0.5rem] ${isLg ? 'lg:text-xs' : ''}`}>
-            Rs
-          </span>
-          <span className={`font-price font-bold text-[0.85rem] ${isLg ? 'lg:text-[1.375rem]' : ''}`}>
+          {/* The currency is dropped from the face of the badge — every price on the
+              menu is in rupees, so the symbol was repeating itself on every tile and
+              stealing room from the number. It stays for screen readers, which
+              otherwise announce a bare figure with no unit. */}
+          <span className="sr-only">Rs </span>
+          <span className={`font-price font-bold text-[1.1rem] ${isLg ? 'lg:text-[1.75rem]' : ''}`}>
             {product.price}
           </span>
         </span>
@@ -139,10 +145,24 @@ export default function ProductCard({ product, to }) {
               <button
                 type="button"
                 aria-label={atLast ? `Remove ${product.name} from cart` : `Remove one ${product.name}`}
-                onClick={() => (atLast ? removeItem(product.id) : setQty(product.id, qty - 1))}
+                onClick={() => {
+                  if (atLast) removeItem(product.id)
+                  else setQty(product.id, qty - 1)
+                  setRemovePulse((n) => n + 1)
+                }}
                 className={`${controlBase} ${buttonSize} bg-transparent text-accent hover:bg-[#f0e3e3] hover:text-[#c0392b]`}
               >
-                {atLast ? <TrashIcon /> : <MinusIcon />}
+                {/* Keyed on the glyph too, not just the counter: at qty 2 the minus
+                    becomes a bin on the same press, and without that in the key the
+                    swapped icon would appear without the pop. */}
+                <span
+                  key={`${removePulse}-${atLast}`}
+                  className={`flex items-center justify-center w-full h-full ${
+                    removePulse ? 'animate-cart-pop' : ''
+                  }`}
+                >
+                  {atLast ? <TrashIcon /> : <MinusIcon />}
+                </span>
               </button>
               <span
                 aria-live="polite"
@@ -158,10 +178,24 @@ export default function ProductCard({ product, to }) {
           <button
             type="button"
             aria-label={`Add ${product.name} to cart`}
-            onClick={() => addItem(product, 1)}
+            onClick={() => {
+              addItem(product, 1)
+              setAddPulse((n) => n + 1)
+            }}
             className={`${controlBase} ${buttonSize} bg-white text-accent ring-1 ring-black/5 shadow-[0_2px_8px_rgba(0,0,0,0.18)] hover:bg-[#eef2f6]`}
           >
-            <PlusIcon />
+            {/* The icon pops, not the button: scaling the button would drag its
+                shadow and ring with it and read as the whole control jumping. The
+                key remounts this span, which is what restarts the animation; at 0
+                (never clicked) no animation class is applied at all. */}
+            <span
+              key={addPulse}
+              className={`flex items-center justify-center w-full h-full ${
+                addPulse ? 'animate-cart-pop' : ''
+              }`}
+            >
+              <PlusIcon />
+            </span>
           </button>
         </div>
       </div>
