@@ -161,23 +161,23 @@ export function describeCheckoutError(error) {
      * the checkout page sends them back to the verification step rather than showing a
      * failure they cannot act on.
      */
-    case 'PHONE_NOT_VERIFIED':
+    case 'EMAIL_NOT_VERIFIED':
     case 'SESSION_EXPIRED':
       return {
-        title: 'Please verify your number again',
+        title: 'Please verify your email again',
         detail: 'Your verification has expired. It only takes a moment.',
         canRetry: true,
       }
 
     /**
-     * The order named a different number than the one verified. Reachable if someone
-     * edits the phone field after verifying, so the message says exactly that.
+     * The order named a different address than the one verified. Reachable if someone
+     * edits the email field after verifying, so the message says exactly that.
      */
-    case 'PHONE_MISMATCH':
+    case 'EMAIL_MISMATCH':
       return {
-        title: 'That is not the number you verified',
-        detail: error.details?.verifiedPhone
-          ? `This order has to use ${error.details.verifiedPhone}, or verify the new number instead.`
+        title: 'That is not the address you verified',
+        detail: error.details?.verifiedEmail
+          ? `This order has to use ${error.details.verifiedEmail}, or verify the new address instead.`
           : detail,
         canRetry: true,
       }

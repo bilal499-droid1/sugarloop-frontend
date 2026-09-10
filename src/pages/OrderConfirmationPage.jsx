@@ -118,7 +118,7 @@ export default function OrderConfirmationPage() {
   const { state } = useLocation()
 
   const [order, setOrder] = useState(state?.order ?? null)
-  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [looking, setLooking] = useState(false)
   const [error, setError] = useState(null)
 
@@ -130,14 +130,16 @@ export default function OrderConfirmationPage() {
    * tick. Keyed on the status instead, the effect re-runs only when something actually
    * changed — and stops for good once the order reaches a terminal state.
    *
-   * The phone is read off the order we already hold. That is the same credential the
-   * lookup form asks for, so polling needs nothing the page did not already have.
+   * The email is read off the order we already hold. That is the same credential the
+   * lookup form asks for, so polling needs nothing the page did not already have. It was
+   * the phone until checkout stopped collecting one — an order placed since then has no
+   * number, so polling on it would have stopped working the day that field was parked.
    */
   const status = order?.status
-  const contactPhone = order?.contact?.phone
+  const contactEmail = order?.contact?.email
 
   useEffect(() => {
-    if (!status || TERMINAL.has(status) || !contactPhone) return
+    if (!status || TERMINAL.has(status) || !contactEmail) return
 
     const controller = new AbortController()
     let cancelled = false
@@ -148,7 +150,7 @@ export default function OrderConfirmationPage() {
       if (document.visibilityState === 'hidden') return
 
       try {
-        const data = await fetchOrderByNumber(orderNumber, contactPhone, {
+        const data = await fetchOrderByNumber(orderNumber, contactEmail, {
           signal: controller.signal,
         })
         if (!cancelled && data?.order) setOrder(data.order)
@@ -173,25 +175,27 @@ export default function OrderConfirmationPage() {
       clearInterval(timer)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [status, contactPhone, orderNumber])
+  }, [status, contactEmail, orderNumber])
 
   async function handleLookup(event) {
     event.preventDefault()
-    if (!phone.trim() || looking) return
+    if (!email.trim() || looking) return
 
     setLooking(true)
     setError(null)
     try {
-      const data = await fetchOrderByNumber(orderNumber, phone.replace(/[\s()-]/g, ''))
+      // Lowercased to match what the server stored — it normalises the address on the
+      // way in, so a capital here would come back as "no such order".
+      const data = await fetchOrderByNumber(orderNumber, email.trim().toLowerCase())
       setOrder(data.order)
     } catch (caught) {
-      // A wrong phone comes back as a 404, not a 403 — the API deliberately does not
+      // A wrong address comes back as a 404, not a 403 — the API deliberately does not
       // confirm that an order number exists to someone who cannot prove it is theirs.
       setError(
         caught?.status === 404
           ? {
               title: 'We could not find that order',
-              detail: 'Check the number and use the mobile number the order was placed with.',
+              detail: 'Check the number and use the email address the order was placed with.',
             }
           : describeCheckoutError(caught)
       )
@@ -200,7 +204,7 @@ export default function OrderConfirmationPage() {
     }
   }
 
-  /* ---- Reloaded without the order in hand: ask for the phone ---- */
+  /* ---- Reloaded without the order in hand: ask for the email ---- */
   if (!order) {
     return (
       <>
@@ -210,7 +214,7 @@ export default function OrderConfirmationPage() {
             Order {orderNumber}
           </h1>
           <p className="mt-0 mb-6 text-sm text-text-body">
-            Enter the mobile number this order was placed with to see it.
+            Enter the email address this order was placed with to see it.
           </p>
 
           {error && (
@@ -226,17 +230,17 @@ export default function OrderConfirmationPage() {
           <form onSubmit={handleLookup}>
             <input
               className="w-full h-11 px-3 rounded-lg border border-border-light bg-white font-display text-sm text-black outline-none focus:border-accent"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="03001234567"
-              inputMode="tel"
-              autoComplete="tel"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              inputMode="email"
+              autoComplete="email"
             />
             <button
               type="submit"
-              disabled={looking || !phone.trim()}
+              disabled={looking || !email.trim()}
               className={`mt-3 w-full h-12 rounded-lg font-display font-bold text-sm ${
-                looking || !phone.trim()
+                looking || !email.trim()
                   ? 'bg-accent/40 text-white cursor-not-allowed'
                   : 'bg-accent text-white cursor-pointer'
               }`}

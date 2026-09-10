@@ -9,11 +9,14 @@
  * So there is exactly one place that unwraps `data` and one that reads `error.code`,
  * instead of every caller remembering which shape a given endpoint returns.
  *
- * **Order placement requires a verified phone.** `POST /orders` is gated server-side: the
- * customer proves they hold their number by OTP, and the server then refuses any order
- * whose contact phone differs from the verified one. That pairing is what stops a prank
- * Cash-on-Delivery order — the callback number on the order is the only handle a branch
- * has on a customer who has paid nothing yet.
+ * **Order placement requires a verified email.** `POST /orders` is gated server-side: the
+ * customer proves they hold their address by OTP, and the server then refuses any order
+ * whose contact email differs from the verified one.
+ *
+ * This was on the phone number until the WhatsApp sender got stuck in Meta's review. The
+ * pairing is what stops one person ordering under someone else's contact details, but on
+ * an email address it is much weaker friction against a prank Cash-on-Delivery order than
+ * a number was: an inbox is free and disposable, a SIM is not.
  *
  * The session travels as an httpOnly cookie the API sets on verify, which is why every
  * authenticated call here sends `credentials: 'include'`. Nothing in this file ever holds
@@ -199,7 +202,7 @@ export function quoteCart(request_, { signal } = {}) {
  * That refusal is a feature: it is what stops someone being charged a number they never
  * agreed to.
  *
- * ⚠️ See the warning at the top of this file. Nothing verifies the phone number yet.
+ * ⚠️ See the warning at the top of this file — the order is gated on a verified email.
  */
 export function placeOrder(order, { signal } = {}) {
   return request('/orders', {
@@ -207,30 +210,32 @@ export function placeOrder(order, { signal } = {}) {
     body: order,
     signal,
     timeoutMs: WRITE_TIMEOUT_MS,
-    // The OTP session cookie. Without it the API answers PHONE_NOT_VERIFIED.
+    // The OTP session cookie. Without it the API answers EMAIL_NOT_VERIFIED.
     withSession: true,
   })
 }
 
 /* -------------------------------------------------------------------------- */
-/* Phone verification                                                          */
+/* Email verification                                                          */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Sends a verification code to a phone.
+ * Sends a verification code to an email address.
  *
- * The most expensive endpoint in the system to call — every request bills a real message —
- * so the server caps it at 3/hour per number with a 60-second resend cooldown, and answers
- * `OTP_COOLDOWN` / `OTP_RATE_LIMITED` with a `retryAfterSeconds` the UI counts down.
+ * Email costs nothing per message, unlike the WhatsApp/SMS flow this replaced, but the
+ * limits are unchanged: 3/hour per address with a 60-second resend cooldown, answered as
+ * `OTP_COOLDOWN` / `OTP_RATE_LIMITED` with a `retryAfterSeconds` the UI counts down. What
+ * they protect now is a stranger's inbox and the shop's sending reputation rather than a
+ * per-message bill.
  *
  * In development the API returns `devCode`, because the `log` transport prints the code to
  * the server console instead of sending it. That field is impossible in production: the
  * server refuses to boot with that transport configured.
  */
-export function requestOtp(phone, { signal } = {}) {
+export function requestOtp(email, { signal } = {}) {
   return request('/auth/otp/request', {
     method: 'POST',
-    body: { phone },
+    body: { email },
     signal,
     withSession: true,
   })
@@ -243,32 +248,32 @@ export function requestOtp(phone, { signal } = {}) {
  * here. The token is also in the response body for non-browser clients; this file ignores
  * it, because storing it would undo the reason the cookie is httpOnly.
  */
-export function verifyOtp({ phone, code }, { signal } = {}) {
+export function verifyOtp({ email, code }, { signal } = {}) {
   return request('/auth/otp/verify', {
     method: 'POST',
-    body: { phone, code },
+    body: { email, code },
     signal,
     withSession: true,
   })
 }
 
 /**
- * The phone this browser has already verified, or null.
+ * The email address this browser has already verified, or null.
  *
  * Lets a returning customer skip verification for the four days their session lasts.
  * Resolves to null rather than throwing on 401 — arriving unverified is the ordinary
  * case, not an error worth surfacing.
  */
-export async function fetchVerifiedPhone({ signal } = {}) {
+export async function fetchVerifiedEmail({ signal } = {}) {
   try {
     const data = await request('/auth/me', { signal, withSession: true })
-    return data?.phone ?? null
+    return data?.email ?? null
   } catch {
     return null
   }
 }
 
-/** Ends the session. Used when the customer wants to order under a different number. */
+/** Ends the session. Used when the customer wants to order under a different address. */
 export async function endCustomerSession({ signal } = {}) {
   try {
     await request('/auth/logout', { method: 'POST', body: {}, signal, withSession: true })
@@ -310,7 +315,7 @@ export function submitEnquiry(enquiry, { signal } = {}) {
  * enumerable, so the phone is the only thing standing between a stranger and every
  * order placed today. Replaced by the OTP session in Sprint 2.
  */
-export function fetchOrderByNumber(orderNumber, phone, { signal } = {}) {
-  const query = new URLSearchParams({ phone })
+export function fetchOrderByNumber(orderNumber, email, { signal } = {}) {
+  const query = new URLSearchParams({ email })
   return request(`/orders/${encodeURIComponent(orderNumber)}?${query}`, { signal })
 }

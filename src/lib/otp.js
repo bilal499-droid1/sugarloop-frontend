@@ -40,7 +40,7 @@ export function describeOtpError(error) {
       return {
         title: 'Too many codes requested',
         detail:
-          'This number has requested several codes recently. Please try again shortly, or call us to order.',
+          'This address has requested several codes recently. Please try again shortly, or call us to order.',
         retryAfterSeconds,
       }
 
@@ -66,19 +66,19 @@ export function describeOtpError(error) {
     }
 
     case 'VALIDATION_ERROR':
-      return { title: 'Check the number', detail, retryAfterSeconds }
+      return { title: 'Check the address', detail, retryAfterSeconds }
 
     /**
-     * The per-IP limiter, as opposed to the per-phone limits above. Worth wording
-     * differently: this one can fire for a number that has never requested a code at
+     * The per-IP limiter, as opposed to the per-recipient limits above. Worth wording
+     * differently: this one can fire for an address that has never requested a code at
      * all — a shared connection, an office, or (in development) everyone on localhost —
-     * so blaming the customer's number would be wrong and confusing.
+     * so blaming the customer's address would be wrong and confusing.
      */
     case 'TOO_MANY_REQUESTS':
       return {
         title: 'Too many code requests from this connection',
         detail: retryAfterSeconds
-          ? `This is a limit on the network you are using, not on your number. Please try again in ${formatWait(retryAfterSeconds)}, or call us to order.`
+          ? `This is a limit on the network you are using, not on your address. Please try again in ${formatWait(retryAfterSeconds)}, or call us to order.`
           : 'Please wait a moment before trying again, or call us to order.',
         retryAfterSeconds,
       }
@@ -86,7 +86,7 @@ export function describeOtpError(error) {
     case 'API_NOT_CONFIGURED':
       return {
         title: 'Ordering is not switched on',
-        detail: 'This build has no API configured, so numbers cannot be verified.',
+        detail: 'This build has no API configured, so addresses cannot be verified.',
         retryAfterSeconds: null,
       }
 

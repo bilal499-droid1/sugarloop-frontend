@@ -3,12 +3,17 @@ import { requestOtp, verifyOtp } from '../../lib/api'
 import { describeOtpError, formatWait } from '../../lib/otp'
 
 /**
- * Proving the customer holds the number they are ordering under.
+ * Proving the customer holds the email address they are ordering under.
  *
- * This is the only thing standing between the shop and a prank Cash-on-Delivery order:
- * nobody has paid anything at this point, so the callback number is the entire handle the
- * branch has on whoever placed it. Verifying it makes a prank cost the prankster a real,
- * reachable number.
+ * This used to verify the mobile number, and that was the only thing standing between
+ * the shop and a prank Cash-on-Delivery order: nobody has paid anything at this point,
+ * so the callback number is the entire handle the branch has on whoever placed it, and
+ * proving it made a prank cost the prankster a real, reachable SIM.
+ *
+ * It verifies the email address instead now, because the WhatsApp sender is still
+ * waiting on Meta while email needed nothing but an app password. A throwaway inbox is
+ * free, so this is a genuine reduction in what the step buys — the number is still
+ * collected and still what the branch rings, it is simply no longer proven.
  *
  * Two states, deliberately not two pages — losing the cart to a navigation in the middle
  * of verification would be a worse failure than any this step prevents.
@@ -50,7 +55,7 @@ function Notice({ title, detail }) {
   )
 }
 
-export default function PhoneVerification({ phone, onVerified }) {
+export default function EmailVerification({ email, canSend = true, onVerified }) {
   const [step, setStep] = useState('idle') // idle → sent
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
@@ -61,22 +66,22 @@ export default function PhoneVerification({ phone, onVerified }) {
   const resendIn = useCountdown(resendAt)
   const codeRef = useRef(null)
 
-  // Changing the number invalidates a code sent to the old one, so the step resets rather
-  // than leaving a code box that silently belongs to a different phone.
+  // Changing the address invalidates a code sent to the old one, so the step resets
+  // rather than leaving a code box that silently belongs to a different inbox.
   useEffect(() => {
     setStep('idle')
     setCode('')
     setError(null)
     setDevCode(null)
-  }, [phone])
+  }, [email])
 
   const send = useCallback(async () => {
-    if (busy) return
+    if (busy || !canSend) return
     setBusy(true)
     setError(null)
 
     try {
-      const result = await requestOtp(phone)
+      const result = await requestOtp(email)
       setStep('sent')
       setCode('')
       setResendAt(Date.now() + (result.resendInSeconds ?? 60) * 1000)
@@ -95,7 +100,7 @@ export default function PhoneVerification({ phone, onVerified }) {
     } finally {
       setBusy(false)
     }
-  }, [busy, phone])
+  }, [busy, canSend, email])
 
   const submit = useCallback(
     async (value) => {
@@ -104,8 +109,8 @@ export default function PhoneVerification({ phone, onVerified }) {
       setError(null)
 
       try {
-        await verifyOtp({ phone, code: value })
-        onVerified(phone)
+        await verifyOtp({ email, code: value })
+        onVerified(email)
       } catch (caught) {
         const described = describeOtpError(caught)
         setError(described)
@@ -117,34 +122,55 @@ export default function PhoneVerification({ phone, onVerified }) {
         setBusy(false)
       }
     },
-    [busy, phone, onVerified]
+    [busy, email, onVerified]
   )
 
-  /** Auto-submits on the sixth digit — nobody wants to type a code and then hunt for a
-   *  button, and the length is fixed so there is nothing ambiguous about when it is done. */
+  /**
+   * Digits only, capped at the code length. It used to fire `submit` the instant a sixth
+   * digit landed; it does not any more. Auto-submitting took the decision away — a typo
+   * spent an attempt before you could look at what you had typed, and there are only five
+   * of those before the challenge is burned. Verify is a button you press.
+   */
   const onCodeChange = (event) => {
-    const next = event.target.value.replace(/\D/g, '').slice(0, CODE_LENGTH)
-    setCode(next)
-    if (next.length === CODE_LENGTH) submit(next)
+    setCode(event.target.value.replace(/\D/g, '').slice(0, CODE_LENGTH))
+  }
+
+  /**
+   * Enter submits the code, not the order.
+   *
+   * This input sits inside the checkout page's own `<form>`, so without the
+   * `preventDefault` an Enter here would bubble up and fire the place-order handler —
+   * which mattered far less while the sixth digit auto-submitted, and matters a lot now
+   * that pressing something is the only way through.
+   */
+  const onCodeKeyDown = (event) => {
+    if (event.key !== 'Enter') return
+    event.preventDefault()
+    submit(code)
   }
 
   return (
     <div className="mb-4 bg-white rounded-2xl border border-[#ececec] p-5">
       <h2 className="mt-0 mb-1 font-display font-bold text-base text-black">
-        Verify your number
+        Verify your email
       </h2>
+      {/* Three states, because this card is on screen from the start now — including
+          before there is an address to name. Saying "we will send a code to " with
+          nothing after it reads as a bug. */}
       <p className="mt-0 mb-4 text-xs text-text-body">
         {step === 'sent'
-          ? `Enter the ${CODE_LENGTH}-digit code we sent to ${phone}.`
-          : `We will send a ${CODE_LENGTH}-digit code to ${phone} to confirm it is yours.`}
+          ? `Enter the ${CODE_LENGTH}-digit code we sent to ${email}.`
+          : canSend
+            ? `We will send a ${CODE_LENGTH}-digit code to ${email} to confirm it is yours.`
+            : `Enter your email above and we will send a ${CODE_LENGTH}-digit code to confirm it is yours.`}
       </p>
 
-      {/* The single most confusing thing about this build: no WhatsApp or SMS account
-          exists yet, so NOTHING arrives on a real handset. Said before the customer
-          waits for a message that is never coming, not after. */}
+      {/* Spam is the one failure this step has that the old SMS flow did not: a first
+          message from an address the customer has never had mail from is exactly what
+          filters hold back. Said before they sit waiting on an empty inbox, not after. */}
       {devCode === null && step === 'sent' && (
         <p className="mt-0 mb-3 text-[0.7rem] text-text-body">
-          Not arriving? Message delivery is not switched on in this build.
+          Not arriving? Check your spam folder — it can take a minute.
         </p>
       )}
 
@@ -171,6 +197,7 @@ export default function PhoneVerification({ phone, onVerified }) {
             className={`${inputClass} tracking-[0.5em] text-center font-price text-lg`}
             value={code}
             onChange={onCodeChange}
+            onKeyDown={onCodeKeyDown}
             placeholder="······"
             inputMode="numeric"
             autoComplete="one-time-code"
@@ -215,9 +242,9 @@ export default function PhoneVerification({ phone, onVerified }) {
         <button
           type="button"
           onClick={send}
-          disabled={busy || resendIn > 0}
+          disabled={busy || resendIn > 0 || !canSend}
           className={`w-full h-11 rounded-lg font-display font-bold text-sm ${
-            busy || resendIn > 0
+            busy || resendIn > 0 || !canSend
               ? 'bg-accent/40 text-white cursor-not-allowed'
               : 'bg-accent text-white cursor-pointer'
           }`}

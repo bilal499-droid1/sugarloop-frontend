@@ -7,14 +7,14 @@ import { useBranch } from '../context/BranchContext'
 import { useCatalogue } from '../context/CatalogueContext'
 import {
   endCustomerSession,
-  fetchVerifiedPhone,
+  fetchVerifiedEmail,
   isApiConfigured,
   placeOrder,
   quoteCart,
 } from '../lib/api'
 import { describeCheckoutError, findUnorderableLines, toApiItems } from '../lib/checkout'
 import { reverseGeocode } from '../lib/geocode'
-import PhoneVerification from '../components/checkout/PhoneVerification'
+import EmailVerification from '../components/checkout/EmailVerification'
 
 /**
  * Checkout.
@@ -29,8 +29,25 @@ import PhoneVerification from '../components/checkout/PhoneVerification'
 
 const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
 
-/** Matches the API's own rule (`order.validator.js`) so the refusal happens before the trip. */
-const PK_MOBILE = /^(\+92|92|0)3\d{9}$/
+/*
+ * PK_MOBILE lived here, mirroring the API's rule so a bad number was refused before the
+ * trip. Nothing on this page validates a phone now — the field is parked. The rule itself
+ * still stands server-side in order.validator.js for any number that does get sent.
+ */
+
+/**
+ * Deliberately loose, and not the RFC.
+ *
+ * The address is verified by a code sent to it moments later, which is a far better test
+ * of "can we reach this" than any pattern. All this needs to catch is the typo that would
+ * spend a message on nothing — a missing @, a missing dot, a trailing space. Anything
+ * stricter starts rejecting valid addresses, and the server's own check is the backstop.
+ */
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function normaliseEmail(value) {
+  return value.trim().toLowerCase()
+}
 
 /** Metres. Below this a fix is good enough to stop waiting for a better one. */
 const GOOD_ACCURACY_METRES = 50
@@ -42,18 +59,13 @@ const COARSE_ACCURACY_METRES = 150
  *  before the GPS chip has locked — watchPosition lets a following, tighter fix replace it. */
 const LOCATE_WINDOW_MS = 8000
 
-function normalisePhone(value) {
-  return value.replace(/[\s()-]/g, '')
-}
 
-/**
- * The single canonical form the server stores and compares against, so `03001234567`,
- * `+923001234567` and `923001234567` are recognised as one number rather than three.
- * Mirrors the transform in the API's own phone validator.
+/*
+ * `toE164` used to live here, canonicalising the number so it could be compared against
+ * the phone this browser had verified. Nothing compares phone numbers on the client any
+ * more — the session is keyed by email — and the server's own validator still normalises
+ * whatever is submitted, so the helper had no caller left.
  */
-function toE164(value) {
-  return `+92${value.replace(/^\+?92|^0/, '')}`
-}
 
 /* -------------------------------------------------------------------------- */
 
@@ -114,7 +126,7 @@ export default function CheckoutPage() {
    *  glance that it found the right street, rather than trusting a bare tick. */
   const [placeLabel, setPlaceLabel] = useState(null)
 
-  const [contact, setContact] = useState({ name: '', phone: '' })
+  const [contact, setContact] = useState({ name: '', phone: '', email: '' })
   const [address, setAddress] = useState({ line1: '', area: '', city: 'Islamabad', notes: '' })
 
   const [quote, setQuote] = useState(null)
@@ -134,13 +146,13 @@ export default function CheckoutPage() {
   const [touched, setTouched] = useState(false)
 
   /**
-   * The phone this browser has proved it holds, or null.
+   * The email address this browser has proved it holds, or null.
    *
    * Checked once on mount: the session lasts four days, so a returning customer skips
-   * verification entirely rather than being asked to prove the same number again on
+   * verification entirely rather than being asked to prove the same address again on
    * every order.
    */
-  const [verifiedPhone, setVerifiedPhone] = useState(null)
+  const [verifiedEmail, setVerifiedEmail] = useState(null)
   const [checkingSession, setCheckingSession] = useState(isApiConfigured)
 
   useEffect(() => {
@@ -148,12 +160,12 @@ export default function CheckoutPage() {
 
     const controller = new AbortController()
 
-    fetchVerifiedPhone({ signal: controller.signal })
-      .then((phone) => {
+    fetchVerifiedEmail({ signal: controller.signal })
+      .then((email) => {
         if (controller.signal.aborted) return
-        setVerifiedPhone(phone)
-        // Pre-fill so a returning customer is not retyping a number we already know.
-        if (phone) setContact((current) => (current.phone ? current : { ...current, phone }))
+        setVerifiedEmail(email)
+        // Pre-fill so a returning customer is not retyping an address we already know.
+        if (email) setContact((current) => (current.email ? current : { ...current, email }))
       })
       .finally(() => {
         if (!controller.signal.aborted) setCheckingSession(false)
@@ -382,8 +394,10 @@ export default function CheckoutPage() {
 
   const errors = {}
   if (!contact.name.trim() || contact.name.trim().length < 2) errors.name = 'Please enter your name.'
-  if (!PK_MOBILE.test(normalisePhone(contact.phone)))
-    errors.phone = 'Enter a Pakistani mobile number, e.g. 03001234567.'
+  // No phone rule: the field is parked (see the contact card below) and the server no
+  // longer requires one, so demanding a number nobody can type would be a dead end.
+  if (!EMAIL_SHAPE.test(normaliseEmail(contact.email)))
+    errors.email = 'Enter an email address so we can verify your order.'
   if (isDelivery && address.line1.trim().length < 5)
     errors.line1 = 'A street address is required so the rider can find you.'
   // No location error: sharing a pin is now optional. The address alone is enough for the
@@ -394,23 +408,39 @@ export default function CheckoutPage() {
   const isValid = Object.keys(errors).length === 0
 
   /**
-   * Whether the number in the form is the one this browser actually verified.
+   * Whether the address in the form is the one this browser actually verified.
    *
-   * Compared after normalising both sides, because `03001234567` and `+923001234567` are
-   * the same number and the server stores the E.164 form. Editing the phone after
-   * verifying silently drops back to unverified — which is correct: the server would
-   * refuse that order with PHONE_MISMATCH, and finding out here beats finding out on
-   * submit.
+   * Compared after normalising both sides, because the server lowercases and trims what
+   * it stores. Editing the email after verifying silently drops back to unverified —
+   * which is correct: the server would refuse that order with EMAIL_MISMATCH, and
+   * finding out here beats finding out on submit.
    */
-  const normalisedPhone = normalisePhone(contact.phone)
-  const phoneIsVerified =
-    Boolean(verifiedPhone) &&
-    PK_MOBILE.test(normalisedPhone) &&
-    toE164(normalisedPhone) === verifiedPhone
+  const normalisedEmail = normaliseEmail(contact.email)
+  const emailIsVerified =
+    Boolean(verifiedEmail) &&
+    EMAIL_SHAPE.test(normalisedEmail) &&
+    normalisedEmail === verifiedEmail
 
-  /** Verification is asked for only once there is a valid number to send a code to. */
-  const needsVerification =
-    canReachApi && !checkingSession && !phoneIsVerified && PK_MOBILE.test(normalisedPhone)
+  /**
+   * Shown from the moment the page settles, not once the address parses.
+   *
+   * It used to appear only when `EMAIL_SHAPE` matched, which meant the whole card
+   * materialised under your cursor as you typed the "m" of ".com" — the page jumping
+   * mid-keystroke, and no warning beforehand that a verification step was even coming.
+   * It is always on screen now; the send button is what waits for a valid address.
+   *
+   * Gated on `isApiConfigured` and NOT on `canReachApi`, which is the difference between
+   * this card surviving and vanishing. `canReachApi` also requires the catalogue to be
+   * `live`, and the catalogue refetches whenever the branch changes — so a slow or empty
+   * refetch flipped it to `stale`, unmounted this component mid-verification, and took
+   * the entered code and the "we sent you a code" step down with it. React state does not
+   * survive an unmount, so the customer watched the code box vanish a second after it
+   * appeared. Verification talks to `/auth/*` and does not care about the menu.
+   */
+  const needsVerification = isApiConfigured && !checkingSession && !emailIsVerified
+
+  /** Nothing to send a code to yet — the button stays down rather than the card hiding. */
+  const canSendCode = EMAIL_SHAPE.test(normalisedEmail)
 
   /**
    * The button is NOT disabled for an incomplete form, and that is deliberate.
@@ -425,14 +455,14 @@ export default function CheckoutPage() {
    * order needs an `expectedTotal` that the customer was actually shown, and there is no
    * honest way to submit without one.
    */
-  const canSubmit = Boolean(quote) && !submitting && phoneIsVerified
+  const canSubmit = Boolean(quote) && !submitting && emailIsVerified
 
   /** Why the button cannot go through yet, in the order the customer should fix it. */
   const blockingReason = (() => {
     if (unorderable.length > 0) return 'Remove and re-add the items flagged above.'
     if (!canReachApi) return null
-    if (phoneIsVerified === false && PK_MOBILE.test(normalisedPhone) && !checkingSession) {
-      return 'Verify your number to place the order.'
+    if (emailIsVerified === false && EMAIL_SHAPE.test(normalisedEmail) && !checkingSession) {
+      return 'Verify your email to place the order.'
     }
     if (quoting) return 'Working out your total…'
     if (quoteError) return quoteError.title
@@ -474,7 +504,12 @@ export default function CheckoutPage() {
     try {
       const { order } = await placeOrder({
         ...quoteRequest,
-        contact: { name: contact.name.trim(), phone: normalisePhone(contact.phone) },
+        // No phone: the field is parked, and sending an empty string would be worse
+        // than sending nothing — the server would store "" as the number to call.
+        contact: {
+          name: contact.name.trim(),
+          email: normalisedEmail,
+        },
         ...(isDelivery
           ? {
               address: {
@@ -505,11 +540,11 @@ export default function CheckoutPage() {
         setRequoteNonce((n) => n + 1)
       }
 
-      // The four-day session lapsed, or the server disagrees about which number was
+      // The four-day session lapsed, or the server disagrees about which address was
       // verified. Dropping it re-renders the verification step rather than leaving a
-      // "✓ Number verified" tick above an order the API just refused.
-      if (['PHONE_NOT_VERIFIED', 'SESSION_EXPIRED', 'PHONE_MISMATCH'].includes(error?.code)) {
-        setVerifiedPhone(null)
+      // "✓ Email verified" tick above an order the API just refused.
+      if (['EMAIL_NOT_VERIFIED', 'SESSION_EXPIRED', 'EMAIL_MISMATCH'].includes(error?.code)) {
+        setVerifiedEmail(null)
       }
     } finally {
       inFlight.current = false
@@ -711,9 +746,19 @@ export default function CheckoutPage() {
                 />
               </Field>
 
+              {/* The mobile number field is parked, not deleted — checkout collects
+                  nothing but an email for now.
+
+                  Worth knowing what this costs: Cash on Delivery means a rider goes to
+                  a real address having taken no payment, and the number was how the
+                  branch confirmed the order and how the rider got through the gate. The
+                  server now accepts an order without one, so nothing on the order board
+                  has a phone to ring. Uncomment this block and re-add `errors.phone` in
+                  the validation above to bring it back.
+
               <Field
                 label="Mobile number"
-                hint="We call this number to confirm your order."
+                hint="We call this number to confirm your order and when the rider arrives."
                 error={touched ? errors.phone : undefined}
               >
                 <input
@@ -725,43 +770,67 @@ export default function CheckoutPage() {
                   autoComplete="tel"
                 />
               </Field>
+              */}
+
+              <Field
+                label="Email"
+                hint="We send a code here to confirm the order is really yours."
+                error={touched ? errors.email : undefined}
+              >
+                {/* Turns green the moment the address is complete enough to send a code
+                    to — the same `EMAIL_SHAPE` test the button below uses, so the two can
+                    never disagree. It fires on the final "m" of ".com", not on "@gmail",
+                    because a domain with no dot is not somewhere mail can go. */}
+                <input
+                  className={`${inputClass} ${
+                    canSendCode ? 'border-[#2e7d4f] focus:border-[#2e7d4f]' : ''
+                  }`}
+                  value={contact.email}
+                  onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                  placeholder="you@example.com"
+                  inputMode="email"
+                  autoComplete="email"
+                />
+              </Field>
 
               {/* Confirmation rather than a step: a returning customer inside their
                   four-day session sees this instead of being asked to prove the same
-                  number again.
+                  address again.
 
                   The escape hatch matters as much as the tick. A session lasts four days
                   and browsers get shared — a phone on a counter, a family laptop — so
                   without a way out, whoever verified first silently owns every order
                   placed from that browser until the session lapses. */}
-              {phoneIsVerified && (
+              {emailIsVerified && (
                 <div className="flex items-center justify-between gap-3">
                   <p className="m-0 text-[0.7rem] font-display font-bold text-accent">
-                    ✓ Number verified
+                    ✓ Email verified
                   </p>
                   <button
                     type="button"
                     onClick={async () => {
                       await endCustomerSession()
-                      setVerifiedPhone(null)
-                      setContact((current) => ({ ...current, phone: '' }))
+                      setVerifiedEmail(null)
+                      setContact((current) => ({ ...current, email: '' }))
                     }}
                     className="bg-none border-none p-0 text-[0.7rem] text-text-body underline cursor-pointer"
                   >
-                    Not you? Use another number
+                    Not you? Use another address
                   </button>
                 </div>
               )}
             </Card>
 
-            {/* Sits directly under the number it verifies, and appears only once a valid
-                one has been typed — offering to send a code to an incomplete number would
-                spend a real message on a typo. */}
+            {/* Sits directly under the address it verifies, and stays on screen the whole
+                time so the customer can see the step coming. `canSendCode` is what holds
+                the button back until there is a real address — sending a code to half a
+                domain would mail a stranger, or nobody. */}
             {needsVerification && (
-              <PhoneVerification
-                phone={toE164(normalisedPhone)}
-                onVerified={(phone) => {
-                  setVerifiedPhone(phone)
+              <EmailVerification
+                email={normalisedEmail}
+                canSend={canSendCode}
+                onVerified={(email) => {
+                  setVerifiedEmail(email)
                   setSubmitError(null)
                 }}
               />
