@@ -120,7 +120,13 @@ export function generatePassword() {
 }
 
 /**
- * Mirrors PRODUCT_CATEGORIES on the server. Four, fixed — a category is a section of the
- * printed menu, not a tag, so this is a closed list rather than free text.
+ * Mirrors PRODUCT_CATEGORIES on the server — a category is a section of the printed
+ * menu, not a tag, so this is a closed list rather than free text.
+ *
+ * ⚠️ 'Brownies' is AHEAD of the server. The API's own PRODUCT_CATEGORIES
+ * (src/config/constants.js in the backend) still holds only the original four, and it
+ * backs both a Mongoose enum on Product.category and a zod enum on the staff product
+ * routes. Until that list gains 'Brownies', saving a product in this category from the
+ * staff console gets a 400 back. Add it there before relying on this option.
  */
-export const PRODUCT_CATEGORIES = ['Donuts', 'Croissants', 'Sandwiches', 'Drinks']
+export const PRODUCT_CATEGORIES = ['Donuts', 'Brownies', 'Croissants', 'Sandwiches', 'Drinks']

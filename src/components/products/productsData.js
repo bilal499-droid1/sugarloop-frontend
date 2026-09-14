@@ -30,6 +30,16 @@ import bostonCreme3 from '../../assets/category/boston creme 3.webp'
 import mixBerry1 from '../../assets/category/mix berry 1.webp'
 import mixBerry2 from '../../assets/category/mix berry 2.webp'
 import mixBerry3 from '../../assets/category/mix berry 3.webp'
+import blueberry1 from '../../assets/category/blueberry 1.webp'
+import blueberry2 from '../../assets/category/blueberry 2.webp'
+import chocolateBounty1 from '../../assets/Brownies/chocolate-bounty-1.webp'
+import chocolateBounty2 from '../../assets/Brownies/chocolate-bounty-2.webp'
+import peanutButter1 from '../../assets/Brownies/peanut-butter-1.webp'
+import peanutButter2 from '../../assets/Brownies/peanut-butter-2.webp'
+import brookie1 from '../../assets/Brownies/brookie-1.webp'
+import brookie2 from '../../assets/Brownies/brookie-2.webp'
+import classicFudge1 from '../../assets/Brownies/classic-fudge-1.webp'
+import classicFudge2 from '../../assets/Brownies/classic-fudge-2.webp'
 import brownieFilled1 from '../../assets/browniefilled1.webp'
 import brownieFilled2 from '../../assets/category/brownie filled 2.webp'
 import mango1 from '../../assets/category/mango 1.webp'
@@ -102,7 +112,7 @@ import waterImg from '../../assets/water.webp'
 
 // Donuts lead: they are the signature line, the biggest section of the printed
 // board, and the order the home page's menu carousel already presents.
-export const CATEGORIES = ['Donuts', 'Croissants', 'Drinks', 'Sandwiches']
+export const CATEGORIES = ['Donuts', 'Brownies', 'Croissants', 'Drinks', 'Sandwiches']
 
 const DESCRIPTION =
   'Baked fresh every morning with simple, honest ingredients. Best enjoyed the same day, alongside your favorite coffee.'
@@ -122,6 +132,7 @@ export const PRODUCTS = withPrimaryImage([
   { id: 5, name: 'Salted Caramel', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [saltedCaramel1, saltedCaramel2, saltedCaramel3], description: DESCRIPTION },
   { id: 6, name: 'Boston Creme', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [bostonCreme1, bostonCreme2, bostonCreme3], description: DESCRIPTION },
   { id: 8, name: 'Mix Berry', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mixBerry1, mixBerry2, mixBerry3], description: DESCRIPTION },
+  { id: 48, name: 'Blueberry', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [blueberry1, blueberry2], description: DESCRIPTION },
   { id: 9, name: 'Brownie Filled', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [brownieFilled1, brownieFilled2], description: DESCRIPTION },
   { id: 10, name: 'Mango', price: 299, category: 'Donuts', type: 'Signature', size: 'sm', images: [mango1, mango2], description: DESCRIPTION },
 
@@ -174,4 +185,10 @@ export const PRODUCTS = withPrimaryImage([
   { id: 41, name: 'Wild Berry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [wildBerry1, wildBerry2], description: DRINK_DESCRIPTION },
   { id: 42, name: 'Strawberry Chiller', price: 299, category: 'Drinks', type: 'Chillers', size: 'sm', images: [strawberryChillerSc, strawberryChiller2], description: DRINK_DESCRIPTION },
   { id: 43, name: 'Water', price: 120, category: 'Drinks', type: 'Extras', size: 'sm', images: [waterImg], description: 'Chilled bottled water.' },
+
+  // ---- Brownies ----
+  { id: 49, name: 'Chocolate Bounty', price: 420, category: 'Brownies', type: 'Brownies', size: 'sm', images: [chocolateBounty1, chocolateBounty2], description: DESCRIPTION },
+  { id: 50, name: 'Peanut Butter', price: 399, category: 'Brownies', type: 'Brownies', size: 'sm', images: [peanutButter1, peanutButter2], description: DESCRIPTION },
+  { id: 51, name: 'Brookie', price: 399, category: 'Brownies', type: 'Brownies', size: 'sm', images: [brookie1, brookie2], description: DESCRIPTION },
+  { id: 52, name: 'Classic Fudge', price: 370, category: 'Brownies', type: 'Brownies', size: 'sm', images: [classicFudge1, classicFudge2], description: DESCRIPTION },
 ])

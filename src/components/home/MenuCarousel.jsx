@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom'
 import donutImg from '../../assets/a1.webp'
 import croissantImg from '../../assets/a5.webp'
 import drinkImg from '../../assets/a3.webp'
+import brownieImg from '../../assets/Brownies/chocolate-bounty-1.webp'
 import sandwichImg from '../../assets/a2.webp'
 
 const CATEGORY_ITEMS = [
   { label: 'Donuts', image: donutImg, to: '/products?category=Donuts' },
+  { label: 'Brownies', image: brownieImg, to: '/products?category=Brownies' },
   { label: 'Croissants', image: croissantImg, to: '/products?category=Croissants' },
   { label: 'Drinks', image: drinkImg, to: '/products?category=Drinks' },
   { label: 'Sandwiches', image: sandwichImg, to: '/products?category=Sandwiches' },
