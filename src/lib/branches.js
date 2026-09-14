@@ -81,3 +81,70 @@ export function branchMapUrl(branch) {
 
   return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`
 }
+
+/** Below this, "Open now" becomes a countdown — the last stretch is when it matters. */
+export const LAST_ORDERS_WARNING_MINUTES = 30
+
+/**
+ * What a shop picker should say about a branch right now, or null when there is no
+ * server verdict to report.
+ *
+ * Driven by `isAcceptingOrders`, NOT `isOpenNow`. The two diverge exactly when it
+ * matters: `isOpenNow` is the trading-hours clock alone, so a branch whose manager has
+ * pressed "stop taking orders" mid-rush — or one past its last-order cutoff — still
+ * reads open. A green "Open now" on a kitchen that will refuse the order at checkout is
+ * a promise the site then breaks.
+ *
+ * The public API does not say WHY a trading branch is not taking orders (paused versus
+ * past the cutoff), and a customer does not need to know: either way the answer is "not
+ * right now", so both get the same label rather than a guessed reason.
+ *
+ * Null when the API sent no verdict at all — the offline fallback list carries no hours,
+ * and a guessed "open" is the one wrong answer that sends someone to a locked door.
+ *
+ * @returns {{ tone: 'open' | 'warn' | 'closed', label: string, short: string | null } | null}
+ */
+export function branchOrderStatus(branch) {
+  if (branch?.isOpenNow === undefined && branch?.isAcceptingOrders === undefined) return null
+
+  // An older API response without the verdict falls back to the clock rather than to
+  // nothing, so the status degrades instead of vanishing.
+  const accepting = branch.isAcceptingOrders ?? branch.isOpenNow
+
+  if (accepting) {
+    const minutes = branch.minutesUntilLastOrder
+    if (Number.isFinite(minutes) && minutes <= LAST_ORDERS_WARNING_MINUTES) {
+      return { tone: 'warn', label: `Last orders in ${minutes} min`, short: null }
+    }
+    return { tone: 'open', label: 'Open now', short: null }
+  }
+
+  if (branch.isOpenNow) {
+    return { tone: 'warn', label: 'Not taking orders right now', short: 'not taking orders' }
+  }
+
+  const opensAt = formatOpeningTime(branch.nextOpeningAt)
+  return {
+    tone: 'closed',
+    label: opensAt ? `Closed · opens ${opensAt}` : 'Closed now',
+    short: 'closed',
+  }
+}
+
+/**
+ * "11:00 am", in Pakistan time whatever the visitor's own clock says — the shop opens at
+ * eleven in Islamabad, not at eleven wherever the browser happens to be.
+ */
+function formatOpeningTime(value) {
+  const date = value ? new Date(value) : null
+  if (!date || Number.isNaN(date.getTime())) return null
+
+  return new Intl.DateTimeFormat('en-PK', {
+    timeZone: 'Asia/Karachi',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+    .format(date)
+    .toLowerCase()
+}

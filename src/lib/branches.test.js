@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { FALLBACK_BRANCHES, branchMapUrl, shortBranchName } from './branches'
+import { FALLBACK_BRANCHES, branchMapUrl, branchOrderStatus, shortBranchName } from './branches'
 
 describe('branchMapUrl', () => {
   test('pins the coordinates rather than asking Google to guess', () => {
@@ -57,5 +57,50 @@ describe('shortBranchName', () => {
 
   test('keeps the full name when stripping would leave nothing', () => {
     expect(shortBranchName('Sugar Loop')).toBe('Sugar Loop')
+  })
+})
+
+describe('branchOrderStatus', () => {
+  test('open and taking orders is green', () => {
+    expect(branchOrderStatus({ isOpenNow: true, isAcceptingOrders: true, minutesUntilLastOrder: 240 })).toEqual({
+      tone: 'open',
+      label: 'Open now',
+      short: null,
+    })
+  })
+
+  test('a manager pause turns an open branch amber, not green', () => {
+    // The bug this exists for: isOpenNow is the clock alone and stays true while the
+    // kitchen has stopped taking orders, so a picker reading it said "Open now".
+    const status = branchOrderStatus({ isOpenNow: true, isAcceptingOrders: false, minutesUntilLastOrder: null })
+
+    expect(status.tone).toBe('warn')
+    expect(status.label).toBe('Not taking orders right now')
+    expect(status.short).toBe('not taking orders')
+  })
+
+  test('counts down the last half hour, and is still orderable', () => {
+    const status = branchOrderStatus({ isOpenNow: true, isAcceptingOrders: true, minutesUntilLastOrder: 12 })
+
+    expect(status).toEqual({ tone: 'warn', label: 'Last orders in 12 min', short: null })
+  })
+
+  test('closed quotes the next opening in Pakistan time', () => {
+    const status = branchOrderStatus({
+      isOpenNow: false,
+      isAcceptingOrders: false,
+      nextOpeningAt: '2026-09-15T06:00:00.000Z',
+    })
+
+    expect(status).toEqual({ tone: 'closed', label: 'Closed · opens 11:00 am', short: 'closed' })
+  })
+
+  test('closed without a usable opening time still says closed', () => {
+    expect(branchOrderStatus({ isOpenNow: false, isAcceptingOrders: false }).label).toBe('Closed now')
+    expect(branchOrderStatus({ isOpenNow: false, nextOpeningAt: 'garbage' }).label).toBe('Closed now')
+  })
+
+  test('says nothing when there is no server verdict', () => {
+    expect(branchOrderStatus(FALLBACK_BRANCHES[0])).toBeNull()
   })
 })
