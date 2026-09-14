@@ -158,8 +158,8 @@ export default function CartPage() {
 
               <p className="mt-3 mb-0 text-[0.7rem] text-text-body text-center">
                 Prefer to order by phone?{' '}
-                <a href="tel:051111557799" className="text-accent font-bold">
-                  051-111-557-799
+                <a href="tel:+923704193372" className="text-accent font-bold">
+                  +92 370 4193372
                 </a>
               </p>
             </div>

@@ -8,6 +8,8 @@ import BuildYourBoxPage from './pages/BuildYourBoxPage'
 import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
 import OrderConfirmationPage from './pages/OrderConfirmationPage'
+import TermsPage from './pages/TermsPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import NotFoundPage from './pages/NotFoundPage'
 import StaffLoginPage from './pages/staff/StaffLoginPage'
 import StaffOrdersPage from './pages/staff/StaffOrdersPage'
@@ -45,6 +47,8 @@ export default function App() {
                   <Route path="/products/:id" element={<ProductDetailPage />} />
                   <Route path="/corporate-gifting" element={<CorporateGiftingPage />} />
                   <Route path="/faq" element={<FaqPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
                   <Route path="/build-your-box" element={<BuildYourBoxPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />

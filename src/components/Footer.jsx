@@ -8,19 +8,19 @@ const COLUMNS = [
   {
     heading: 'KEEP IN TOUCH',
     links: [
-      { label: '051-111-557-799', href: 'tel:051111557799' },
+      { label: '+92 370 4193372', href: 'tel:+923704193372' },
       // `to` so the router handles it: a plain anchor reloads the whole app, and
       // ScrollToTop only sees the hash on a client-side navigation.
       { label: 'Our Locations', to: '/faq#locations' },
-      { label: 'Instagram', href: '#' },
-      { label: 'LinkedIn', href: '#' },
+      { label: 'Instagram', href: 'https://www.instagram.com/sugarlooppk' },
+      { label: 'LinkedIn', href: 'https://www.linkedin.com/company/sugar-loop/' },
     ],
   },
   {
     heading: 'LEARN MORE',
     links: [
-      { label: 'Terms & Conditions', href: '#' },
-      { label: 'Privacy Policy', href: '#' },
+      { label: 'Terms & Conditions', to: '/terms' },
+      { label: 'Privacy Policy', to: '/privacy' },
     ],
   },
 ]
@@ -30,13 +30,23 @@ const COLUMNS = [
 const linkClass =
   'text-white no-underline text-[1rem] transition-opacity duration-200 hover:opacity-80'
 
+const isExternal = (href) => /^https?:\/\//.test(href ?? '')
+
 function FooterLink({ link }) {
   return link.to ? (
     <Link to={link.to} className={linkClass}>
       {link.label}
     </Link>
   ) : (
-    <a href={link.href} className={linkClass}>
+    // Off-site links (the socials) open in their own tab so the shop is not lost;
+    // noreferrer also covers noopener on the older browsers that need it.
+    <a
+      href={link.href}
+      className={linkClass}
+      {...(isExternal(link.href)
+        ? { target: '_blank', rel: 'noopener noreferrer' }
+        : {})}
+    >
       {link.label}
     </a>
   )

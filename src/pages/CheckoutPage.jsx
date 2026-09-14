@@ -590,7 +590,7 @@ export default function CheckoutPage() {
         {!canReachApi && (
           <Notice
             title="Online ordering is unavailable right now"
-            detail="We are showing a saved menu and cannot price an order against it. Please call 051-111-557-799 to order."
+            detail="We are showing a saved menu and cannot price an order against it. Please call +92 370 4193372 to order."
           />
         )}
 
