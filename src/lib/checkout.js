@@ -90,7 +90,28 @@ export function describeCheckoutError(error) {
     }
 
     case 'OUTSIDE_DELIVERY_AREA': {
-      const { nearestBranch, distanceKm, deliveryRadiusKm } = error.details ?? {}
+      const { nearestBranch, distanceKm, deliveryRadiusKm, roadKm, maxDeliveryRoadKm } =
+        error.details ?? {}
+
+      /**
+       * Road distance, and the limit stated in the same units the customer is refused in.
+       *
+       * The old sentence quoted a great-circle distance, which reads as nonsense to
+       * anyone who knows the route: a Westridge customer was told the nearest shop was
+       * 3.65 km away when it is a 9.97 km ride around the airbase. Ride time was tried
+       * here too and dropped — the shop's rule is a distance, so the refusal states a
+       * distance. Nothing is refused for a reason this sentence does not give.
+       */
+      if (nearestBranch && roadKm != null) {
+        return {
+          title: 'We do not deliver here yet',
+          detail:
+            `Our nearest shop is ${nearestBranch}, ${roadKm} km away by road — we deliver ` +
+            `up to ${maxDeliveryRoadKm ?? 5} km. You can still collect your order.`,
+          canRetry: false,
+        }
+      }
+
       return {
         title: 'We do not deliver here yet',
         detail: nearestBranch

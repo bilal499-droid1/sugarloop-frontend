@@ -27,6 +27,20 @@ import EmailVerification from '../components/checkout/EmailVerification'
  * it then shows is the server's numbers verbatim.
  */
 
+/**
+ * The fallback order route, for when this page cannot place an order itself.
+ *
+ * Checkout has two states where it genuinely cannot proceed and no amount of fixing the
+ * form will help: a build with no API configured (the phone is then the only way to
+ * order at all), and an API that is configured but not answering. Both end at the same
+ * place, so the number and the trading hours live here rather than being written into a
+ * sentence — the hours in particular are the branches' seeded 11:00-03:00 window, and
+ * when those change this is the one line to change.
+ */
+const ORDER_PHONE = '+92 370 4193372'
+const ORDER_PHONE_TEL = 'tel:+923704193372'
+const TRADING_HOURS = '11am until 3am, seven days a week'
+
 const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
 
 /*
@@ -54,6 +68,21 @@ const GOOD_ACCURACY_METRES = 50
 /** Metres. Above this the fix is coarse enough (wifi/cell triangulation, not GPS) that
  *  it can tip a customer over a branch's 2km radius, so we warn rather than stay silent. */
 const COARSE_ACCURACY_METRES = 150
+/**
+ * Metres. Past this a fix is not merely coarse — it is unusable, and is refused.
+ *
+ * The branch radius is 2 km. A fix of +/-5 km, which is what a laptop on wifi routinely
+ * returns when it is really geolocating the ISP rather than the device, cannot answer
+ * "is this address inside 2 km" at all: it can put a customer 6 km out on the doorstep of
+ * a shop, or turn a neighbour away. Quoting a confident distance from a point like that
+ * is the same defect the server-side geocoder had, arriving by the other door — so the
+ * pin is dropped and the customer is asked for their street address instead.
+ *
+ * 500 m sits in the gap between the two populations: a real GNSS/wifi fix on a phone is
+ * tens of metres and indoors rarely worse than a few hundred, while an IP-derived guess
+ * is kilometres. It rejects the guesses without rejecting anybody's phone.
+ */
+const UNUSABLE_ACCURACY_METRES = 500
 /** How long to keep listening for a better fix before settling for the best one seen. A
  *  single getCurrentPosition() call often returns a fast, coarse, network-based fix
  *  before the GPS chip has locked — watchPosition lets a following, tighter fix replace it. */
@@ -322,6 +351,19 @@ export default function CheckoutPage() {
         return
       }
 
+      // A fix this loose cannot decide a 2 km radius, so it is discarded rather than
+      // quoted from — see UNUSABLE_ACCURACY_METRES.
+      if (best.accuracy > UNUSABLE_ACCURACY_METRES) {
+        const km = Math.round(best.accuracy / 100) / 10
+        setLocating(false)
+        setLocationError(
+          `We could only place you to within ${km} km, which is too rough to work out which ` +
+            'shop can reach you. Please type your street address below instead — or try again ' +
+            'from your phone, which can usually place you far more precisely.'
+        )
+        return
+      }
+
       setLocation(best)
 
       /**
@@ -459,8 +501,11 @@ export default function CheckoutPage() {
 
   /** Why the button cannot go through yet, in the order the customer should fix it. */
   const blockingReason = (() => {
-    if (unorderable.length > 0) return 'Remove and re-add the items flagged above.'
+    // The outage notice already says what to do and offers the phone; repeating a
+    // re-add instruction under the button would contradict it, since on a bundled menu
+    // every line is id-less and re-adding changes nothing.
     if (!canReachApi) return null
+    if (unorderable.length > 0) return 'Remove and re-add the items flagged above.'
     if (emailIsVerified === false && EMAIL_SHAPE.test(normalisedEmail) && !checkingSession) {
       return 'Verify your email to place the order.'
     }
@@ -468,8 +513,8 @@ export default function CheckoutPage() {
     if (quoteError) return quoteError.title
     if (!quote) {
       return isDelivery
-        ? 'Enter your address, or share your location, to see your total.'
-        : 'Choose a shop to see your total.'
+        ? 'Enter your address, or share your location, to place your order.'
+        : 'Choose a shop to place your order.'
     }
     if (touched && !isValid) return 'Please fix the highlighted fields above.'
     return null
@@ -587,20 +632,44 @@ export default function CheckoutPage() {
           Checkout
         </h1>
 
-        {!canReachApi && (
+        {/*
+          One refusal, not two. When the API cannot be reached the cart is running on the
+          bundled menu, so EVERY line is also "unorderable" — and the old page said both
+          things at once: an outage notice, then a list of every item asking the customer
+          to remove and re-add it. The second is noise in that state and its advice does
+          not work, because re-adding from a bundled menu produces another id-less line.
+          So the outage message wins, and the re-add list is kept for the case it is
+          actually true of: a live catalogue with a stale line left in an old cart.
+        */}
+        {!canReachApi ? (
           <Notice
-            title="Online ordering is unavailable right now"
-            detail="We are showing a saved menu and cannot price an order against it. Please call +92 370 4193372 to order."
+            tone="info"
+            title={
+              isApiConfigured
+                ? 'We cannot take online orders right now'
+                : 'Online ordering is coming soon'
+            }
+            detail={
+              <>
+                {isApiConfigured
+                  ? 'Our ordering system is not responding, so we cannot confirm your total. Please try again shortly — or let us take the order over the phone: '
+                  : 'The full menu is here to browse, but we are taking orders by phone while online checkout is being finished. Our team will confirm your order and delivery: '}
+                <a href={ORDER_PHONE_TEL} className="font-bold underline">
+                  {ORDER_PHONE}
+                </a>
+                . We are open {TRADING_HOURS}.
+              </>
+            }
           />
-        )}
-
-        {unorderable.length > 0 && (
-          <Notice
-            title="Some items need adding again"
-            detail={`${unorderable
-              .map((item) => item.name)
-              .join(', ')} — please remove and re-add them from the menu.`}
-          />
+        ) : (
+          unorderable.length > 0 && (
+            <Notice
+              title="Some items need adding again"
+              detail={`${unorderable
+                .map((item) => item.name)
+                .join(', ')} — please remove and re-add them from the menu.`}
+            />
+          )
         )}
 
         <form onSubmit={handleSubmit} className="lg:flex lg:items-start lg:gap-8">
@@ -872,7 +941,18 @@ export default function CheckoutPage() {
 
                   <p className="mt-3 mb-0 text-[0.7rem] text-text-body">
                     {isDelivery ? 'Delivered from' : 'Collect from'} {quote.branch.name}
-                    {quote.branch.distanceKm !== undefined && ` — ${quote.branch.distanceKm} km away`}
+                    {/* Road distance — the same measure the delivery rule uses, so the
+                        summary and a refusal never quote two different numbers. Ride time
+                        rides along for free in the same routing response, and reads as
+                        more reassuring than a distance to someone waiting. */}
+                    {quote.branch.roadKm !== undefined
+                      ? ` — ${quote.branch.roadKm} km away` +
+                        (quote.branch.rideMinutes !== undefined
+                          ? `, about ${quote.branch.rideMinutes} min`
+                          : '')
+                      : quote.branch.distanceKm !== undefined
+                        ? ` — ${quote.branch.distanceKm} km away`
+                        : ''}
                     . Ready in about 45 minutes.
                   </p>
 
@@ -892,8 +972,8 @@ export default function CheckoutPage() {
                       : quoteError
                         ? 'We cannot total this order yet.'
                         : isDelivery
-                          ? 'Share your location to see delivery and your total.'
-                          : 'Choose a shop to see your total.'}
+                          ? 'Share your location so we can work out delivery.'
+                          : 'Choose a shop to collect from.'}
                   </p>
                 </div>
               )}
