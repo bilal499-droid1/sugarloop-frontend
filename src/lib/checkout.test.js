@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { findUnorderableLines, toApiItems } from './checkout'
+import { describeCheckoutError, findUnorderableLines, toApiItems } from './checkout'
 
 /**
  * The cart-to-API translation.
@@ -86,5 +86,30 @@ describe('findUnorderableLines', () => {
   test('a box with no donuts at all is unorderable', () => {
     const empty = { kind: 'box', boxSize: 4, childApiIds: [] }
     expect(findUnorderableLines([empty])).toEqual([empty])
+  })
+})
+
+describe('describeCheckoutError', () => {
+  test('a late delivery points at collection, not at tomorrow', () => {
+    const described = describeCheckoutError({
+      code: 'BRANCH_NOT_ACCEPTING_ORDERS',
+      message: 'Sugar Loop DHA 2 has stopped delivering for today',
+      details: { isOpenNow: true, canStillCollect: true, opensAt: '2026-09-18T11:00:00.000Z' },
+    })
+
+    expect(described.title).toBe('Delivery has closed for today')
+    expect(described.detail).toContain('I will collect')
+    expect(described.detail).not.toContain('reopen')
+  })
+
+  test('a shut branch still quotes when it reopens', () => {
+    const described = describeCheckoutError({
+      code: 'BRANCH_NOT_ACCEPTING_ORDERS',
+      message: 'Sugar Loop DHA 2 is closed',
+      details: { isOpenNow: false, canStillCollect: false, opensAt: '2026-09-18T11:00:00.000Z' },
+    })
+
+    expect(described.title).toBe('We are closed right now')
+    expect(described.detail).toContain('We reopen at')
   })
 })

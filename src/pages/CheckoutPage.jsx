@@ -23,8 +23,10 @@ import EmailVerification from '../components/checkout/EmailVerification'
  * on screen comes from `POST /checkout/quote`. The cart's own subtotal is good enough to
  * show someone what they picked, but it does not know about the delivery fee, the Rs 500
  * minimum, the 2 km radius, whether the shop is open, or whether a tray emptied thirty
- * seconds ago. So the summary panel stays empty until the server has answered, and what
- * it then shows is the server's numbers verbatim.
+ * seconds ago. So what the summary panel shows once the server has answered is the
+ * server's numbers verbatim. The one exception is before that answer: a delivery order
+ * shows the flat fee and a greyed provisional total, so choosing delivery visibly adds
+ * it. That figure is never submitted — placing an order needs a real quote.
  */
 
 /**
@@ -34,20 +36,34 @@ import EmailVerification from '../components/checkout/EmailVerification'
  * form will help: a build with no API configured (the phone is then the only way to
  * order at all), and an API that is configured but not answering. Both end at the same
  * place, so the number and the trading hours live here rather than being written into a
- * sentence — the hours in particular are the branches' seeded 11:00-03:00 window, and
+ * sentence — the hours in particular are the branches' seeded windows (see seed.js), and
  * when those change this is the one line to change.
  */
 const ORDER_PHONE = '+92 370 4193372'
 const ORDER_PHONE_TEL = 'tel:+923704193372'
-const TRADING_HOURS = '11am until 3am, seven days a week'
+const TRADING_HOURS =
+  '4pm until midnight at DHA 1, DHA 2 and Bahria Phase 4, and 10am until 6pm at NUST H-12'
 
 const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
 
-/*
- * PK_MOBILE lived here, mirroring the API's rule so a bad number was refused before the
- * trip. Nothing on this page validates a phone now — the field is parked. The rule itself
- * still stands server-side in order.validator.js for any number that does get sent.
+/**
+ * Rupees. Mirrors the API's flat `DELIVERY_FEE`, and only used for display before the
+ * first quote lands: someone who taps "Deliver to me" should see the Rs 100 added to
+ * their order straight away, not only once a pin or address has been priced. The
+ * server's quote replaces it the moment it arrives, and is still what an order submits.
  */
+const DELIVERY_FEE_RUPEES = 100
+
+/**
+ * Pakistani mobile, the same shape order.validator.js accepts: `03001234567`,
+ * `+92 300 1234567`, `0300-1234567`. Mirrored here so a mistyped number is caught before
+ * the trip — the server's rule is still the one that counts.
+ */
+const PK_MOBILE = /^(\+92|92|0)3\d{9}$/
+
+function normalisePhone(value) {
+  return value.trim().replace(/[\s()-]/g, '')
+}
 
 /**
  * Deliberately loose, and not the RFC.
@@ -83,10 +99,21 @@ const COARSE_ACCURACY_METRES = 150
  * is kilometres. It rejects the guesses without rejecting anybody's phone.
  */
 const UNUSABLE_ACCURACY_METRES = 500
-/** How long to keep listening for a better fix before settling for the best one seen. A
- *  single getCurrentPosition() call often returns a fast, coarse, network-based fix
- *  before the GPS chip has locked — watchPosition lets a following, tighter fix replace it. */
+/** How long to keep listening for a better fix, counted from the FIRST fix, before settling
+ *  for the best one seen. A single getCurrentPosition() call often returns a fast, coarse,
+ *  network-based fix before the GPS chip has locked — watchPosition lets a following,
+ *  tighter fix replace it. */
 const LOCATE_WINDOW_MS = 8000
+/**
+ * How long to wait for any fix at all.
+ *
+ * Kept separate from the window above, which used to cover both — and that is what made
+ * the button need a second tap. The clock started on the tap, so the seconds someone
+ * spent reading the browser's "allow location?" prompt, plus a cold GPS lock, used up
+ * the whole 8s and the attempt failed. The second tap then worked because permission was
+ * granted and the phone had a fix to hand.
+ */
+const FIRST_FIX_TIMEOUT_MS = 30000
 
 
 /*
@@ -331,6 +358,17 @@ export default function CheckoutPage() {
     setLocationError(null)
 
     let best = null
+    let settled = false
+    let windowTimer = null
+
+    const stopWatching = () => {
+      clearTimeout(windowTimer)
+      clearTimeout(firstFixTimer)
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current)
+        watchIdRef.current = null
+      }
+    }
 
     /**
      * A single getCurrentPosition() call often returns whatever fix the browser has
@@ -340,10 +378,9 @@ export default function CheckoutPage() {
      * is good enough or the window runs out, rather than trusting whichever lands first.
      */
     const settle = async () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current)
-        watchIdRef.current = null
-      }
+      if (settled) return
+      settled = true
+      stopWatching()
 
       if (!best) {
         setLocating(false)
@@ -389,13 +426,16 @@ export default function CheckoutPage() {
       setLocating(false)
     }
 
-    const ceiling = setTimeout(settle, LOCATE_WINDOW_MS)
+    // No fix at all in this long means none is coming; settle() reports it.
+    const firstFixTimer = setTimeout(settle, FIRST_FIX_TIMEOUT_MS)
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
+        if (settled) return
         const accuracy = position.coords.accuracy
         if (best && best.accuracy <= accuracy) return // never regress to a worse fix
 
+        const isFirstFix = best === null
         best = {
           lat: Number(position.coords.latitude.toFixed(6)),
           lng: Number(position.coords.longitude.toFixed(6)),
@@ -403,25 +443,32 @@ export default function CheckoutPage() {
         }
 
         if (accuracy <= GOOD_ACCURACY_METRES) {
-          clearTimeout(ceiling)
           settle()
+        } else if (isFirstFix) {
+          // The window for a better fix opens now, not on the tap — see FIRST_FIX_TIMEOUT_MS.
+          clearTimeout(firstFixTimer)
+          windowTimer = setTimeout(settle, LOCATE_WINDOW_MS)
         }
       },
       (error) => {
-        if (best) return // a later error on an already-good watch shouldn't discard it
-        clearTimeout(ceiling)
-        if (watchIdRef.current !== null) {
-          navigator.geolocation.clearWatch(watchIdRef.current)
-          watchIdRef.current = null
-        }
+        if (settled || best) return // a later error on an already-good watch shouldn't discard it
+
+        /**
+         * Only a refusal ends the attempt here. A TIMEOUT or POSITION_UNAVAILABLE is
+         * commonly just the GPS still locking, and the watch keeps trying after reporting
+         * it — stopping on the first one is exactly the failure a second tap used to fix.
+         * FIRST_FIX_TIMEOUT_MS is what gives up if nothing ever arrives.
+         */
+        if (error.code !== error.PERMISSION_DENIED) return
+
+        settled = true
+        stopWatching()
         setLocating(false)
         setLocationError(
-          error.code === error.PERMISSION_DENIED
-            ? 'Location permission was declined. We need it to find your nearest shop — or you can collect your order instead.'
-            : 'We could not read your location. Try again, or collect your order instead.'
+          'Location permission was declined. We need it to find your nearest shop — or you can collect your order instead.'
         )
       },
-      { enableHighAccuracy: true, timeout: LOCATE_WINDOW_MS, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: FIRST_FIX_TIMEOUT_MS, maximumAge: 0 }
     )
   }, [])
 
@@ -436,8 +483,10 @@ export default function CheckoutPage() {
 
   const errors = {}
   if (!contact.name.trim() || contact.name.trim().length < 2) errors.name = 'Please enter your name.'
-  // No phone rule: the field is parked (see the contact card below) and the server no
-  // longer requires one, so demanding a number nobody can type would be a dead end.
+  // Required: this is Cash on Delivery, so the number is how the branch confirms the
+  // order and how the rider gets through the gate.
+  if (!PK_MOBILE.test(normalisePhone(contact.phone)))
+    errors.phone = 'Enter a mobile number we can call, e.g. 03001234567.'
   if (!EMAIL_SHAPE.test(normaliseEmail(contact.email)))
     errors.email = 'Enter an email address so we can verify your order.'
   if (isDelivery && address.line1.trim().length < 5)
@@ -549,10 +598,9 @@ export default function CheckoutPage() {
     try {
       const { order } = await placeOrder({
         ...quoteRequest,
-        // No phone: the field is parked, and sending an empty string would be worse
-        // than sending nothing — the server would store "" as the number to call.
         contact: {
           name: contact.name.trim(),
+          phone: normalisePhone(contact.phone),
           email: normalisedEmail,
         },
         ...(isDelivery
@@ -677,7 +725,11 @@ export default function CheckoutPage() {
             <Card title="How would you like it?">
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { value: FULFILMENT.DELIVERY, label: 'Deliver to me', note: 'Rs 100 delivery' },
+                  {
+                    value: FULFILMENT.DELIVERY,
+                    label: 'Deliver to me',
+                    note: `Rs ${DELIVERY_FEE_RUPEES} delivery`,
+                  },
                   { value: FULFILMENT.PICKUP, label: 'I will collect', note: 'No delivery fee' },
                 ].map((option) => (
                   <button
@@ -738,8 +790,17 @@ export default function CheckoutPage() {
                           <br />
                         </>
                       )}
-                      <span className="opacity-70">
+                      {/* Opens the pin on a map, so the customer can check it is their
+                          door and not the building next door before a rider goes there. */}
+                      <a
+                        href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-accent underline"
+                      >
                         {location.lat}, {location.lng}
+                      </a>
+                      <span className="opacity-70">
                         {location.accuracy != null && ` (±${Math.round(location.accuracy)}m)`}
                       </span>
                     </span>
@@ -815,18 +876,8 @@ export default function CheckoutPage() {
                 />
               </Field>
 
-              {/* The mobile number field is parked, not deleted — checkout collects
-                  nothing but an email for now.
-
-                  Worth knowing what this costs: Cash on Delivery means a rider goes to
-                  a real address having taken no payment, and the number was how the
-                  branch confirmed the order and how the rider got through the gate. The
-                  server now accepts an order without one, so nothing on the order board
-                  has a phone to ring. Uncomment this block and re-add `errors.phone` in
-                  the validation above to bring it back.
-
               <Field
-                label="Mobile number"
+                label="Contact number"
                 hint="We call this number to confirm your order and when the rider arrives."
                 error={touched ? errors.phone : undefined}
               >
@@ -839,7 +890,6 @@ export default function CheckoutPage() {
                   autoComplete="tel"
                 />
               </Field>
-              */}
 
               <Field
                 label="Email"
@@ -966,6 +1016,17 @@ export default function CheckoutPage() {
               ) : (
                 <div className="border-t border-border-light pt-3">
                   <Row label="Subtotal" value={`Rs ${subtotal}`} muted />
+                  {isDelivery && (
+                    <>
+                      <Row label="Delivery" value={`Rs ${DELIVERY_FEE_RUPEES}`} muted />
+                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-border-light">
+                        <span className="font-display font-bold text-sm text-black">Total</span>
+                        <span className="font-price font-bold text-lg text-text-body">
+                          Rs {subtotal + DELIVERY_FEE_RUPEES}
+                        </span>
+                      </div>
+                    </>
+                  )}
                   <p className="mt-3 mb-0 text-[0.7rem] text-text-body">
                     {quoting
                       ? 'Working out your total…'

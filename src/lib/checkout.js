@@ -75,6 +75,16 @@ export function describeCheckoutError(error) {
       }
 
     case 'BRANCH_NOT_ACCEPTING_ORDERS': {
+      // Delivery stops 30 minutes before closing, collection does not — so this is not a
+      // "come back tomorrow", and quoting tomorrow's opening time would say it is.
+      if (error.details?.canStillCollect) {
+        return {
+          title: 'Delivery has closed for today',
+          detail: `${detail}. Choose "I will collect" above to order for collection.`,
+          canRetry: false,
+        }
+      }
+
       const opensAt = error.details?.opensAt
       return {
         title: error.details?.isOpenNow ? 'Last orders have passed' : 'We are closed right now',
