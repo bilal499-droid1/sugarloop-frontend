@@ -6,6 +6,10 @@ import drinkImg from '../../assets/a3.webp'
 import brownieImg from '../../assets/Brownies/chocolate-bounty-1.webp'
 import sandwichImg from '../../assets/a2.webp'
 
+// One column per category, so the row is one line. It was grid-cols-4 against five
+// items, which left Sandwiches alone on a second row from 720px up — the Brownies card
+// was added as a fifth item and the column count stayed where it was. The count is
+// tied to the list below: a sixth category needs this number moved with it.
 const CATEGORY_ITEMS = [
   { label: 'Donuts', image: donutImg, to: '/products?category=Donuts' },
   { label: 'Brownies', image: brownieImg, to: '/products?category=Brownies' },
@@ -16,7 +20,9 @@ const CATEGORY_ITEMS = [
 
 export default function MenuCarousel({ title = 'MENU' }) {
   const items = CATEGORY_ITEMS
-  const [activeIndex, setActiveIndex] = useState(1) // center card highlighted, matches Figma sample
+  // The middle card is the highlighted one, matching the Figma sample. Derived rather
+  // than hardcoded to 1, which stopped being the middle when the fifth category landed.
+  const [activeIndex, setActiveIndex] = useState(Math.floor(CATEGORY_ITEMS.length / 2))
   const trackRef = useRef(null)
 
   // Horizontal-only centering: avoids scrollIntoView, which would also move the page vertically
@@ -44,7 +50,7 @@ export default function MenuCarousel({ title = 'MENU' }) {
 
       <div
         ref={trackRef}
-        className="grid grid-cols-4 gap-[clamp(0.75rem,2vw,1.5rem)] max-w-[1100px] mx-auto max-[720px]:flex max-[720px]:max-w-none max-[720px]:overflow-x-auto max-[720px]:snap-x max-[720px]:snap-mandatory max-[720px]:-mx-[clamp(1.5rem,5vw,4rem)] max-[720px]:px-[clamp(1.5rem,5vw,4rem)] max-[720px]:pb-2 max-[720px]:[scrollbar-width:none] max-[720px]:[&::-webkit-scrollbar]:hidden"
+        className="grid grid-cols-5 gap-[clamp(0.75rem,2vw,1.5rem)] max-w-[1100px] mx-auto max-[720px]:flex max-[720px]:max-w-none max-[720px]:overflow-x-auto max-[720px]:snap-x max-[720px]:snap-mandatory max-[720px]:-mx-[clamp(1.5rem,5vw,4rem)] max-[720px]:px-[clamp(1.5rem,5vw,4rem)] max-[720px]:pb-2 max-[720px]:[scrollbar-width:none] max-[720px]:[&::-webkit-scrollbar]:hidden"
       >
         {items.map((item, i) => (
           <Link
