@@ -138,8 +138,11 @@ order board, and nothing on the public site should be able to import a credentia
 
 ## What is not built
 
-- **Product images from the API.** Blocked on moving Cloudinary to a client-owned account;
-  until then the bundle owns the photography and `legacyId` is the join.
+- **Product images from the API.** The backend stores them in S3 and the uploader
+  (`npm run images:upload`) is written; it needs a bucket, an instance role and the
+  bucket CORS rule. Until it runs the bundle owns the photography and `legacyId` is the
+  join — so a product added through the admin console cannot have a photo, having no
+  `legacyId`.
 
 ## Blocked on the client, not on code
 
@@ -149,7 +152,12 @@ These are the same items the backend README lists, and they gate launch:
    `NOTIFY_TRANSPORT=log`, and refuses to boot in production on either. WhatsApp needs the
    client's Meta Business account plus per-template approval (1–3 days each, ×7
    templates). Calendar time — start it now.
-2. **Geocoding is on OpenStreetMap.** It resolves areas but not individual buildings, so
+2. **The homepage drink videos are on somebody's personal Cloudinary.**
+   `DrinksStrip.jsx` streams four videos from account `djyjxr18v`, created by a developer
+   on a personal Gmail. Product images do not go there any more — they go to S3 — so this
+   is now four files, not the catalogue. But if that account is lost the home page loses
+   its videos, and nobody at Sugarloop can get in to stop that.
+3. **Geocoding is on OpenStreetMap.** It resolves areas but not individual buildings, so
    some customers will be told their address cannot be found and pushed to the location
    button. A Maps key is a two-line change in the backend's `.env`.
 
