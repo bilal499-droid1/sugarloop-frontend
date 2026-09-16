@@ -27,9 +27,21 @@ export const FAILURE_REASON_LABEL = {
   customer_request: "Customer's request",
   branch_unable: 'Branch unable to fulfil',
   other: 'Other',
+
+  /**
+   * Set by the server, never by a person: an order nobody confirmed within the
+   * auto-cancel window is failed on the shop's behalf and the customer is emailed. It is
+   * labelled here so the board can name it, and excluded from FAILURE_REASONS below so
+   * it never appears in the fail-reason picker — the branch that ignored an order must
+   * not be able to file it under "nobody looked at this".
+   */
+  not_acknowledged: 'Nobody confirmed it',
 }
 
-export const FAILURE_REASONS = Object.keys(FAILURE_REASON_LABEL)
+/** What a human may choose. See `not_acknowledged` above. */
+export const FAILURE_REASONS = Object.keys(FAILURE_REASON_LABEL).filter(
+  (reason) => reason !== 'not_acknowledged'
+)
 
 export const FULFILMENT_LABEL = {
   delivery: 'Delivery',
