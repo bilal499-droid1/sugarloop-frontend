@@ -33,10 +33,10 @@ const MORE_PAGES = [
 ]
 
 // MORE_PAGES rides the desktop-only hamburger, so on a phone those pages had no
-// route in at all — the drawer carries both lists. Build a Box and Corporate
-// Gifting are deliberately kept out of it: they belong to the pill nav, and the
-// homepage sells them elsewhere.
-const DRAWER_EXCLUDED = ['Build a Box', 'Corporate Gifting']
+// route in at all — the drawer carries both lists. Corporate Gifting is kept out
+// of it: the homepage sells it elsewhere. Build a Box stays in — on a phone the
+// drawer is the only nav there is, and it is a core thing a customer comes to do.
+const DRAWER_EXCLUDED = ['Corporate Gifting']
 
 const MOBILE_NAV_ITEMS = [
   ...NAV_ITEMS.filter((item) => !DRAWER_EXCLUDED.includes(item.label)),
