@@ -41,8 +41,7 @@ import EmailVerification from '../components/checkout/EmailVerification'
  */
 const ORDER_PHONE = '+92 370 4193372'
 const ORDER_PHONE_TEL = 'tel:+923704193372'
-const TRADING_HOURS =
-  '4pm until midnight at DHA 1, DHA 2 and Bahria Phase 4, and 10am until 6pm at NUST H-12'
+const TRADING_HOURS = '4pm until midnight at DHA 2'
 
 const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
 
