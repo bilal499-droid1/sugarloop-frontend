@@ -29,9 +29,14 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
       </div>
 
       {/* Below lg only: past lg the ProductGrid sidebar owns category filtering, so
-          these would just duplicate it on top of the hero photo. */}
+          these would just duplicate it on top of the hero photo.
+
+          flex-wrap is the safety net: the vw sizing aims for one line, but the 20px
+          side padding and the pill borders don't scale, so on a narrow phone the row
+          came out wider than the screen and dragged the whole page sideways. A pill
+          dropping to a second line is fine; a page that scrolls right is not. */}
       <div
-        className="relative z-[2] flex lg:hidden flex-nowrap items-center gap-[1.7vw] sm:gap-[0.6rem] pt-6 px-5 pb-0 max-w-full"
+        className="relative z-[2] flex lg:hidden flex-wrap items-center gap-[1.5vw] sm:gap-[0.6rem] pt-6 px-5 pb-0 max-w-full"
         role="group"
         aria-label="Filter by category"
       >
@@ -39,7 +44,7 @@ export default function ProductsHero({ categories, activeCategory, onSelectCateg
           <button
             key={category}
             type="button"
-            className={`shrink-0 font-display font-medium rounded-cta-pill cursor-pointer whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110 text-[3.3vw] py-[1.5vw] px-[2.6vw] sm:text-[0.8rem] sm:py-[0.4rem] sm:px-4 ${
+            className={`shrink-0 font-display font-medium rounded-cta-pill cursor-pointer whitespace-nowrap transition-transform duration-300 ease-out hover:scale-110 text-[3.2vw] py-[1.5vw] px-[2.2vw] sm:text-[0.8rem] sm:py-[0.4rem] sm:px-4 ${
               category === activeCategory
                 ? 'bg-accent text-white border border-accent'
                 : 'bg-white text-accent border border-accent'
