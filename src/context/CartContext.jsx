@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { useCatalogue } from './CatalogueContext'
 import CartToast from '../components/CartToast'
+import { trackAddToCart } from '../lib/metaPixel'
 
 const CartContext = createContext(null)
 
@@ -203,6 +204,9 @@ export function CartProvider({ children }) {
       })
 
       announce(product, 'added', 'Added to cart')
+      // Here rather than in each button, so a product tile, the product page and a
+      // finished box all report the same way.
+      trackAddToCart(product, qty)
     }
 
     // The line is read out of `items` before it goes, because the toast needs the name

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import ShopNav from '../components/products/ShopNav'
 import ProductCard from '../components/products/ProductCard'
@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import { useCart } from '../context/CartContext'
 import { useCatalogue } from '../context/CatalogueContext'
 import { useBranch } from '../context/BranchContext'
+import { trackViewContent } from '../lib/metaPixel'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
@@ -20,6 +21,14 @@ export default function ProductDetailPage() {
   const [qty, setQty] = useState(1)
   const [justAdded, setJustAdded] = useState(false)
   const { addItem } = useCart()
+
+  // Keyed on the id, not the object: the live catalogue replaces the bundled one moments
+  // after load, and that swap is not a second view of the same product.
+  const productId = product?.id
+  useEffect(() => {
+    if (product) trackViewContent(product)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId])
 
   if (!product) {
     return (

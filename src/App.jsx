@@ -23,6 +23,7 @@ import RequireStaffAuth from './components/staff/RequireStaffAuth'
 import RequireAdmin from './components/staff/RequireAdmin'
 import StaffLayout from './components/staff/StaffLayout'
 import ScrollToTop from './components/ScrollToTop'
+import MetaPixelRouteTracker from './components/MetaPixelRouteTracker'
 import PageLoader from './components/PageLoader'
 import { CartProvider } from './context/CartContext'
 import { CatalogueProvider } from './context/CatalogueContext'
@@ -33,6 +34,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <MetaPixelRouteTracker />
       {/* Outermost: the catalogue fetch is branch-scoped (stock is per branch), and the
           cart re-reads names and prices off the catalogue. So branch, then catalogue,
           then cart. */}

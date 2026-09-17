@@ -14,6 +14,7 @@ import {
 } from '../lib/api'
 import { describeCheckoutError, findUnorderableLines, toApiItems } from '../lib/checkout'
 import { reverseGeocode } from '../lib/geocode'
+import { trackInitiateCheckout, trackPurchase } from '../lib/metaPixel'
 import EmailVerification from '../components/checkout/EmailVerification'
 
 /**
@@ -170,6 +171,17 @@ export default function CheckoutPage() {
   const { items, subtotal, clear } = useCart()
   const { branches } = useBranch()
   const { status: catalogueStatus } = useCatalogue()
+
+  // Once per visit. The ref, not an empty dependency list alone, because StrictMode runs
+  // mount effects twice in development and an empty cart has nothing to check out. The
+  // cart is read at mount on purpose: editing it here is still the same checkout.
+  const checkoutTracked = useRef(false)
+  useEffect(() => {
+    if (checkoutTracked.current || items.length === 0) return
+    checkoutTracked.current = true
+    trackInitiateCheckout(items, subtotal)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [fulfilment, setFulfilment] = useState(FULFILMENT.DELIVERY)
   const [branchCode, setBranchCode] = useState('')
@@ -620,6 +632,10 @@ export default function CheckoutPage() {
       // Cleared only after the server has confirmed. Clearing on click would lose the
       // cart of anyone whose order was refused for being under the minimum.
       clear()
+      // Here, not on the confirmation page: that page also opens from a bookmark or a
+      // reload, and neither is a new purchase. `order.metaEventId` is the id the server
+      // sent Meta for this order, so the two copies are counted once.
+      trackPurchase(order)
       navigate(`/order/${order.orderNumber}`, { replace: true, state: { order } })
     } catch (error) {
       setSubmitError(describeCheckoutError(error))
