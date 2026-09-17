@@ -6,7 +6,7 @@ describe('branchMapUrl', () => {
   test('pins the coordinates rather than asking Google to guess', () => {
     // The FAQ page used to embed `?q=DHA Phase 2`, which drops the pin in the middle of
     // an area rather than on the shop — and named an area that has no shop in it at all.
-    const url = branchMapUrl(FALLBACK_BRANCHES[0])
+    const url = branchMapUrl(FALLBACK_BRANCHES[1])
 
     expect(url).toContain('33.5312498%2C73.1574172')
     expect(url).toContain('output=embed')
@@ -32,13 +32,14 @@ describe('branchMapUrl', () => {
 })
 
 describe('FALLBACK_BRANCHES', () => {
-  test('is the shops trading now, each with its own name', () => {
-    // Only DHA 2 trades for now. The older bug this replaced: four entries all called
-    // "DHA Branch", which told a visitor nothing about which one was near them.
-    expect(FALLBACK_BRANCHES.map((b) => b.code)).toEqual(['DHA2'])
+  test('is the four real shops, each with its own name', () => {
+    // The bug this replaced: four entries all called "DHA Branch", which told a visitor
+    // nothing about which one was near them.
+    expect(FALLBACK_BRANCHES).toHaveLength(4)
 
     const names = FALLBACK_BRANCHES.map((b) => b.name)
-    expect(new Set(names).size).toBe(names.length)
+    expect(new Set(names).size).toBe(4)
+    expect(FALLBACK_BRANCHES.map((b) => b.code)).toEqual(['DHA1', 'DHA2', 'BAH4', 'NUST'])
   })
 
   test('every shop carries an address, since that is the point of the section', () => {

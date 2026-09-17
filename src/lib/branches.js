@@ -19,7 +19,7 @@ export function shortBranchName(name) {
 }
 
 /**
- * The trading shops, as a fallback for when the API is not configured.
+ * The four shops, as a fallback for when the API is not configured.
  *
  * Mirrors `scripts/seed.js` in the backend — same names, same addresses, same
  * coordinates. Duplicated rather than fetched for the same reason `productsData.js` is:
@@ -33,14 +33,33 @@ export function shortBranchName(name) {
  * the database stores. Getting those backwards puts all four shops in the Indian Ocean.
  */
 export const FALLBACK_BRANCHES = [
-  // Only DHA 2 is trading for now: DHA 1, Bahria Phase 4 and NUST H-12 are
-  // `isActive: false` in the backend seed. Put them back here when they reopen.
+  {
+    id: 'fallback-dha1',
+    code: 'DHA1',
+    name: 'Sugar Loop DHA 1',
+    address: 'H32V+J2F, DHA Phase 1, Islamabad',
+    location: { lat: 33.5515545, lng: 73.0925354 },
+  },
   {
     id: 'fallback-dha2',
     code: 'DHA2',
     name: 'Sugar Loop DHA 2',
     address: '1st Floor, Nadir Arcade, Sector E, DHA Phase II, Islamabad',
     location: { lat: 33.5312498, lng: 73.1574172 },
+  },
+  {
+    id: 'fallback-bah4',
+    code: 'BAH4',
+    name: 'Sugar Loop Bahria Phase 4',
+    address: 'Marina Commercial, Corniche Road, near WeDrink, Bahria Town Phase 4, Islamabad 46220',
+    location: { lat: 33.5465939, lng: 73.1233008 },
+  },
+  {
+    id: 'fallback-nust',
+    code: 'NUST',
+    name: 'Sugar Loop NUST H-12',
+    address: 'SINES / NSTP Building, NUST, Khyber Road, H-12, Islamabad 44000',
+    location: { lat: 33.6461047, lng: 72.9974445 },
   },
 ]
 
