@@ -15,36 +15,73 @@ import { FaBell, FaBellSlash } from 'react-icons/fa'
  * somebody does something, not when a timer runs out.
  *
  * The tone is synthesised rather than loaded from a file. It avoids shipping a binary for
- * two seconds of beep, and it means the alert cannot silently fail because an asset 404'd.
+ * five seconds of beep, and it means the alert cannot silently fail because an asset 404'd.
  */
 
-/** How often the chime repeats while orders are waiting. */
+/** How often the chime repeats while orders are waiting, measured start to start. */
 const REPEAT_MS = 20_000
 
+/** How long each round of beeping lasts. One short chime was too easy to miss in a kitchen. */
+const CHIME_SECONDS = 5
+
+/** One two-tone pair plus a short gap; repeated until CHIME_SECONDS is filled. */
+const PAIR_SECONDS = 0.5
+const TONE_SECONDS = 0.18
+
 /**
- * Two short tones, a fifth apart. Deliberately not a klaxon: this fires in a shop with
- * customers in it, and an alarm people find unpleasant is an alarm they turn off.
+ * Peak level per tone. Tones never overlap, so this cannot clip. It was 0.12 on a sine,
+ * which a laptop speaker across a noisy counter barely carried.
+ */
+const PEAK_GAIN = 0.6
+
+/**
+ * Two short tones, a fifth apart, repeated for CHIME_SECONDS. Returns a function that
+ * silences whatever is still scheduled, so Mute or a confirmed order cuts it off at once
+ * rather than letting the rest of the five seconds play out.
+ *
+ * A square wave through a low-pass filter: the square carries far more energy than a sine
+ * at the same peak, and the filter takes off the buzzy top end so it still reads as a
+ * chime rather than a klaxon in a shop with customers in it.
  */
 function playChime(context) {
   const now = context.currentTime
+  const oscillators = []
 
-  for (const [index, frequency] of [880, 1318.5].entries()) {
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
+  const filter = context.createBiquadFilter()
+  filter.type = 'lowpass'
+  filter.frequency.value = 3000
+  filter.connect(context.destination)
 
-    oscillator.type = 'sine'
-    oscillator.frequency.value = frequency
+  for (let pair = 0; pair * PAIR_SECONDS < CHIME_SECONDS; pair++) {
+    for (const [index, frequency] of [880, 1318.5].entries()) {
+      const oscillator = context.createOscillator()
+      const gain = context.createGain()
 
-    // Ramped rather than switched: an abrupt start and stop on a sine wave produces an
-    // audible click at both ends.
-    const start = now + index * 0.18
-    gain.gain.setValueAtTime(0, start)
-    gain.gain.linearRampToValueAtTime(0.12, start + 0.02)
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16)
+      oscillator.type = 'square'
+      oscillator.frequency.value = frequency
 
-    oscillator.connect(gain).connect(context.destination)
-    oscillator.start(start)
-    oscillator.stop(start + 0.18)
+      // Ramped rather than switched: an abrupt start and stop produces an audible click
+      // at both ends.
+      const start = now + pair * PAIR_SECONDS + index * TONE_SECONDS
+      gain.gain.setValueAtTime(0, start)
+      gain.gain.linearRampToValueAtTime(PEAK_GAIN, start + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16)
+
+      oscillator.connect(gain).connect(filter)
+      oscillator.start(start)
+      oscillator.stop(start + TONE_SECONDS)
+      oscillators.push(oscillator)
+    }
+  }
+
+  return () => {
+    for (const oscillator of oscillators) {
+      try {
+        oscillator.stop()
+      } catch {
+        // Already finished; nothing to silence.
+      }
+    }
   }
 }
 
@@ -55,6 +92,8 @@ export default function UnacknowledgedAlert({ count }) {
 
   useEffect(() => {
     if (count === 0 || muted) return undefined
+
+    let silence = () => {}
 
     const beep = () => {
       try {
@@ -80,7 +119,8 @@ export default function UnacknowledgedAlert({ count }) {
           }
         }
 
-        playChime(context)
+        silence()
+        silence = playChime(context)
         setBlocked(false)
       } catch {
         // No Web Audio at all. The banner is still on screen, which is the part that
@@ -91,7 +131,10 @@ export default function UnacknowledgedAlert({ count }) {
 
     beep()
     const timer = setInterval(beep, REPEAT_MS)
-    return () => clearInterval(timer)
+    return () => {
+      clearInterval(timer)
+      silence()
+    }
   }, [count, muted])
 
   if (count === 0) return null
