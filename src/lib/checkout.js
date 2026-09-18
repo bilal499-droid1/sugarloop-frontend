@@ -80,7 +80,7 @@ export function describeCheckoutError(error) {
       if (error.details?.canStillCollect) {
         return {
           // A branch can also take collection orders before its riders start (DHA 2:
-          // collection from 10am, delivery from 4pm).
+          // collection from 10:30am, delivery from 4pm).
           title: error.details.deliveryStartsLater
             ? 'Delivery has not started yet today'
             : 'Delivery has closed for today',
