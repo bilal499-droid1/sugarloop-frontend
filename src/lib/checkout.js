@@ -75,6 +75,16 @@ export function describeCheckoutError(error) {
       }
 
     case 'BRANCH_NOT_ACCEPTING_ORDERS': {
+      // The shop is open but the manager has paused orders for a while. Quoting tomorrow's
+      // opening time here would send the customer away for the day.
+      if (error.details?.isPaused) {
+        return {
+          title: 'Orders are paused for a few minutes',
+          detail: `${detail}.`,
+          canRetry: true,
+        }
+      }
+
       // Delivery stops 30 minutes before closing, collection does not — so this is not a
       // "come back tomorrow", and quoting tomorrow's opening time would say it is.
       if (error.details?.canStillCollect) {
@@ -91,8 +101,8 @@ export function describeCheckoutError(error) {
 
       const opensAt = error.details?.opensAt
       return {
-        title: error.details?.isOpenNow ? 'Last orders have passed' : 'We are closed right now',
-        detail: opensAt
+        title: error.details?.isOpenNow ? 'Not taking orders right now' : 'We are closed right now',
+        detail: opensAt && !error.details?.isOpenNow
           ? `${detail}. We reopen at ${new Date(opensAt).toLocaleString('en-PK', {
               weekday: 'short',
               hour: 'numeric',

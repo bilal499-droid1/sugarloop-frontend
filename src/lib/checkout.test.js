@@ -113,6 +113,19 @@ describe('describeCheckoutError', () => {
     expect(described.detail).toContain('I will collect')
   })
 
+  test('a paused branch asks to try again shortly, not tomorrow', () => {
+    const described = describeCheckoutError({
+      code: 'BRANCH_NOT_ACCEPTING_ORDERS',
+      message:
+        'Sugar Loop DHA 2 has paused online orders for a short while — please try again in a few minutes',
+      details: { isOpenNow: true, isPaused: true, opensAt: '2026-09-19T05:30:00.000Z' },
+    })
+
+    expect(described.title).toBe('Orders are paused for a few minutes')
+    expect(described.detail).not.toContain('reopen')
+    expect(described.canRetry).toBe(true)
+  })
+
   test('a shut branch still quotes when it reopens', () => {
     const described = describeCheckoutError({
       code: 'BRANCH_NOT_ACCEPTING_ORDERS',
