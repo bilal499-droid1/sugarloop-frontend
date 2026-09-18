@@ -104,7 +104,7 @@ export const LAST_ORDERS_WARNING_MINUTES = 30
  *
  * @returns {{ tone: 'open' | 'warn' | 'closed', label: string, short: string | null } | null}
  */
-export function branchOrderStatus(branch) {
+export function branchOrderStatus(branch, now = new Date()) {
   if (branch?.isOpenNow === undefined && branch?.isAcceptingOrders === undefined) return null
 
   // An older API response without the verdict falls back to the clock rather than to
@@ -123,7 +123,7 @@ export function branchOrderStatus(branch) {
     return { tone: 'warn', label: 'Not taking orders right now', short: 'not taking orders' }
   }
 
-  const opensAt = formatOpeningTime(branch.nextOpeningAt)
+  const opensAt = formatOpeningTime(branch.nextOpeningAt, now)
   return {
     tone: 'closed',
     label: opensAt ? `Closed · opens ${opensAt}` : 'Closed now',
@@ -133,13 +133,15 @@ export function branchOrderStatus(branch) {
 
 /**
  * "11:00 am", in Pakistan time whatever the visitor's own clock says — the shop opens at
- * eleven in Islamabad, not at eleven wherever the browser happens to be.
+ * eleven in Islamabad, not at eleven wherever the browser happens to be. Prefixed with the
+ * day ("Mon 10:30 am") when it is not today, since a branch shut at weekends (NUST)
+ * reopens days away.
  */
-function formatOpeningTime(value) {
+function formatOpeningTime(value, now = new Date()) {
   const date = value ? new Date(value) : null
   if (!date || Number.isNaN(date.getTime())) return null
 
-  return new Intl.DateTimeFormat('en-PK', {
+  const time = new Intl.DateTimeFormat('en-PK', {
     timeZone: 'Asia/Karachi',
     hour: 'numeric',
     minute: '2-digit',
@@ -147,4 +149,14 @@ function formatOpeningTime(value) {
   })
     .format(date)
     .toLowerCase()
+
+  const dayOf = (instant) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(instant)
+  if (dayOf(date) === dayOf(now)) return time
+
+  const weekday = new Intl.DateTimeFormat('en-PK', {
+    timeZone: 'Asia/Karachi',
+    weekday: 'short',
+  }).format(date)
+  return `${weekday} ${time}`
 }

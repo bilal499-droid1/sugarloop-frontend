@@ -43,7 +43,7 @@ import EmailVerification from '../components/checkout/EmailVerification'
 const ORDER_PHONE = '+92 370 4193372'
 const ORDER_PHONE_TEL = 'tel:+923704193372'
 const TRADING_HOURS =
-  '10:30am until 2am at every branch for collection, and 4pm until midnight for delivery from DHA 2'
+  '10:30am until 2am at every branch for collection (NUST H-12 is closed on Saturday and Sunday), and 4pm until midnight for delivery from DHA 2'
 
 const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
 

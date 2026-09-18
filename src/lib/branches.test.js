@@ -86,13 +86,31 @@ describe('branchOrderStatus', () => {
   })
 
   test('closed quotes the next opening in Pakistan time', () => {
-    const status = branchOrderStatus({
-      isOpenNow: false,
-      isAcceptingOrders: false,
-      nextOpeningAt: '2026-09-15T06:00:00.000Z',
-    })
+    const status = branchOrderStatus(
+      {
+        isOpenNow: false,
+        isAcceptingOrders: false,
+        nextOpeningAt: '2026-09-15T06:00:00.000Z',
+      },
+      new Date('2026-09-15T03:00:00.000Z')
+    )
 
     expect(status).toEqual({ tone: 'closed', label: 'Closed · opens 11:00 am', short: 'closed' })
+  })
+
+  test('names the day when the next opening is not today (NUST at the weekend)', () => {
+    const status = branchOrderStatus(
+      {
+        isOpenNow: false,
+        isAcceptingOrders: false,
+        // Monday 21 Sep, 10:30 in Pakistan.
+        nextOpeningAt: '2026-09-21T05:30:00.000Z',
+      },
+      // Saturday 19 Sep, 11:00 in Pakistan.
+      new Date('2026-09-19T06:00:00.000Z')
+    )
+
+    expect(status.label).toBe('Closed · opens Mon 10:30 am')
   })
 
   test('closed without a usable opening time still says closed', () => {
