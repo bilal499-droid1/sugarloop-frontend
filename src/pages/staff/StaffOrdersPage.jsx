@@ -3,6 +3,7 @@ import { FaSearch } from 'react-icons/fa'
 import StatusBadge from '../../components/staff/StatusBadge'
 import OrderDetailPanel from '../../components/staff/OrderDetailPanel'
 import UnacknowledgedAlert from '../../components/staff/UnacknowledgedAlert'
+import OrderSoundBar from '../../components/staff/OrderSoundBar'
 import { useStaffAuth } from '../../context/StaffAuthContext'
  import BranchOrdersSwitch from '../../components/staff/BranchOrdersSwitch'
 import { fetchOrders, fetchOrder, changeOrderStatus } from '../../lib/staffApi'
@@ -228,6 +229,9 @@ export default function StaffOrdersPage() {
         to pause, and does it per branch from Team instead.
       */}
       {!isAdmin && <BranchOrdersSwitch branchId={staffUser?.branch?.id} />}
+
+      {/* First, so the sound gets switched on at the start of a shift, not mid-rush. */}
+      <OrderSoundBar alarmActive={unacknowledged > 0} />
 
       {/* Above the filters, so a filtered view cannot hide the thing that needs doing. */}
       <UnacknowledgedAlert count={unacknowledged} />
