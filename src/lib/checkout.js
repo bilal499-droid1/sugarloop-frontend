@@ -79,7 +79,11 @@ export function describeCheckoutError(error) {
       // "come back tomorrow", and quoting tomorrow's opening time would say it is.
       if (error.details?.canStillCollect) {
         return {
-          title: 'Delivery has closed for today',
+          // A branch can also take collection orders before its riders start (DHA 2:
+          // collection from 10am, delivery from 4pm).
+          title: error.details.deliveryStartsLater
+            ? 'Delivery has not started yet today'
+            : 'Delivery has closed for today',
           detail: `${detail}. Choose "I will collect" above to order for collection.`,
           canRetry: false,
         }

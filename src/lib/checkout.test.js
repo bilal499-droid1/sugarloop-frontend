@@ -102,6 +102,17 @@ describe('describeCheckoutError', () => {
     expect(described.detail).not.toContain('reopen')
   })
 
+  test('an early delivery says delivery has not started, and still points at collection', () => {
+    const described = describeCheckoutError({
+      code: 'BRANCH_NOT_ACCEPTING_ORDERS',
+      message: 'Sugar Loop DHA 2 delivers from 4:00 pm — you can collect your order now',
+      details: { isOpenNow: true, canStillCollect: true, deliveryStartsLater: true },
+    })
+
+    expect(described.title).toBe('Delivery has not started yet today')
+    expect(described.detail).toContain('I will collect')
+  })
+
   test('a shut branch still quotes when it reopens', () => {
     const described = describeCheckoutError({
       code: 'BRANCH_NOT_ACCEPTING_ORDERS',
