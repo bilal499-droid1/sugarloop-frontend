@@ -142,3 +142,16 @@ export function generatePassword() {
  * staff console gets a 400 back. Add it there before relying on this option.
  */
 export const PRODUCT_CATEGORIES = ['Donuts', 'Brownies', 'Croissants', 'Sandwiches', 'Drinks']
+
+/**
+ * What a product photo may be. Mirrors `ALLOWED_IMAGE_TYPES`, `MAX_IMAGE_BYTES` and
+ * `MAX_IMAGES_PER_PRODUCT` in the backend's image storage and product services.
+ *
+ * The server is the authority — S3 enforces the type and size through the signed URL and
+ * the attach step checks them again. These exist so a wrong file is turned away at the
+ * file picker, not after a round trip and a 400. SVG is absent on purpose: an uploaded
+ * SVG can carry script and would be served from a domain the shop trusts.
+ */
+export const PRODUCT_IMAGE_TYPES = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
+export const PRODUCT_IMAGE_MAX_BYTES = 5 * 1024 * 1024
+export const PRODUCT_IMAGE_MAX_COUNT = 8

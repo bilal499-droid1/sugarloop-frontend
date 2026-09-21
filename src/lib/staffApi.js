@@ -22,6 +22,7 @@
  * point of the backend putting it in a cookie rather than the body.
  */
 import { API_BASE_URL, ApiError, isApiConfigured } from './api'
+import { PRODUCT_IMAGE_MAX_BYTES, PRODUCT_IMAGE_TYPES } from './staffConstants'
 
 /** Longer than the storefront's 8s: an operator waiting on a deliberate click has
  *  more patience than a visitor waiting on a menu that should already be there. */
@@ -624,6 +625,93 @@ export function updateStaffProduct(id, changes) {
  */
 export function discontinueStaffProduct(id) {
   return data(`${PRODUCTS}/${id}`, { method: 'DELETE' }).then((response) => response.product)
+}
+
+/** A photo can be several MB on a kitchen phone's connection; the 15s API timeout is too short for it. */
+const STORAGE_TIMEOUT_MS = 60000
+
+/**
+ * Why this file cannot be a product photo, or null if it can. Mirrors the server's rules
+ * so the operator hears about it at the file picker.
+ */
+export function checkProductImage(file) {
+  if (!PRODUCT_IMAGE_TYPES.includes(file.type)) {
+    return `${file.name} is not a WebP, JPEG, PNG or AVIF photo.`
+  }
+  if (file.size === 0) return `${file.name} is empty.`
+  if (file.size > PRODUCT_IMAGE_MAX_BYTES) {
+    return `${file.name} is over ${PRODUCT_IMAGE_MAX_BYTES / 1024 / 1024} MB.`
+  }
+  return null
+}
+
+/**
+ * Step 2 of an upload: the browser sends the file straight to S3.
+ *
+ * Not through `raw`, and never with the access token. This is a different origin and a
+ * different party — a signed URL carries its own authority in the query string, and an
+ * `Authorization` header on top makes S3 reject the request, because the signature covers
+ * exactly the headers the server named and no others. `headers` is what the server told us
+ * to send; it is part of the signature, so it is sent as given.
+ *
+ * `fetch` rejecting here, as opposed to a non-2xx, means the browser never got an answer —
+ * on this call that is almost always a missing CORS rule on the bucket, which the browser
+ * reports as a bare "Failed to fetch" and nothing more.
+ */
+async function putToStorage({ uploadUrl, headers }, file) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), STORAGE_TIMEOUT_MS)
+
+  let response
+  try {
+    response = await fetch(uploadUrl, { method: 'PUT', headers, body: file, signal: controller.signal })
+  } catch (error) {
+    throw new ApiError(
+      0,
+      'UPLOAD_FAILED',
+      error?.name === 'AbortError'
+        ? 'The upload timed out. Check the connection and try again.'
+        : 'The photo could not be sent to storage. If this keeps happening, the bucket is missing a CORS rule for this site.'
+    )
+  } finally {
+    clearTimeout(timer)
+  }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, 'UPLOAD_FAILED', `Storage refused the photo (${response.status}).`)
+  }
+}
+
+/**
+ * Puts one photo on a product: ask for a signed URL, send the file to S3, then tell the
+ * API which object was written so it can check it and record it. Resolves to the updated
+ * product, photos included.
+ *
+ * The product must already exist — the object's key is prefixed with its id, which is
+ * also what stops one product claiming another's photo.
+ */
+export async function uploadProductImage(productId, file) {
+  const problem = checkProductImage(file)
+  if (problem) throw new ApiError(0, 'INVALID_IMAGE', problem)
+
+  const { upload } = await data(`${PRODUCTS}/${productId}/images/upload-url`, {
+    method: 'POST',
+    body: { filename: file.name, contentType: file.type, size: file.size },
+  })
+
+  await putToStorage(upload, file)
+
+  return data(`${PRODUCTS}/${productId}/images`, {
+    method: 'POST',
+    body: { key: upload.key },
+  }).then((response) => response.product)
+}
+
+/** Takes a photo off a product and deletes the file behind it. `key` is the image's `publicId`. */
+export function removeStaffProductImage(productId, key) {
+  return data(`${PRODUCTS}/${productId}/images`, { method: 'DELETE', body: { key } }).then(
+    (response) => response.product
+  )
 }
 
 /**

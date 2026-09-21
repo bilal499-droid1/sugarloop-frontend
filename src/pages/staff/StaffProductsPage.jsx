@@ -138,9 +138,23 @@ export default function StaffProductsPage() {
     setProducts((current) => current.map((p) => (p.id === saved.id ? saved : p)))
   }
 
-  const handleSaved = (saved, { created }) => {
-    if (created) setProducts((current) => [saved, ...current])
-    else replaceInList(saved)
+  /**
+   * Replaces the row if it is already listed, otherwise puts it first.
+   *
+   * A product can reach the list before the form closes: if one of a new product's photos
+   * fails to upload, the form stays open on the product it just created. Adding it then
+   * and again on the eventual Save would list it twice.
+   */
+  const upsertInList = (saved) => {
+    setProducts((current) =>
+      current.some((p) => p.id === saved.id)
+        ? current.map((p) => (p.id === saved.id ? saved : p))
+        : [saved, ...current]
+    )
+  }
+
+  const handleSaved = (saved) => {
+    upsertInList(saved)
     setEditing(null)
   }
 
@@ -184,9 +198,13 @@ export default function StaffProductsPage() {
 
       {editing && (
         <div className="mb-5">
+          {/* Keyed so opening another product's Edit replaces the form rather than reusing
+              the last one's field state. */}
           <ProductForm
+            key={editing.id ?? 'new'}
             product={editing.id ? editing : null}
             onSaved={handleSaved}
+            onPhotosChanged={upsertInList}
             onCancel={() => setEditing(null)}
           />
         </div>

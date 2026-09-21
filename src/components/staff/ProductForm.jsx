@@ -2,10 +2,12 @@ import { useState } from 'react'
 import {
   createStaffProduct,
   updateStaffProduct,
+  uploadProductImage,
   toPaisa,
   toRupees,
 } from '../../lib/staffApi'
 import { PRODUCT_CATEGORIES } from '../../lib/staffConstants'
+import ProductPhotos from './ProductPhotos'
 
 const fieldClass =
   'w-full h-10 px-3 rounded-lg border border-border-light font-display text-sm text-black outline-none focus:border-accent'
@@ -34,9 +36,22 @@ function Field({ label, hint, error, children }) {
  *
  * On edit, only changed fields are sent. The server rejects an empty patch, which is the
  * right answer to a form that was opened and closed.
+ *
+ * **Photos are saved on their own, not with the Save button.** Each one goes straight to
+ * S3 the moment it is picked (see `ProductPhotos`), so on an existing product Save changes
+ * only ever concerns the text fields. A NEW product has no id for a photo's key to be
+ * prefixed with, so photos chosen there wait in `pending` and are sent right after the
+ * product is created. If one of those fails the product still exists — the form stays
+ * open, now editing it, with the reason showing and the photos panel ready to try again.
+ * `onPhotosChanged` keeps the list behind this form in step while it stays open.
  */
-export default function ProductForm({ product, onSaved, onCancel }) {
-  const isEdit = Boolean(product)
+export default function ProductForm({ product, onSaved, onPhotosChanged, onCancel }) {
+  // The product as this form now knows it: the one it was opened on, or the one it just
+  // created, or the latest copy the server sent back after a photo was added or removed.
+  const [latest, setLatest] = useState(null)
+  const current = latest ?? product
+  const isEdit = Boolean(current)
+  const [pending, setPending] = useState([])
 
   const [form, setForm] = useState(() => ({
     name: product?.name ?? '',
@@ -94,15 +109,36 @@ export default function ProductForm({ product, onSaved, onCancel }) {
     if (!isEdit) {
       payload.sku = form.sku.trim()
       if (form.slug.trim()) payload.slug = form.slug.trim()
-    } else if (form.slug.trim() && form.slug.trim() !== product.slug) {
+    } else if (form.slug.trim() && form.slug.trim() !== current.slug) {
       payload.slug = form.slug.trim()
     }
 
     setSaving(true)
     try {
-      const saved = isEdit
-        ? await updateStaffProduct(product.id, payload)
+      let saved = isEdit
+        ? await updateStaffProduct(current.id, payload)
         : await createStaffProduct(payload)
+
+      if (!isEdit && pending.length > 0) {
+        for (const file of pending) {
+          try {
+            saved = await uploadProductImage(saved.id, file)
+          } catch (uploadError) {
+            // The product exists now, so this is no longer a create. Stay open on it,
+            // with the photos panel live, rather than closing on a message nobody reads
+            // and leaving the admin to work out which photos made it.
+            setLatest(saved)
+            setPending([])
+            onPhotosChanged?.(saved)
+            setError(
+              `The product was created, but a photo did not upload: ${
+                uploadError?.message ?? 'unknown error'
+              } Add the photos again below.`
+            )
+            return
+          }
+        }
+      }
 
       onSaved(saved, { created: !isEdit })
     } catch (err) {
@@ -126,7 +162,7 @@ export default function ProductForm({ product, onSaved, onCancel }) {
       className="bg-white border border-border-light rounded-xl p-4 lg:p-5"
     >
       <h2 className="m-0 mb-4 font-display font-bold text-base text-black">
-        {isEdit ? `Edit ${product.name}` : 'New product'}
+        {isEdit ? `Edit ${current.name}` : 'New product'}
       </h2>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -222,6 +258,17 @@ export default function ProductForm({ product, onSaved, onCancel }) {
           Featured on the home page
         </label>
       </div>
+
+      <ProductPhotos
+        product={current}
+        pending={pending}
+        onPendingChange={setPending}
+        onProductChange={(next) => {
+          setLatest(next)
+          onPhotosChanged?.(next)
+        }}
+        disabled={saving}
+      />
 
       {error && <p className="mt-3 mb-0 font-display text-sm text-red-600">{error}</p>}
 
