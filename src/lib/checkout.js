@@ -16,6 +16,18 @@
  * sent lets the checkout page say which ones rather than refusing the whole cart with
  * no account of why.
  */
+/**
+ * Mirrors the API's CHECKOUT_DISCOUNT_PERCENT: 15% off the items (never the delivery
+ * fee), every branch, applied at checkout only — menu and box prices stay as listed.
+ * Display only: the server's quote is what an order is charged.
+ */
+export const CHECKOUT_DISCOUNT_PERCENT = 15
+
+/** The discount on a subtotal in rupees, rounded to whole rupees as the server does. */
+export function checkoutDiscountRupees(subtotalRupees) {
+  return Math.round((subtotalRupees * CHECKOUT_DISCOUNT_PERCENT) / 100)
+}
+
 export function findUnorderableLines(items) {
   return items.filter((item) =>
     item.kind === 'box'
@@ -148,11 +160,11 @@ export function describeCheckoutError(error) {
     case 'MINIMUM_ORDER_NOT_MET': {
       const shortfall = error.details?.shortfall
       return {
-        title: 'Your order is under the minimum',
+        title: 'Your delivery order is under the minimum',
         detail: shortfall
           ? `Add Rs ${shortfall / 100} more to reach the Rs ${
               (error.details.minimumOrderValue ?? 0) / 100
-            } minimum. The delivery fee does not count towards it.`
+            } delivery minimum, or collect it instead — collection has no minimum.`
           : detail,
         canRetry: false,
       }

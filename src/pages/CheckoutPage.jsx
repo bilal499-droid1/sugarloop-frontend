@@ -12,7 +12,13 @@ import {
   placeOrder,
   quoteCart,
 } from '../lib/api'
-import { describeCheckoutError, findUnorderableLines, toApiItems } from '../lib/checkout'
+import {
+  CHECKOUT_DISCOUNT_PERCENT,
+  checkoutDiscountRupees,
+  describeCheckoutError,
+  findUnorderableLines,
+  toApiItems,
+} from '../lib/checkout'
 import { reverseGeocode } from '../lib/geocode'
 import { trackInitiateCheckout, trackPurchase } from '../lib/metaPixel'
 import EmailVerification from '../components/checkout/EmailVerification'
@@ -54,6 +60,8 @@ const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
  * server's quote replaces it the moment it arrives, and is still what an order submits.
  */
 const DELIVERY_FEE_RUPEES = 100
+
+const DISCOUNT_LABEL = `Discount (${CHECKOUT_DISCOUNT_PERCENT}% off)`
 
 /**
  * Pakistani mobile, the same shape order.validator.js accepts: `03001234567`,
@@ -170,6 +178,8 @@ function Notice({ title, detail, tone = 'error' }) {
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const { items, subtotal, clear } = useCart()
+  /** Shown before the first quote so the total does not jump when it lands. */
+  const provisionalDiscount = checkoutDiscountRupees(subtotal)
   const { branches } = useBranch()
   const { status: catalogueStatus } = useCatalogue()
 
@@ -995,6 +1005,9 @@ export default function CheckoutPage() {
               {quote ? (
                 <div className="border-t border-border-light pt-3">
                   <Row label="Subtotal" value={quote.totals.subtotal.formatted} />
+                  {quote.totals.discount.amount > 0 && (
+                    <Row label={DISCOUNT_LABEL} value={`-${quote.totals.discount.formatted}`} saving />
+                  )}
                   {quote.totals.deliveryFee.amount > 0 && (
                     <Row label="Delivery" value={quote.totals.deliveryFee.formatted} />
                   )}
@@ -1032,17 +1045,18 @@ export default function CheckoutPage() {
               ) : (
                 <div className="border-t border-border-light pt-3">
                   <Row label="Subtotal" value={`Rs ${subtotal}`} muted />
-                  {isDelivery && (
-                    <>
-                      <Row label="Delivery" value={`Rs ${DELIVERY_FEE_RUPEES}`} muted />
-                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-border-light">
-                        <span className="font-display font-bold text-sm text-black">Total</span>
-                        <span className="font-price font-bold text-lg text-text-body">
-                          Rs {subtotal + DELIVERY_FEE_RUPEES}
-                        </span>
-                      </div>
-                    </>
+                  {provisionalDiscount > 0 && (
+                    <Row label={DISCOUNT_LABEL} value={`-Rs ${provisionalDiscount}`} saving />
                   )}
+                  {isDelivery && (
+                    <Row label="Delivery" value={`Rs ${DELIVERY_FEE_RUPEES}`} muted />
+                  )}
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-border-light">
+                    <span className="font-display font-bold text-sm text-black">Total</span>
+                    <span className="font-price font-bold text-lg text-text-body">
+                      Rs {subtotal - provisionalDiscount + (isDelivery ? DELIVERY_FEE_RUPEES : 0)}
+                    </span>
+                  </div>
                   <p className="mt-3 mb-0 text-[0.7rem] text-text-body">
                     {quoting
                       ? 'Working out your total…'
@@ -1093,11 +1107,12 @@ export default function CheckoutPage() {
   )
 }
 
-function Row({ label, value, muted }) {
+function Row({ label, value, muted, saving }) {
+  const tone = saving ? 'text-[#1f7a3a] font-bold' : muted ? 'text-text-body' : 'text-black font-bold'
   return (
     <div className="flex justify-between items-center py-0.5">
-      <span className="text-xs text-text-body">{label}</span>
-      <span className={`font-price text-sm ${muted ? 'text-text-body' : 'text-black font-bold'}`}>
+      <span className={`text-xs ${saving ? 'text-[#1f7a3a]' : 'text-text-body'}`}>{label}</span>
+      <span className={`font-price text-sm ${tone}`}>
         {value}
       </span>
     </div>

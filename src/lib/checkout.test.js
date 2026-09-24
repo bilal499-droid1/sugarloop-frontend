@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest'
 
-import { describeCheckoutError, findUnorderableLines, toApiItems } from './checkout'
+import {
+  checkoutDiscountRupees,
+  describeCheckoutError,
+  findUnorderableLines,
+  toApiItems,
+} from './checkout'
 
 /**
  * The cart-to-API translation.
@@ -135,5 +140,28 @@ describe('describeCheckoutError', () => {
 
     expect(described.title).toBe('We are closed right now')
     expect(described.detail).toContain('We reopen at')
+  })
+})
+
+describe('checkoutDiscountRupees', () => {
+  // Must round exactly as the API does, or the provisional total jumps when the quote lands.
+  test('15% of the items, rounded to whole rupees', () => {
+    expect(checkoutDiscountRupees(858)).toBe(129) // 128.70
+    expect(checkoutDiscountRupees(370)).toBe(56) // 55.50 rounds up
+    expect(checkoutDiscountRupees(110)).toBe(17) // 16.50 — no float drift to 16
+    expect(checkoutDiscountRupees(0)).toBe(0)
+  })
+})
+
+describe('minimum order message', () => {
+  test('says it is a delivery minimum and offers collection', () => {
+    const error = Object.assign(new Error('Minimum order for delivery is Rs 500'), {
+      code: 'MINIMUM_ORDER_NOT_MET',
+      details: { subtotal: 37_000, minimumOrderValue: 50_000, shortfall: 13_000 },
+    })
+    const { title, detail } = describeCheckoutError(error)
+    expect(title).toMatch(/delivery/)
+    expect(detail).toMatch(/Rs 130 more/)
+    expect(detail).toMatch(/collection has no minimum/)
   })
 })

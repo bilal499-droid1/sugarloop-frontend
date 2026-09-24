@@ -387,6 +387,9 @@ export default function OrderConfirmationPage() {
 
           <div className="border-t border-border-light pt-2">
             <Money label="Subtotal" value={order.totals.subtotal.formatted} />
+            {order.totals.discount.amount > 0 && (
+              <Money label="Discount" value={`-${order.totals.discount.formatted}`} />
+            )}
             {order.totals.deliveryFee.amount > 0 && (
               <Money label="Delivery" value={order.totals.deliveryFee.formatted} />
             )}

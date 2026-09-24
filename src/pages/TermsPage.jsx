@@ -31,8 +31,9 @@ const SECTIONS = [
       `Orders are paid cash on delivery or in cash on collection. The rider carries no change beyond what is reasonable, so please keep the order amount ready.`,
     ],
     list: [
-      `Minimum order value: Rs 500.`,
+      `Minimum order for delivery: Rs 500, before any discount. Collection has no minimum.`,
       `Delivery fee: Rs 100. Collection from a branch carries no fee.`,
+      `Online orders get 15% off the items at checkout. The discount does not apply to the delivery fee.`,
       `We may change prices at any time; a change never affects an order we have already confirmed.`,
     ],
   },

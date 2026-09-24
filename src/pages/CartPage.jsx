@@ -3,6 +3,7 @@ import { FaShoppingCart, FaTrash } from 'react-icons/fa'
 import ShopNav from '../components/products/ShopNav'
 import Footer from '../components/Footer'
 import { useCart } from '../context/CartContext'
+import { CHECKOUT_DISCOUNT_PERCENT } from '../lib/checkout'
 
 function QtyStepper({ qty, onChange, className = '' }) {
   return (
@@ -146,7 +147,10 @@ export default function CartPage() {
                   shop is open, or whether anything is sold out. Those are the server's
                   answers and they arrive on the checkout page. Quoting a total here that
                   the next page contradicts is worse than quoting none. */}
-              <p className="mt-4 mb-3 text-xs text-text-body">
+              <p className="mt-4 mb-1 text-xs font-display font-bold text-[#1f7a3a]">
+                {CHECKOUT_DISCOUNT_PERCENT}% off is taken off at checkout.
+              </p>
+              <p className="mt-0 mb-3 text-xs text-text-body">
                 Delivery and your total are worked out at checkout.
               </p>
               <Link
