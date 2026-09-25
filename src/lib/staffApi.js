@@ -777,3 +777,24 @@ export function updateBranch(id, changes) {
     (response) => response.branch
   )
 }
+
+/* -------------------------------------------------------------------------- */
+/* Shop settings                                                              */
+/* -------------------------------------------------------------------------- */
+
+const SETTINGS = '/staff/settings'
+
+/** `{ checkoutDiscountPercent, updatedAt }`. Admin only. */
+export function fetchShopSettings({ signal } = {}) {
+  return data(SETTINGS, { signal }).then((response) => response.settings)
+}
+
+/**
+ * Sets the checkout discount for every branch. Admin only. A whole percent from 0 (off)
+ * to 90. It takes effect on the next quote; an order already placed keeps its price.
+ */
+export function updateShopSettings(changes) {
+  return data(SETTINGS, { method: 'PATCH', body: changes }).then(
+    (response) => response.settings
+  )
+}

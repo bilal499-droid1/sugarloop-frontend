@@ -146,10 +146,15 @@ describe('describeCheckoutError', () => {
 describe('checkoutDiscountRupees', () => {
   // Must round exactly as the API does, or the provisional total jumps when the quote lands.
   test('15% of the items, rounded to whole rupees', () => {
-    expect(checkoutDiscountRupees(858)).toBe(129) // 128.70
-    expect(checkoutDiscountRupees(370)).toBe(56) // 55.50 rounds up
-    expect(checkoutDiscountRupees(110)).toBe(17) // 16.50 — no float drift to 16
-    expect(checkoutDiscountRupees(0)).toBe(0)
+    expect(checkoutDiscountRupees(858, 15)).toBe(129) // 128.70
+    expect(checkoutDiscountRupees(370, 15)).toBe(56) // 55.50 rounds up
+    expect(checkoutDiscountRupees(110, 15)).toBe(17) // 16.50 — no float drift to 16
+    expect(checkoutDiscountRupees(0, 15)).toBe(0)
+  })
+
+  test('whatever percent staff set', () => {
+    expect(checkoutDiscountRupees(998, 20)).toBe(200) // 199.60
+    expect(checkoutDiscountRupees(858, 0)).toBe(0)
   })
 })
 

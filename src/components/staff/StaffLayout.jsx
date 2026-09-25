@@ -5,6 +5,7 @@ import {
   FaClipboardList,
   FaDonate,
   FaEnvelopeOpenText,
+  FaPercent,
   FaSignOutAlt,
   FaUsers,
   FaWarehouse,
@@ -129,6 +130,10 @@ export default function StaffLayout() {
                 <NavLink to="/staff/team" className={navLinkClass}>
                   <FaUsers className="text-xs" aria-hidden="true" />
                   Team
+                </NavLink>
+                <NavLink to="/staff/discount" className={navLinkClass}>
+                  <FaPercent className="text-xs" aria-hidden="true" />
+                  Discount
                 </NavLink>
               </>
             )}

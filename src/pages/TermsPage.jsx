@@ -33,7 +33,7 @@ const SECTIONS = [
     list: [
       `Minimum order for delivery: Rs 500, before any discount. Collection has no minimum.`,
       `Delivery fee: Rs 100. Collection from a branch carries no fee.`,
-      `Online orders get 15% off the items at checkout. The discount does not apply to the delivery fee.`,
+      `When an online discount is running, it is shown at checkout and comes off the items only. It does not apply to the delivery fee. We may change or end a discount at any time; it never changes an order already placed.`,
       `We may change prices at any time; a change never affects an order we have already confirmed.`,
     ],
   },

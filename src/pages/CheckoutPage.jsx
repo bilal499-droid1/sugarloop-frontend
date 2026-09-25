@@ -12,8 +12,8 @@ import {
   placeOrder,
   quoteCart,
 } from '../lib/api'
+import { useCheckoutDiscount } from '../lib/useCheckoutDiscount'
 import {
-  CHECKOUT_DISCOUNT_PERCENT,
   checkoutDiscountRupees,
   describeCheckoutError,
   findUnorderableLines,
@@ -49,7 +49,7 @@ import EmailVerification from '../components/checkout/EmailVerification'
 const ORDER_PHONE = '+92 370 4193372'
 const ORDER_PHONE_TEL = 'tel:+923704193372'
 const TRADING_HOURS =
-  '10:30am until 2am at every branch for collection (NUST H-12 is closed on Saturday and Sunday), and 4pm until midnight for delivery from DHA 2'
+  '10:30am until 2am at every branch for collection (NUST H-12 is closed on Saturday and Sunday), and 4pm until 2am for delivery from DHA 2'
 
 const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
 
@@ -61,7 +61,7 @@ const FULFILMENT = { DELIVERY: 'delivery', PICKUP: 'pickup' }
  */
 const DELIVERY_FEE_RUPEES = 100
 
-const DISCOUNT_LABEL = `Discount (${CHECKOUT_DISCOUNT_PERCENT}% off)`
+const discountLabel = (percent) => `Discount (${percent}% off)`
 
 /**
  * Pakistani mobile, the same shape order.validator.js accepts: `03001234567`,
@@ -179,7 +179,8 @@ export default function CheckoutPage() {
   const navigate = useNavigate()
   const { items, subtotal, clear } = useCart()
   /** Shown before the first quote so the total does not jump when it lands. */
-  const provisionalDiscount = checkoutDiscountRupees(subtotal)
+  const discountPercent = useCheckoutDiscount()
+  const provisionalDiscount = checkoutDiscountRupees(subtotal, discountPercent)
   const { branches } = useBranch()
   const { status: catalogueStatus } = useCatalogue()
 
@@ -1006,7 +1007,11 @@ export default function CheckoutPage() {
                 <div className="border-t border-border-light pt-3">
                   <Row label="Subtotal" value={quote.totals.subtotal.formatted} />
                   {quote.totals.discount.amount > 0 && (
-                    <Row label={DISCOUNT_LABEL} value={`-${quote.totals.discount.formatted}`} saving />
+                    <Row
+                      label={discountLabel(quote.discountPercent ?? discountPercent)}
+                      value={`-${quote.totals.discount.formatted}`}
+                      saving
+                    />
                   )}
                   {quote.totals.deliveryFee.amount > 0 && (
                     <Row label="Delivery" value={quote.totals.deliveryFee.formatted} />
@@ -1046,7 +1051,11 @@ export default function CheckoutPage() {
                 <div className="border-t border-border-light pt-3">
                   <Row label="Subtotal" value={`Rs ${subtotal}`} muted />
                   {provisionalDiscount > 0 && (
-                    <Row label={DISCOUNT_LABEL} value={`-Rs ${provisionalDiscount}`} saving />
+                    <Row
+                      label={discountLabel(discountPercent)}
+                      value={`-Rs ${provisionalDiscount}`}
+                      saving
+                    />
                   )}
                   {isDelivery && (
                     <Row label="Delivery" value={`Rs ${DELIVERY_FEE_RUPEES}`} muted />

@@ -150,6 +150,11 @@ export function fetchProducts({ branchId, signal } = {}) {
   return request(`/products?${query}`, { signal })
 }
 
+/** Shop-wide settings staff set from the console: `{ checkoutDiscountPercent }`. */
+export function fetchShopSettings({ signal } = {}) {
+  return request('/settings', { signal }).then((response) => response.settings)
+}
+
 /** The branches, with server-computed `isOpenNow` / `isAcceptingOrders`. */
 export function fetchBranches({ signal } = {}) {
   return request('/branches', { signal })

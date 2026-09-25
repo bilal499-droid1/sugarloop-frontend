@@ -17,15 +17,17 @@
  * no account of why.
  */
 /**
- * Mirrors the API's CHECKOUT_DISCOUNT_PERCENT: 15% off the items (never the delivery
- * fee), every branch, applied at checkout only — menu and box prices stay as listed.
- * Display only: the server's quote is what an order is charged.
+ * The checkout discount comes off the items (never the delivery fee), every branch, at
+ * checkout only — menu and box prices stay as listed. Staff set the live percent from the
+ * console; `useCheckoutDiscount` reads it. This is only the fallback shown until that
+ * answer arrives, or when there is no API. Display only: the server's quote is what an
+ * order is charged.
  */
-export const CHECKOUT_DISCOUNT_PERCENT = 15
+export const DEFAULT_CHECKOUT_DISCOUNT_PERCENT = 15
 
 /** The discount on a subtotal in rupees, rounded to whole rupees as the server does. */
-export function checkoutDiscountRupees(subtotalRupees) {
-  return Math.round((subtotalRupees * CHECKOUT_DISCOUNT_PERCENT) / 100)
+export function checkoutDiscountRupees(subtotalRupees, percent) {
+  return Math.round((subtotalRupees * percent) / 100)
 }
 
 export function findUnorderableLines(items) {

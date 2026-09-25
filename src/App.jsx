@@ -19,6 +19,7 @@ import StaffTeamPage from './pages/staff/StaffTeamPage'
 import StaffEnquiriesPage from './pages/staff/StaffEnquiriesPage'
 import StaffProductsPage from './pages/staff/StaffProductsPage'
 import StaffAccountPage from './pages/staff/StaffAccountPage'
+import StaffDiscountPage from './pages/staff/StaffDiscountPage'
 import RequireStaffAuth from './components/staff/RequireStaffAuth'
 import RequireAdmin from './components/staff/RequireAdmin'
 import StaffLayout from './components/staff/StaffLayout'
@@ -86,6 +87,7 @@ export default function App() {
                                 <Route path="team" element={<StaffTeamPage />} />
                                 <Route path="enquiries" element={<StaffEnquiriesPage />} />
                                 <Route path="products" element={<StaffProductsPage />} />
+                                <Route path="discount" element={<StaffDiscountPage />} />
                               </Route>
                             </Route>
                           </Route>
